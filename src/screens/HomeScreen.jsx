@@ -1,17 +1,11 @@
 import { useState, useRef } from "react";
 import { DAYS, DAY_SCHEDULE } from "../data/seed";
 
-// ─── ICONS (simple line, sage or slate) ───────────────────────────────────────
+// ─── ICONS ────────────────────────────────────────────────────────────────────
 const Icon = {
   Leaf: () => (
     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/>
-    </svg>
-  ),
-  Check: () => (
-    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 11l3 3L22 4"/>
-      <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
     </svg>
   ),
   Feather: () => (
@@ -43,6 +37,49 @@ const Icon = {
     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+    </svg>
+  ),
+  Check: () => (
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 11l3 3L22 4"/>
+      <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+    </svg>
+  ),
+  // Habit-specific icons — sage
+  Eye: () => (
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  ),
+  Voice: () => (
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+      <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+      <line x1="12" y1="19" x2="12" y2="23"/>
+      <line x1="8" y1="23" x2="16" y2="23"/>
+    </svg>
+  ),
+  Outdoors: () => (
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 17l4-8 4 5 3-3 4 6H3z"/>
+      <circle cx="18" cy="6" r="2"/>
+    </svg>
+  ),
+  Stillness: () => (
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+      <path d="M12 6v6l4 2"/>
+    </svg>
+  ),
+  Orderly: () => (
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="8" y1="6" x2="21" y2="6"/>
+      <line x1="8" y1="12" x2="21" y2="12"/>
+      <line x1="8" y1="18" x2="21" y2="18"/>
+      <line x1="3" y1="6" x2="3.01" y2="6"/>
+      <line x1="3" y1="12" x2="3.01" y2="12"/>
+      <line x1="3" y1="18" x2="3.01" y2="18"/>
     </svg>
   ),
 };
@@ -86,6 +123,15 @@ const MOTHER_CULTURE = [
   ],
 ];
 
+// Which block subjects are "free" / independent (show mother's note)
+const FREE_BLOCK_KEYWORDS = [
+  "rise & shine", "rise and shine", "free", "rest", "independent",
+  "chores", "piano", "outdoor", "nature", "afternoon",
+];
+
+const isFreeBlock = (subject) =>
+  FREE_BLOCK_KEYWORDS.some(k => subject.toLowerCase().includes(k));
+
 // ─── OUTDOOR TRACKER ──────────────────────────────────────────────────────────
 const OUTDOOR_GOAL_HOURS = 15;
 
@@ -127,7 +173,7 @@ function OutdoorTracker() {
           <p style={{ fontSize: 14, color: "var(--ink)", fontFamily: "'Playfair Display', serif", marginBottom: 3 }}>
             {hours >= OUTDOOR_GOAL_HOURS
               ? "Goal reached this week ✦"
-              : `${OUTDOOR_GOAL_HOURS - hours} hr ${mins > 0 ? `${60 - mins} min` : ""} to go`}
+              : `${OUTDOOR_GOAL_HOURS - hours} hr${mins > 0 ? ` ${60 - mins} min` : ""} to go`}
           </p>
           <p className="caption italic" style={{ marginBottom: 12 }}>Goal: {OUTDOOR_GOAL_HOURS} hrs / week</p>
           <div style={{ display: "flex", gap: 8 }}>
@@ -176,12 +222,23 @@ function MotherCulture() {
 // ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
 function TodaySchedule({ today, blocks, onNavigate }) {
   const [items, setItems] = useState(
-    blocks.map((b, i) => ({ ...b, id: i, status: "pending" }))
+    blocks.map((b, i) => ({ ...b, id: i, status: "pending", motherNote: "" }))
   );
+  const [editingNote, setEditingNote] = useState(null);
   const longPressTimer = useRef(null);
 
-  const markDone = (id) => {
+  const toggleDone = (id) => {
     setItems(prev => {
+      const target = prev.find(b => b.id === id);
+      if (!target) return prev;
+
+      // if already done — undo back to pending, move back to position by id
+      if (target.status === "done") {
+        const restored = prev.map(b => b.id === id ? { ...b, status: "pending" } : b);
+        return restored.sort((a, b) => a.id - b.id);
+      }
+
+      // mark done, slide to bottom
       const updated = prev.map(b => b.id === id ? { ...b, status: "done" } : b);
       return [
         ...updated.filter(b => b.status === "pending"),
@@ -200,8 +257,18 @@ function TodaySchedule({ today, blocks, onNavigate }) {
     });
   };
 
-  const startLongPress = (id) => { longPressTimer.current = setTimeout(() => markSkipped(id), 600); };
-  const cancelLongPress = ()  => clearTimeout(longPressTimer.current);
+  const saveNote = (id, note) => {
+    setItems(prev => prev.map(b => b.id === id ? { ...b, motherNote: note } : b));
+    setEditingNote(null);
+  };
+
+  const startLongPress = (id) => {
+    longPressTimer.current = setTimeout(() => {
+      cancelLongPress();
+      markSkipped(id);
+    }, 600);
+  };
+  const cancelLongPress = () => clearTimeout(longPressTimer.current);
 
   return (
     <div style={{ marginBottom: 32 }}>
@@ -226,57 +293,113 @@ function TodaySchedule({ today, blocks, onNavigate }) {
       {items.map(b => {
         const isDone    = b.status === "done";
         const isSkipped = b.status === "skipped";
+        const showMother = isFreeBlock(b.subject) && !isSkipped;
+
         return (
-          <div
-            key={b.id}
-            onClick={() => { if (b.status === "pending") markDone(b.id); }}
-            onTouchStart={() => startLongPress(b.id)}
-            onTouchEnd={cancelLongPress}
-            onMouseDown={() => startLongPress(b.id)}
-            onMouseUp={cancelLongPress}
-            onMouseLeave={cancelLongPress}
-            style={{
-              display: "flex", gap: 14, alignItems: "flex-start",
-              padding: "13px 0", borderBottom: "1px solid var(--rule)",
-              cursor: b.status === "pending" ? "pointer" : "default",
-              opacity: isDone ? 0.38 : isSkipped ? 0.5 : 1,
-              transition: "opacity .4s ease",
-            }}
-          >
-            <div style={{
-              width: 8, height: 8, borderRadius: "50%", marginTop: 7, flexShrink: 0,
-              background: isDone ? "var(--sage)" : isSkipped ? "var(--gold)" : "transparent",
-              border: isDone || isSkipped ? "none" : "1.5px solid var(--rule)",
-              transition: "all .3s ease",
-            }} />
-            <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>
-              {b.time}
-            </span>
-            <div style={{ flex: 1 }}>
-              <p style={{
-                fontSize: 15, color: isDone ? "var(--ink-faint)" : "var(--ink)",
-                fontFamily: "'Playfair Display', serif",
-                textDecoration: isDone ? "line-through" : "none",
-                textDecorationColor: "var(--sage-md)",
+          <div key={b.id} style={{ borderBottom: "1px solid var(--rule)" }}>
+            <div
+              onClick={() => { if (b.status !== "skipped") toggleDone(b.id); }}
+              onTouchStart={() => { if (b.status === "pending") startLongPress(b.id); }}
+              onTouchEnd={cancelLongPress}
+              onMouseDown={() => { if (b.status === "pending") startLongPress(b.id); }}
+              onMouseUp={cancelLongPress}
+              onMouseLeave={cancelLongPress}
+              style={{
+                display: "flex", gap: 14, alignItems: "flex-start",
+                padding: "13px 0 6px",
+                cursor: b.status !== "skipped" ? "pointer" : "default",
+                opacity: isDone ? 0.38 : isSkipped ? 0.5 : 1,
+                transition: "opacity .4s ease",
+              }}
+            >
+              {/* Status dot */}
+              <div style={{
+                width: 8, height: 8, borderRadius: "50%", marginTop: 7, flexShrink: 0,
+                background: isDone ? "var(--sage)" : isSkipped ? "var(--gold)" : "transparent",
+                border: isDone || isSkipped ? "none" : "1.5px solid var(--rule)",
                 transition: "all .3s ease",
+              }} />
+
+              <span style={{
+                fontSize: 11, color: "var(--ink-faint)", width: 36,
+                paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif",
               }}>
-                {b.subject}
-              </p>
-              {isSkipped && (
-                <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>
-                  skipped today
+                {b.time}
+              </span>
+
+              <div style={{ flex: 1 }}>
+                <p style={{
+                  fontSize: 15, color: isDone ? "var(--ink-faint)" : "var(--ink)",
+                  fontFamily: "'Playfair Display', serif",
+                  textDecoration: isDone ? "line-through" : "none",
+                  textDecorationColor: "var(--sage-md)",
+                  transition: "all .3s ease",
+                }}>
+                  {b.subject}
                 </p>
-              )}
-              {b.note && !isSkipped && (
-                <p className="caption italic" style={{ marginTop: 2 }}>{b.note}</p>
-              )}
+                {isSkipped && (
+                  <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>
+                    skipped today
+                  </p>
+                )}
+                {b.note && !isSkipped && (
+                  <p className="caption italic" style={{ marginTop: 2 }}>{b.note}</p>
+                )}
+                {isDone && (
+                  <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 3 }}>
+                    tap to undo
+                  </p>
+                )}
+              </div>
             </div>
+
+            {/* Mother's quiet note — free blocks only */}
+            {showMother && (
+              <div style={{ paddingLeft: 58, paddingBottom: 10 }}
+                onClick={e => e.stopPropagation()}>
+                {editingNote === b.id ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <input
+                      autoFocus
+                      defaultValue={b.motherNote}
+                      placeholder="What will you tend during this time?"
+                      onBlur={e => saveNote(b.id, e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") saveNote(b.id, e.target.value); }}
+                      style={{
+                        flex: 1, background: "none", border: "none",
+                        borderBottom: "1px solid var(--rule)",
+                        fontFamily: "'Cormorant Garamond', Georgia, serif",
+                        fontStyle: "italic", fontSize: 14,
+                        color: "var(--ink-lt)", outline: "none",
+                        padding: "4px 0",
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setEditingNote(b.id)}
+                    style={{
+                      background: "none", border: "none", cursor: "pointer",
+                      fontFamily: "'Cormorant Garamond', Georgia, serif",
+                      fontStyle: "italic", fontSize: 14,
+                      color: b.motherNote ? "var(--ink-faint)" : "var(--ink-faint)",
+                      padding: 0, textAlign: "left",
+                      opacity: b.motherNote ? 1 : 0.55,
+                    }}
+                  >
+                    {b.motherNote
+                      ? `✦ ${b.motherNote}`
+                      : "your time · what will you tend?"}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         );
       })}
 
       <p className="caption italic" style={{ marginTop: 14, textAlign: "center" }}>
-        Tap to complete · Hold to skip
+        Tap to complete · Tap again to undo · Hold to skip
       </p>
     </div>
   );
@@ -284,11 +407,11 @@ function TodaySchedule({ today, blocks, onNavigate }) {
 
 // ─── HABIT TRACKER ────────────────────────────────────────────────────────────
 const HABIT_LIST = [
-  { id: 1, name: "Attention",    emoji: "👁" },
-  { id: 2, name: "Narration",    emoji: "🗣" },
-  { id: 3, name: "Outdoor Time", emoji: "🌿" },
-  { id: 4, name: "Stillness",    emoji: "🕊" },
-  { id: 5, name: "Orderly Work", emoji: "📖" },
+  { id: 1, name: "Attention",    Icon: Icon.Eye      },
+  { id: 2, name: "Narration",    Icon: Icon.Voice    },
+  { id: 3, name: "Outdoor Time", Icon: Icon.Outdoors },
+  { id: 4, name: "Stillness",    Icon: Icon.Stillness },
+  { id: 5, name: "Orderly Work", Icon: Icon.Orderly  },
 ];
 const WEEK_DAYS = ["M", "T", "W", "T", "F"];
 
@@ -318,18 +441,22 @@ function HabitTracker() {
           }}>{d}</div>
         ))}
       </div>
+
       {HABIT_LIST.map(h => {
         const dayChecks = checked[h.id] || {};
         const count = Object.values(dayChecks).filter(Boolean).length;
         return (
-          <div key={h.id} style={{ display: "flex", alignItems: "center", padding: "9px 0", borderTop: "1px solid var(--rule)" }}>
+          <div key={h.id} style={{ display: "flex", alignItems: "center", padding: "10px 0", borderTop: "1px solid var(--rule)" }}>
             <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                <span style={{ fontSize: 12 }}>{h.emoji}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                <h.Icon />
                 <span style={{ fontSize: 13, color: "var(--ink)", fontFamily: "'Playfair Display', serif" }}>{h.name}</span>
               </div>
               <div style={{ height: 2, background: "var(--rule)", borderRadius: 1, width: 56 }}>
-                <div style={{ height: 2, background: "var(--sage)", borderRadius: 1, width: `${(count / 5) * 100}%`, transition: "width .3s ease" }} />
+                <div style={{
+                  height: 2, background: "var(--sage)", borderRadius: 1,
+                  width: `${(count / 5) * 100}%`, transition: "width .3s ease",
+                }} />
               </div>
             </div>
             {WEEK_DAYS.map((_, i) => (
@@ -377,17 +504,14 @@ export default function HomeScreen({ onNavigate }) {
         Begin with what is in front of you.
       </p>
 
-      {/* Outdoor tracker */}
       <OutdoorTracker />
 
       <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 28px" }} />
 
-      {/* Mother culture */}
       <MotherCulture />
 
       <div style={{ height: 1, background: "var(--rule)", margin: "0 0 28px" }} />
 
-      {/* Today's schedule */}
       <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} />
 
       {/* Quick begin */}
@@ -403,7 +527,6 @@ export default function HomeScreen({ onNavigate }) {
 
       <div style={{ height: 1, background: "var(--rule)", margin: "0 0 28px" }} />
 
-      {/* Habit tracker — bottom of screen */}
       <HabitTracker />
 
     </div>
