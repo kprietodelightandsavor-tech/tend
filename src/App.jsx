@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../src/styles/globals.css";
+import "./styles/globals.css";
 
 import BottomNav       from "./components/BottomNav";
 import HomeScreen      from "./screens/HomeScreen";
