@@ -88,15 +88,16 @@ const Icon = {
   ),
   X: () => (
     <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
     </svg>
   ),
 };
 
-// ─── BLOCK CATEGORY COLOR ────────────────────────────────────────────────────
+// ─── BLOCK CATEGORY COLOR ─────────────────────────────────────────────────────
 const getBlockColor = (subject) => {
   const s = subject.toLowerCase();
-  if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("living literature") || s.includes("morning")) return "var(--block-morning)";
+  if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("living literature")) return "var(--block-morning)";
   if (s.includes("math") || s.includes("language") || s.includes("writing") || s.includes("copywork") || s.includes("history") || s.includes("science") || s.includes("geography") || s.includes("historical fiction") || s.includes("spanish") || s.includes("reading") || s.includes("timeline") || s.includes("commonplace")) return "var(--block-academic)";
   if (s.includes("nature") || s.includes("outdoor")) return "var(--block-nature)";
   if (s.includes("co-op") || s.includes("bach") || s.includes("chispa")) return "var(--block-coop)";
@@ -131,20 +132,40 @@ const FREE_KEYWORDS = ["rise", "chores", "piano", "free", "rest", "independent",
 const isFreeBlock = (subject) => FREE_KEYWORDS.some(k => subject.toLowerCase().includes(k));
 
 // ─── PREMIUM MODAL ────────────────────────────────────────────────────────────
-function PremiumModal({ onClose }) {
+export function PremiumModal({ onClose }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={onClose}>
       <div style={{ width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 52px", maxHeight: "88dvh", overflowY: "auto" }}
         onClick={e => e.stopPropagation()}>
+
         <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-          <h2 className="serif" style={{ fontSize: 24 }}>Tend Premium</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)" }}><Icon.X /></button>
+
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
+          <div>
+            <p className="eyebrow" style={{ marginBottom: 4 }}>Delight & Savor</p>
+            <h2 className="serif" style={{ fontSize: 24 }}>Tend Premium</h2>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)", marginTop: 4 }}>
+            <Icon.X />
+          </button>
         </div>
-        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 24, lineHeight: 1.7 }}>
-          Everything in Tend — beautifully tended.
+
+        {/* Tagline */}
+        <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", marginBottom: 24, lineHeight: 1.8 }}>
+          Beauty. Meaning. Connection.
         </p>
+
+        {/* Invitational description */}
+        <div className="card-sage" style={{ marginBottom: 24 }}>
+          <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.9 }}>
+            Tend Premium is for the family that wants to go deeper — a full weekly planner that breathes with your rhythm, a living nature and commonplace journal, all five habits tended over twelve weeks, and the tools to make Charlotte Mason homeschooling feel as beautiful as it actually is.
+          </p>
+          <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.8, marginTop: 12 }}>
+            When you're ready, we'd love to have you.
+          </p>
+        </div>
 
         {/* Pricing */}
         <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
@@ -160,56 +181,58 @@ function PremiumModal({ onClose }) {
           </div>
         </div>
 
-        {/* Free vs paid */}
-        <div style={{ marginBottom: 24 }}>
-          <p className="eyebrow" style={{ marginBottom: 12 }}>What's included</p>
-
-          {/* Free */}
-          <div style={{ marginBottom: 16 }}>
-            <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 8 }}>Free — always</p>
-            {[
-              "Daily schedule (one repeating template)",
-              "Outdoor time tracker",
-              "Consider the Lilies journal structure",
-              "One habit focus with today's ideas",
-              "Daily Mother Culture prompt",
-              "CM quote of the day",
-            ].map((f, i) => (
-              <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 6 }}>
-                <span style={{ color: "var(--sage)", fontSize: 14, flexShrink: 0, marginTop: 1 }}>✓</span>
-                <p style={{ fontSize: 14, color: "var(--ink-lt)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", lineHeight: 1.5 }}>{f}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Paid */}
-          <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, padding: "16px" }}>
-            <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 10 }}>Premium</p>
-            {[
-              "Full weekly planner — different schedule per day, editable blocks, Beauty Loop",
-              "Term counter with rest week rhythm",
-              "All five habits with full library & 12-week reflection",
-              "Nature page with rotating outdoor ideas",
-              "Full Consider the Lilies digital journal — photo upload, print, all journal owners",
-              "Students screen with narration tracking",
-              "Full rotating Mother Culture prompt bank",
-            ].map((f, i) => (
-              <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
-                <span style={{ color: "var(--sage)", fontSize: 14, flexShrink: 0, marginTop: 1 }}>✦</span>
-                <p style={{ fontSize: 14, color: "var(--ink-lt)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", lineHeight: 1.5 }}>{f}</p>
-              </div>
-            ))}
-          </div>
+        {/* Free */}
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 10 }}>Free — always</p>
+          {[
+            "Daily schedule (one repeating template)",
+            "Outdoor time tracker",
+            "Consider the Lilies journal structure",
+            "One habit focus with today's ideas",
+            "Daily Mother Culture prompt",
+            "CM quote of the day",
+          ].map((f, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 7 }}>
+              <span style={{ color: "var(--sage)", fontSize: 14, flexShrink: 0, marginTop: 1 }}>✓</span>
+              <p style={{ fontSize: 14, color: "var(--ink-lt)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", lineHeight: 1.5 }}>{f}</p>
+            </div>
+          ))}
         </div>
 
-        {/* CTA */}
-        <div className="card-gold" style={{ marginBottom: 20 }}>
-          <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.7, marginBottom: 12 }}>
-            Tend Premium is coming soon. Follow Delight & Savor on Substack to be the first to know when it launches.
-          </p>
+        {/* Premium */}
+        <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, padding: "16px", marginBottom: 28 }}>
+          <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 12 }}>Premium includes everything, plus</p>
+          {[
+            "Full weekly planner — different schedule per day, editable blocks, Beauty Loop",
+            "Term counter with rest week gentle rhythm",
+            "All five habits with full library & 12-week reflection",
+            "Nature page with rotating daily outdoor ideas",
+            "Full Consider the Lilies digital journal — photo upload, print, all family members",
+            "Students screen with narration tracking",
+            "Full rotating Mother Culture prompt bank",
+          ].map((f, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
+              <span style={{ color: "var(--sage)", fontSize: 14, flexShrink: 0, marginTop: 1 }}>✦</span>
+              <p style={{ fontSize: 14, color: "var(--ink-lt)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", lineHeight: 1.5 }}>{f}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Primary CTA — Payhip */}
+        <a href="https://payhip.com/b/NMQ4D" target="_blank" rel="noopener noreferrer"
+          style={{ display: "block", background: "var(--sage)", border: "none", borderRadius: 2, padding: "14px 0", width: "100%", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "white", textAlign: "center", textDecoration: "none", marginBottom: 12 }}>
+          Join Tend Premium →
+        </a>
+
+        {/* Secondary links */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+          <a href="https://www.delightandsavor.com" target="_blank" rel="noopener noreferrer"
+            style={{ display: "block", textAlign: "center", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", textDecoration: "none", padding: "8px 0", borderBottom: "1px solid var(--rule)" }}>
+            Explore curriculum & the blog at Delight & Savor →
+          </a>
           <a href="https://substack.com/@delightandsavor" target="_blank" rel="noopener noreferrer"
-            style={{ display: "block", background: "var(--gold)", border: "none", borderRadius: 2, padding: "12px 0", width: "100%", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "white", textAlign: "center", textDecoration: "none" }}>
-            Follow on Substack →
+            style={{ display: "block", textAlign: "center", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", textDecoration: "none", padding: "8px 0" }}>
+            Follow along on Substack →
           </a>
         </div>
 
@@ -397,11 +420,8 @@ function TodaySchedule({ today, blocks, onNavigate }) {
               onMouseLeave={cancelLP}
               style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px", cursor: b.status !== "skipped" ? "pointer" : "default", opacity: isDone ? 0.35 : isSkipped ? 0.45 : 1, transition: "opacity .4s ease" }}
             >
-              {/* Color stripe */}
               <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: isDone || isSkipped ? "var(--rule)" : blockColor, marginRight: 12, flexShrink: 0, transition: "background .3s ease", minHeight: 36 }} />
-
               <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{b.time}</span>
-
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: 16, color: isDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease" }}>
                   {b.subject}
@@ -417,7 +437,7 @@ function TodaySchedule({ today, blocks, onNavigate }) {
               <div style={{ paddingLeft: 53, paddingBottom: 10 }} onClick={e => e.stopPropagation()}>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {riseShineItems.map((item, idx) => {
-                    const checked = b.subChecked[idx];
+                    const checked = b.subChecked?.[idx];
                     return (
                       <button key={idx} onClick={() => toggleSub(b.id, idx)}
                         style={{
@@ -529,8 +549,6 @@ export default function HomeScreen({ onNavigate, settings }) {
   const activeHabit = settings?.activeHabit || "attention";
   const isRestWeek  = settings?.isRestWeek || false;
 
-  const [showPremium, setShowPremium] = useState(false);
-
   return (
     <div className="screen">
       <p className="eyebrow" style={{ marginBottom: 6 }}>
@@ -557,12 +575,6 @@ export default function HomeScreen({ onNavigate, settings }) {
       )}
 
       <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
-
-      {/* Premium modal trigger — exposed via prop so OutdoorsScreen can call it too */}
-      {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
     </div>
   );
 }
-
-// Export the modal so other screens can use it
-export { PremiumModal };
