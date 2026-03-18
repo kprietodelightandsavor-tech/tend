@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { HABIT_PROMPTS, HABIT_KEYS } from "../data/seed";
-import { AttentionIcon, NarrationIcon, OutdoorIcon, StillnessIcon, OrderlyIcon } from "./HabitScreen";
 
 const HABIT_ICON_MAP = { attention: AttentionIcon, narration: NarrationIcon, outdoor: OutdoorIcon, stillness: StillnessIcon, orderly: OrderlyIcon };
 
