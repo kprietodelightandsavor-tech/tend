@@ -6,8 +6,8 @@
   --cream:     #F7F4EF;
   --parchment: #EDE9E1;
   --ink:       #2C2A27;
-  --ink-lt:    #6B6760;
-  --ink-faint: #A8A49E;
+  --ink-lt:    #3D3B38;
+  --ink-faint: #6B6760;
   --sage:      #8A9E89;
   --sage-md:   #C4CFBF;
   --sage-bg:   #EFF3EE;
@@ -15,6 +15,11 @@
   --gold-bg:   #F5EDE0;
   --rule:      #DDD8CF;
   --red:       #B5604A;
+  --block-morning:  #8A9E89;
+  --block-academic: #4A5568;
+  --block-nature:   #7A9E7E;
+  --block-coop:     #8A7A9E;
+  --block-free:     #B8935A;
 }
 
 html, body { height: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
