@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { OUTDOOR_SUGGESTIONS } from "../data/seed";
+import { PremiumModal } from "./HomeScreen";
 
 // ─── ROTATING NATURE IDEAS ────────────────────────────────────────────────────
-// Organized by category, rotates by day of year
 const NATURE_IDEAS = {
   observation: [
     "Find one thing that is perfectly still. Watch it for two minutes without moving.",
@@ -44,7 +44,7 @@ const NATURE_IDEAS = {
 
 const CATEGORIES = Object.keys(NATURE_IDEAS);
 
-function NatureIdeaCard({ isPaid }) {
+function NatureIdeaCard({ isPaid, onShowPremium }) {
   const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
 
   if (!isPaid) {
@@ -56,9 +56,10 @@ function NatureIdeaCard({ isPaid }) {
         </p>
         <div style={{ height: 1, background: "#D4B07A", opacity: .3, marginBottom: 12 }} />
         <p className="caption italic" style={{ marginBottom: 10 }}>
-          Unlock daily rotating nature ideas — observation, sketching, wonder, and nature journal prompts — with a Tend subscription.
+          Unlock daily rotating nature ideas — observation, sketching, wonder, and nature journal prompts — with Tend Premium.
         </p>
-        <button style={{ background: "var(--gold)", border: "none", borderRadius: 2, padding: "10px 0", width: "100%", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "white" }}>
+        <button onClick={onShowPremium}
+          style={{ background: "var(--gold)", border: "none", borderRadius: 2, padding: "10px 0", width: "100%", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "white" }}>
           Learn about Tend Premium →
         </button>
       </div>
@@ -92,7 +93,8 @@ export default function OutdoorsScreen({ onNavigate }) {
   const [text, setText]         = useState("");
   const [logged, setLogged]     = useState(false);
   const [observations, setObs]  = useState(INITIAL_OBSERVATIONS);
-  const isPaid                  = false; // flip to true when subscription is active
+  const [showPremium, setShowPremium] = useState(false);
+  const isPaid = false;
 
   const save = () => {
     if (!text.trim()) return;
@@ -106,7 +108,6 @@ export default function OutdoorsScreen({ onNavigate }) {
       <p className="eyebrow" style={{ marginBottom: 6 }}>Nature Study</p>
       <h1 className="display serif" style={{ marginBottom: 24 }}>Outdoors</h1>
 
-      {/* Days outside counter */}
       <div style={{ textAlign: "center", marginBottom: 28 }}>
         <div className="counter-circle">
           <span className="serif" style={{ fontSize: 26, color: "var(--sage)", lineHeight: 1 }}>14</span>
@@ -121,10 +122,8 @@ export default function OutdoorsScreen({ onNavigate }) {
 
       <div className="rule" />
 
-      {/* Nature ideas */}
-      <NatureIdeaCard isPaid={isPaid} />
+      <NatureIdeaCard isPaid={isPaid} onShowPremium={() => setShowPremium(true)} />
 
-      {/* Observation log */}
       {logged ? (
         <div style={{ textAlign: "center", padding: "20px 0" }}>
           <p className="ornament" style={{ fontSize: 36, marginBottom: 12 }}>✦</p>
@@ -143,8 +142,6 @@ export default function OutdoorsScreen({ onNavigate }) {
               <button className="btn-sage" onClick={save}>Keep This</button>
             </div>
           )}
-
-          {/* Suggestions */}
           <div style={{ marginTop: 24 }}>
             <p className="eyebrow" style={{ marginBottom: 12 }}>Suggestions</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -171,6 +168,8 @@ export default function OutdoorsScreen({ onNavigate }) {
           ))}
         </div>
       )}
+
+      {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
     </div>
   );
 }
