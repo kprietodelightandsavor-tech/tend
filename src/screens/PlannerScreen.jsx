@@ -1,95 +1,518 @@
 import { useState } from "react";
-import { DAYS, DAY_SCHEDULE } from "../data/seed";
+import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS } from "../data/seed";
 
+// ─── ICONS ────────────────────────────────────────────────────────────────────
+const Icon = {
+  Up: () => (
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 15l-6-6-6 6"/>
+    </svg>
+  ),
+  Down: () => (
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9l6 6 6-6"/>
+    </svg>
+  ),
+  Edit: () => (
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+  ),
+  Trash: () => (
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#B5604A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6"/>
+      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+      <path d="M10 11v6M14 11v6"/>
+      <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+    </svg>
+  ),
+  Plus: () => (
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  ),
+  Copy: () => (
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+    </svg>
+  ),
+  Leaf: () => (
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/>
+    </svg>
+  ),
+  Moon: () => (
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+    </svg>
+  ),
+  Check: () => (
+    <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 13l4 4L19 7"/>
+    </svg>
+  ),
+};
+
+// ─── TERM COUNTER ─────────────────────────────────────────────────────────────
+function TermCounter({ isRestWeek, onToggleRest, term, week, onEdit }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+      <div>
+        {isRestWeek ? (
+          <div>
+            <p className="eyebrow" style={{ marginBottom: 2, color: "var(--gold)" }}>Rest Week</p>
+            <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)" }}>Counter paused</p>
+          </div>
+        ) : (
+          <div>
+            <p className="eyebrow" style={{ marginBottom: 2 }}>Term {term} · Week {week} of 12</p>
+            <div style={{ width: 120, height: 2, background: "var(--rule)", borderRadius: 1, marginTop: 6 }}>
+              <div style={{ height: 2, background: "var(--sage)", borderRadius: 1, width: `${(week / 12) * 100}%`, transition: "width .4s ease" }} />
+            </div>
+          </div>
+        )}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <button onClick={onEdit}
+          style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, color: "var(--ink-faint)", fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase" }}>
+          Edit
+        </button>
+        {/* Rest week toggle */}
+        <button onClick={onToggleRest}
+          style={{
+            display: "flex", alignItems: "center", gap: 6,
+            background: isRestWeek ? "var(--gold-bg)" : "var(--sage-bg)",
+            border: `1px solid ${isRestWeek ? "#D4B07A" : "var(--sage-md)"}`,
+            borderRadius: 20, padding: "5px 12px", cursor: "pointer",
+            fontSize: 10, fontFamily: "'Lato', sans-serif",
+            letterSpacing: ".1em", textTransform: "uppercase",
+            color: isRestWeek ? "var(--gold)" : "var(--sage)",
+          }}>
+          <Icon.Moon />
+          {isRestWeek ? "Resume" : "Rest Week"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── REST WEEK VIEW ───────────────────────────────────────────────────────────
+function RestWeekView() {
+  const day = new Date().getDay();
+  // Show 3 rotating suggestions based on day
+  const suggestions = [
+    REST_WEEK_SUGGESTIONS[day % REST_WEEK_SUGGESTIONS.length],
+    REST_WEEK_SUGGESTIONS[(day + 1) % REST_WEEK_SUGGESTIONS.length],
+    REST_WEEK_SUGGESTIONS[(day + 3) % REST_WEEK_SUGGESTIONS.length],
+  ];
+
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div className="card-gold" style={{ marginBottom: 24 }}>
+        <p className="corm italic" style={{ fontSize: 18, color: "var(--ink)", lineHeight: 1.8, marginBottom: 8 }}>
+          A week set apart.
+        </p>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.8 }}>
+          The rhythm rests so it can return stronger. There is nothing to accomplish today except to be.
+        </p>
+      </div>
+
+      <p className="eyebrow" style={{ marginBottom: 16 }}>Gentle Invitations</p>
+      {suggestions.map((s, i) => (
+        <div key={i} style={{
+          paddingBottom: i < suggestions.length - 1 ? 16 : 0,
+          marginBottom:  i < suggestions.length - 1 ? 16 : 0,
+          borderBottom:  i < suggestions.length - 1 ? "1px solid var(--rule)" : "none",
+        }}>
+          <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8 }}>{s}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── BEAUTY LOOP SECTION ──────────────────────────────────────────────────────
+function BeautyLoopSection({ day }) {
+  const loops        = BEAUTY_LOOP[day] || [];
+  const [items, setItems]   = useState(loops.map(l => ({ ...l, done: false })));
+  const [editing, setEditing] = useState(false);
+  const [drafts, setDrafts]  = useState(loops.map(l => l.label));
+
+  const isThursday = day === "Thursday";
+
+  const toggle = (id) => setItems(prev => prev.map(l => l.id === id ? { ...l, done: !l.done } : l));
+
+  const saveDrafts = () => {
+    setItems(prev => prev.map((l, i) => ({ ...l, label: drafts[i] })));
+    setEditing(false);
+  };
+
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Icon.Leaf />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Beauty Loop</p>
+        </div>
+        {!isThursday && (
+          <button onClick={() => editing ? saveDrafts() : setEditing(true)}
+            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, color: "var(--ink-faint)", fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase" }}>
+            {editing ? "Save" : "Edit"}
+          </button>
+        )}
+      </div>
+
+      {isThursday ? (
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.8 }}>
+          A full day away. Rest from the loop and trust what has already been tended.
+        </p>
+      ) : editing ? (
+        <div>
+          {drafts.map((d, i) => (
+            <input key={i} className="input-line" value={d}
+              onChange={e => setDrafts(prev => prev.map((v, j) => j === i ? e.target.value : v))}
+              style={{ marginBottom: 8 }} />
+          ))}
+          <p className="caption italic" style={{ marginTop: 8 }}>
+            Changes apply to this day each week.
+          </p>
+        </div>
+      ) : (
+        <>
+          {items.map(l => (
+            <div key={l.id} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--rule)" }}>
+              <button onClick={() => toggle(l.id)}
+                style={{ width: 22, height: 22, borderRadius: "50%", border: `1.5px solid ${l.done ? "var(--sage)" : "var(--rule)"}`, background: l.done ? "var(--sage)" : "none", cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 2, transition: "all .2s" }}>
+                {l.done && <Icon.Check />}
+              </button>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 15, color: l.done ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: l.done ? "line-through" : "none", textDecorationColor: "var(--sage-md)" }}>
+                  {l.label}
+                </p>
+                {l.note && <p className="caption italic" style={{ marginTop: 3 }}>{l.note}</p>}
+              </div>
+            </div>
+          ))}
+          <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.7 }}>
+            Use these as a gathered morning, as quiet anchors throughout your day, or set them aside on full days. There is no wrong way to tend them.
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── ADD BLOCK SHEET ──────────────────────────────────────────────────────────
+function AddBlockSheet({ onSave, onClose }) {
+  const [time, setTime]       = useState("");
+  const [subject, setSubject] = useState("");
+  const [note, setNote]       = useState("");
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200 }}
+      onClick={onClose}>
+      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
+        <p className="serif" style={{ fontSize: 20, marginBottom: 20 }}>Add a Block</p>
+        <input className="input-line" placeholder="Time (e.g. 10:00)" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 14 }} />
+        <input className="input-line" placeholder="Subject" value={subject} onChange={e => setSubject(e.target.value)} style={{ marginBottom: 14 }} />
+        <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: 28 }} />
+        <button className="btn-sage" style={{ width: "100%" }}
+          onClick={() => { if (subject.trim()) { onSave({ time, subject, note }); onClose(); } }}>
+          Add Block
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── EDIT BLOCK SHEET ─────────────────────────────────────────────────────────
+function EditBlockSheet({ block, onSave, onDelete, onClose }) {
+  const [time, setTime]       = useState(block.time);
+  const [subject, setSubject] = useState(block.subject);
+  const [note, setNote]       = useState(block.note || "");
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200 }}
+      onClick={onClose}>
+      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
+        <p className="serif" style={{ fontSize: 20, marginBottom: 20 }}>Edit Block</p>
+        <input className="input-line" placeholder="Time" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 14 }} />
+        <input className="input-line" placeholder="Subject" value={subject} onChange={e => setSubject(e.target.value)} style={{ marginBottom: 14 }} />
+        <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: 28 }} />
+        <div style={{ display: "flex", gap: 10 }}>
+          <button className="btn-sage" style={{ flex: 1 }}
+            onClick={() => { onSave({ ...block, time, subject, note }); onClose(); }}>
+            Save
+          </button>
+          <button onClick={() => { onDelete(block.id); onClose(); }}
+            style={{ background: "none", border: "1px solid #E8C4BB", borderRadius: 2, padding: "12px 18px", cursor: "pointer", color: "var(--red)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase" }}>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── COPY DAY SHEET ───────────────────────────────────────────────────────────
+function CopyDaySheet({ fromDay, onCopy, onClose }) {
+  const [toDay, setToDay] = useState(null);
+  const targets = DAYS.filter(d => d !== fromDay);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200 }}
+      onClick={onClose}>
+      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
+        <p className="serif" style={{ fontSize: 20, marginBottom: 6 }}>Copy {fromDay} to…</p>
+        <p className="caption italic" style={{ marginBottom: 20 }}>This will replace the selected day's blocks entirely.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+          {targets.map(d => (
+            <button key={d} onClick={() => setToDay(d)}
+              style={{ background: toDay === d ? "var(--sage-bg)" : "none", border: `1px solid ${toDay === d ? "var(--sage)" : "var(--rule)"}`, borderRadius: 3, padding: "12px 16px", cursor: "pointer", textAlign: "left", fontFamily: "'Playfair Display', serif", fontSize: 16, color: toDay === d ? "var(--sage)" : "var(--ink)", transition: "all .2s" }}>
+              {d}
+            </button>
+          ))}
+        </div>
+        <button className="btn-sage" style={{ width: "100%" }} disabled={!toDay}
+          onClick={() => { if (toDay) { onCopy(toDay); onClose(); } }}>
+          Copy to {toDay || "…"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── PLANNER SCREEN ───────────────────────────────────────────────────────────
 export default function PlannerScreen() {
-  const [activeDay, setActiveDay] = useState("Monday");
-  const [blocks, setBlocks] = useState(DAY_SCHEDULE);
-  const [editingIdx, setEditingIdx] = useState(null);
-  const [draftNote, setDraftNote] = useState("");
+  const todayIdx   = Math.min(Math.max(new Date().getDay() - 1, 0), 4);
+  const [activeDay, setActiveDay] = useState(DAYS[todayIdx]);
 
-  const dayBlocks = blocks[activeDay] || [];
+  // Term state
+  const [term, setTerm]           = useState(TERM_SETTINGS.currentTerm);
+  const [week, setWeek]           = useState(TERM_SETTINGS.currentWeek);
+  const [isRestWeek, setRestWeek] = useState(false);
+  const [editingTerm, setEditingTerm] = useState(false);
+  const [draftTerm, setDraftTerm] = useState(TERM_SETTINGS.currentTerm);
+  const [draftWeek, setDraftWeek] = useState(TERM_SETTINGS.currentWeek);
 
-  const saveNote = () => {
-    setBlocks(prev => ({
+  // Schedule state — keyed by day
+  const [schedule, setSchedule] = useState(() => {
+    const s = {};
+    DAYS.forEach(d => { s[d] = DAY_SCHEDULE[d].map((b, i) => ({ ...b, _idx: i })); });
+    return s;
+  });
+
+  // Sheet state
+  const [editingBlock, setEditingBlock]   = useState(null);
+  const [addingAfterIdx, setAddingAfterIdx] = useState(null); // index to insert after (-1 = top)
+  const [copyingDay, setCopyingDay]       = useState(false);
+
+  const dayBlocks = schedule[activeDay] || [];
+
+  // ── Block operations ────────────────────────────────────────────────────────
+  const moveBlock = (idx, dir) => {
+    setSchedule(prev => {
+      const blocks = [...prev[activeDay]];
+      const target = idx + dir;
+      if (target < 0 || target >= blocks.length) return prev;
+      [blocks[idx], blocks[target]] = [blocks[target], blocks[idx]];
+      return { ...prev, [activeDay]: blocks };
+    });
+  };
+
+  const saveBlock = (updated) => {
+    setSchedule(prev => ({
       ...prev,
-      [activeDay]: prev[activeDay].map((b, i) =>
-        i === editingIdx ? { ...b, note: draftNote } : b
-      ),
+      [activeDay]: prev[activeDay].map(b => b.id === updated.id ? updated : b),
     }));
-    setEditingIdx(null);
+  };
+
+  const deleteBlock = (id) => {
+    setSchedule(prev => ({
+      ...prev,
+      [activeDay]: prev[activeDay].filter(b => b.id !== id),
+    }));
+  };
+
+  const addBlock = (newBlock) => {
+    const block = { ...newBlock, id: `custom-${Date.now()}` };
+    setSchedule(prev => {
+      const blocks = [...prev[activeDay]];
+      const insertAt = addingAfterIdx === -1 ? 0 : addingAfterIdx + 1;
+      blocks.splice(insertAt, 0, block);
+      return { ...prev, [activeDay]: blocks };
+    });
+    setAddingAfterIdx(null);
+  };
+
+  const copyDay = (toDay) => {
+    setSchedule(prev => ({
+      ...prev,
+      [toDay]: prev[activeDay].map(b => ({ ...b, id: `${b.id}-copy-${Date.now()}` })),
+    }));
+  };
+
+  // ── Term edit ───────────────────────────────────────────────────────────────
+  const saveTerm = () => {
+    setTerm(Number(draftTerm));
+    setWeek(Number(draftWeek));
+    setEditingTerm(false);
   };
 
   return (
     <div className="screen">
-      <p className="eyebrow" style={{ marginBottom: 6 }}>Term 2 · Week 4</p>
-      <h1 className="display serif" style={{ marginBottom: 20 }}>Daily Planner</h1>
+      {/* Header */}
+      <p className="eyebrow" style={{ marginBottom: 6 }}>Weekly Schedule</p>
+      <h1 className="display serif" style={{ marginBottom: 20 }}>Planner</h1>
 
-      {/* Day selector */}
-      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 16, marginBottom: 20 }}>
-        {DAYS.map(d => (
-          <button
-            key={d}
-            className={`day-pill ${activeDay === d ? "active" : ""}`}
-            onClick={() => setActiveDay(d)}
-          >
-            {d.slice(0, 3)}
-          </button>
-        ))}
-      </div>
+      {/* Term counter */}
+      <TermCounter
+        isRestWeek={isRestWeek}
+        onToggleRest={() => setRestWeek(r => !r)}
+        term={term} week={week}
+        onEdit={() => setEditingTerm(true)}
+      />
 
-      <div className="rule-gold" style={{ margin: "0 0 20px" }} />
-
-      {/* Blocks */}
-      {dayBlocks.map((b, i) => (
-        <div key={i} className="planner-block">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      {/* Term edit inline */}
+      {editingTerm && (
+        <div className="card" style={{ marginBottom: 20 }}>
+          <p className="eyebrow" style={{ marginBottom: 14 }}>Set Term & Week</p>
+          <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                <span className="planner-time">{b.time}</span>
-                <span className="planner-subject">{b.subject}</span>
+              <p className="caption" style={{ marginBottom: 6 }}>Term</p>
+              <div style={{ display: "flex", gap: 8 }}>
+                {[1, 2, 3].map(n => (
+                  <button key={n} onClick={() => setDraftTerm(n)}
+                    style={{ flex: 1, padding: "10px 0", borderRadius: 2, border: `1px solid ${draftTerm === n ? "var(--sage)" : "var(--rule)"}`, background: draftTerm === n ? "var(--sage-bg)" : "none", cursor: "pointer", fontFamily: "'Playfair Display', serif", fontSize: 16, color: draftTerm === n ? "var(--sage)" : "var(--ink)" }}>
+                    {n}
+                  </button>
+                ))}
               </div>
-              {editingIdx === i ? (
-                <div style={{ marginTop: 10 }}>
-                  <input
-                    className="input-line"
-                    value={draftNote}
-                    onChange={e => setDraftNote(e.target.value)}
-                    placeholder="What do you plan to cover?"
-                    autoFocus
-                  />
-                  <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-                    <button className="btn-sage" style={{ padding: "7px 18px", fontSize: 10 }} onClick={saveNote}>Save</button>
-                    <button className="btn-ghost" style={{ padding: "7px 14px", fontSize: 10 }} onClick={() => setEditingIdx(null)}>Cancel</button>
-                  </div>
-                </div>
-              ) : (
-                b.note && <p className="caption italic" style={{ marginTop: 5 }}>{b.note}</p>
-              )}
             </div>
-            {editingIdx !== i && (
-              <button
-                onClick={() => { setEditingIdx(i); setDraftNote(b.note); }}
-                style={{
-                  background: "none", border: "none", cursor: "pointer",
-                  color: "var(--ink-faint)", fontSize: 10, letterSpacing: ".1em",
-                  textTransform: "uppercase", fontFamily: "'Lato', sans-serif",
-                  paddingLeft: 12, flexShrink: 0, marginTop: 2,
-                }}
-              >
-                Edit
-              </button>
-            )}
+            <div style={{ flex: 2 }}>
+              <p className="caption" style={{ marginBottom: 6 }}>Week</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(n => (
+                  <button key={n} onClick={() => setDraftWeek(n)}
+                    style={{ width: 32, height: 32, borderRadius: 2, border: `1px solid ${draftWeek === n ? "var(--sage)" : "var(--rule)"}`, background: draftWeek === n ? "var(--sage)" : "none", cursor: "pointer", fontSize: 13, color: draftWeek === n ? "white" : "var(--ink)", fontFamily: "'Lato', sans-serif" }}>
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
+          <button className="btn-sage" onClick={saveTerm} style={{ width: "100%" }}>Save</button>
         </div>
-      ))}
+      )}
 
-      {/* Beauty Loop / Morning Time note */}
-      <div className="card-sage" style={{ marginTop: 20 }}>
-        <p className="eyebrow" style={{ marginBottom: 10 }}>Beauty Loop</p>
-        <p className="body">Hymn — <em>Come Thou Fount</em></p>
-        <p className="body">Poetry — <em>Gerard Manley Hopkins</em></p>
-        <p className="body">Scripture — <em>Psalm 23</em></p>
-      </div>
+      {/* Rest week view */}
+      {isRestWeek ? (
+        <RestWeekView />
+      ) : (
+        <>
+          {/* Day tabs */}
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 16, marginBottom: 4 }}>
+            {DAYS.map(d => (
+              <button key={d} className={`day-pill ${activeDay === d ? "active" : ""}`}
+                onClick={() => setActiveDay(d)}>
+                {d.slice(0, 3)}
+              </button>
+            ))}
+          </div>
+
+          <div className="rule-gold" style={{ margin: "0 0 20px" }} />
+
+          {/* Copy day button */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+            <button onClick={() => setCopyingDay(true)}
+              style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "6px 12px", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
+              <Icon.Copy /> Copy {activeDay}
+            </button>
+          </div>
+
+          {/* Beauty Loop */}
+          <BeautyLoopSection day={activeDay} />
+
+          <div className="rule" style={{ margin: "0 0 20px" }} />
+
+          {/* Add block at top */}
+          <button onClick={() => setAddingAfterIdx(-1)}
+            style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: "4px 0 12px", color: "var(--sage)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase" }}>
+            <Icon.Plus /> Add block here
+          </button>
+
+          {/* Schedule blocks */}
+          {dayBlocks.map((b, idx) => (
+            <div key={b.id}>
+              {/* Block */}
+              <div className="planner-block" style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                {/* Up/down */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 2, paddingTop: 2 }}>
+                  <button onClick={() => moveBlock(idx, -1)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, opacity: idx === 0 ? 0.2 : 1 }}>
+                    <Icon.Up />
+                  </button>
+                  <button onClick={() => moveBlock(idx, 1)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, opacity: idx === dayBlocks.length - 1 ? 0.2 : 1 }}>
+                    <Icon.Down />
+                  </button>
+                </div>
+
+                {/* Content */}
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                    <span className="planner-time">{b.time}</span>
+                    <span className="planner-subject">{b.subject}</span>
+                  </div>
+                  {b.note && <p className="caption italic" style={{ marginTop: 4 }}>{b.note}</p>}
+                </div>
+
+                {/* Edit */}
+                <button onClick={() => setEditingBlock(b)}
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: 4, flexShrink: 0, marginTop: 2 }}>
+                  <Icon.Edit />
+                </button>
+              </div>
+
+              {/* Add block between */}
+              <button onClick={() => setAddingAfterIdx(idx)}
+                style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "6px 0", color: "var(--sage-md)", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", opacity: 0.7 }}>
+                <Icon.Plus /> Add block here
+              </button>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* ── Sheets ── */}
+      {editingBlock && (
+        <EditBlockSheet
+          block={editingBlock}
+          onSave={saveBlock}
+          onDelete={deleteBlock}
+          onClose={() => setEditingBlock(null)}
+        />
+      )}
+      {addingAfterIdx !== null && (
+        <AddBlockSheet
+          onSave={addBlock}
+          onClose={() => setAddingAfterIdx(null)}
+        />
+      )}
+      {copyingDay && (
+        <CopyDaySheet
+          fromDay={activeDay}
+          onCopy={copyDay}
+          onClose={() => setCopyingDay(false)}
+        />
+      )}
     </div>
   );
 }
