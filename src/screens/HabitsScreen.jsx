@@ -1,59 +1,328 @@
-import { useState } from "react";
-import { CollapseSection } from "../components/SharedComponents";
-import { Ic } from "../components/Icons";
-import { HABITS } from "../data/seed";
+import { useState, useEffect } from "react";
+import { HABIT_PROMPTS, HABIT_KEYS } from "./HomeScreen";
 
+// ─── 12-WEEK REFLECTION QUESTIONS (scaffolded) ────────────────────────────────
+const REFLECTION_SCAFFOLD = [
+  {
+    q: "Think back to when you began focusing on this habit.",
+    prompt: "What was it like in your home before you began? What made you choose this habit?",
+  },
+  {
+    q: "Recall a specific moment from these twelve weeks.",
+    prompt: "Was there a day — even a small one — when you noticed this habit taking hold? What did it look like?",
+  },
+  {
+    q: "Consider the harder days.",
+    prompt: "When did this habit feel difficult or forced? What got in the way? Is that still true?",
+  },
+  {
+    q: "Look at your children.",
+    prompt: "What do you observe in them around this habit? Have you seen any change — however small?",
+  },
+  {
+    q: "Now consider yourself.",
+    prompt: "How has working on this habit changed the atmosphere of your home, even slightly?",
+  },
+  {
+    q: "Finally, look ahead.",
+    prompt: "Does this habit need more time, or does your family feel ready to tend a new one? Trust your instinct — you know your home.",
+  },
+];
+
+// ─── APP ICON (botanical circle — rosemary sprig, sage on cream) ──────────────
+export function TendIcon({ size = 64 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Outer circle */}
+      <circle cx="32" cy="32" r="30" stroke="#A9B786" strokeWidth="1" fill="#F7F4EF"/>
+
+      {/* Main stem */}
+      <line x1="32" y1="52" x2="32" y2="14" stroke="#A9B786" strokeWidth="1.2" strokeLinecap="round"/>
+
+      {/* Rosemary / botanical sprigs — pairs of small leaves alternating */}
+      <line x1="32" y1="44" x2="24" y2="40" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="44" x2="40" y2="40" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
+
+      <line x1="32" y1="38" x2="23" y2="33" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="38" x2="41" y2="33" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
+
+      <line x1="32" y1="32" x2="24" y2="27" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="32" x2="40" y2="27" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
+
+      <line x1="32" y1="26" x2="25" y2="21" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="26" x2="39" y2="21" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
+
+      {/* Top bud */}
+      <circle cx="32" cy="14" r="2" fill="#A9B786"/>
+
+      {/* Small leaf dots at twig ends */}
+      <circle cx="24" cy="40" r="1.2" fill="#A9B786"/>
+      <circle cx="40" cy="40" r="1.2" fill="#A9B786"/>
+      <circle cx="23" cy="33" r="1.2" fill="#A9B786"/>
+      <circle cx="41" cy="33" r="1.2" fill="#A9B786"/>
+      <circle cx="24" cy="27" r="1.2" fill="#A9B786"/>
+      <circle cx="40" cy="27" r="1.2" fill="#A9B786"/>
+      <circle cx="25" cy="21" r="1.2" fill="#A9B786"/>
+      <circle cx="39" cy="21" r="1.2" fill="#A9B786"/>
+
+      {/* tend wordmark at bottom of circle */}
+      <text x="32" y="58" textAnchor="middle"
+        fontFamily="'Playfair Display', Georgia, serif"
+        fontSize="5" fill="#A9B786" fontStyle="italic" letterSpacing="0.08em">
+        tend
+      </text>
+    </svg>
+  );
+}
+
+// ─── HABITS SCREEN ────────────────────────────────────────────────────────────
 export default function HabitsScreen() {
-  const [done, setDone] = useState({});
-  const toggle = id => setDone(d => ({ ...d, [id]: !d[id] }));
-  const count  = Object.values(done).filter(Boolean).length;
+  // In production these would be persisted to storage
+  const [activeHabit, setActiveHabit]       = useState("attention");
+  const [habitStartDate, setHabitStartDate] = useState(() => {
+    // Mock: 11 weeks ago so we're near the 12-week prompt for demo purposes
+    const d = new Date();
+    d.setDate(d.getDate() - 77);
+    return d;
+  });
+  const [view, setView]                     = useState("home"); // "home" | "library" | "reflect" | "detail"
+  const [detailHabit, setDetailHabit]       = useState(null);
+  const [reflectionAnswers, setReflectionAnswers] = useState({});
+  const [reflectionStep, setReflectionStep] = useState(0);
+  const [reflectionDone, setReflectionDone] = useState(false);
+
+  // Check if 12 weeks have passed
+  const weeksPassed = Math.floor((new Date() - habitStartDate) / (7 * 24 * 60 * 60 * 1000));
+  const showReassessPrompt = weeksPassed >= 12 && !reflectionDone;
+
+  const chooseHabit = (key) => {
+    setActiveHabit(key);
+    setHabitStartDate(new Date());
+    setReflectionDone(false);
+    setReflectionStep(0);
+    setReflectionAnswers({});
+    setView("home");
+  };
+
+  // ── REFLECTION VIEW ──────────────────────────────────────────────────────
+  if (view === "reflect") {
+    const step     = REFLECTION_SCAFFOLD[reflectionStep];
+    const isLast   = reflectionStep === REFLECTION_SCAFFOLD.length - 1;
+    const answer   = reflectionAnswers[reflectionStep] || "";
+
+    return (
+      <div className="screen">
+        <button onClick={() => setView("home")}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--sage)", fontSize: 13, letterSpacing: ".08em", textTransform: "uppercase", fontFamily: "'Lato', sans-serif", marginBottom: 28, display: "flex", alignItems: "center", gap: 6 }}>
+          ← Back
+        </button>
+
+        <p className="eyebrow" style={{ marginBottom: 8 }}>Twelve Weeks · Reflection</p>
+        <h1 className="display serif" style={{ marginBottom: 6 }}>
+          {HABIT_PROMPTS[activeHabit].name}
+        </h1>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 32, lineHeight: 1.7 }}>
+          Take your time with each question. There is no right answer — only what is true for your home.
+        </p>
+
+        {/* Progress dots */}
+        <div style={{ display: "flex", gap: 6, marginBottom: 32, justifyContent: "center" }}>
+          {REFLECTION_SCAFFOLD.map((_, i) => (
+            <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: i <= reflectionStep ? "var(--sage)" : "var(--rule)", transition: "background .3s" }} />
+          ))}
+        </div>
+
+        <div className="card-sage" style={{ marginBottom: 24 }}>
+          <p className="serif" style={{ fontSize: 16, color: "var(--ink)", marginBottom: 8 }}>{step.q}</p>
+          <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.8 }}>{step.prompt}</p>
+        </div>
+
+        <textarea
+          className="textarea"
+          placeholder="Write what comes to mind…"
+          value={answer}
+          onChange={e => setReflectionAnswers(prev => ({ ...prev, [reflectionStep]: e.target.value }))}
+          rows={5}
+        />
+
+        <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+          {reflectionStep > 0 && (
+            <button className="btn-ghost" onClick={() => setReflectionStep(s => s - 1)}>← Back</button>
+          )}
+          <button
+            className="btn-sage"
+            style={{ flex: 1 }}
+            onClick={() => {
+              if (isLast) { setReflectionDone(true); setView("library"); }
+              else setReflectionStep(s => s + 1);
+            }}>
+            {isLast ? "Choose Our Next Habit →" : "Continue →"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── HABIT DETAIL VIEW ────────────────────────────────────────────────────
+  if (view === "detail" && detailHabit) {
+    const h   = HABIT_PROMPTS[detailHabit];
+    const HIcon = h.icon;
+    const day = new Date().getDay();
+    const isActive = activeHabit === detailHabit;
+
+    return (
+      <div className="screen">
+        <button onClick={() => setView("library")}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--sage)", fontSize: 13, letterSpacing: ".08em", textTransform: "uppercase", fontFamily: "'Lato', sans-serif", marginBottom: 28, display: "flex", alignItems: "center", gap: 6 }}>
+          ← Library
+        </button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+          <HIcon />
+          <h1 className="display serif" style={{ fontSize: 26 }}>{h.name}</h1>
+        </div>
+        <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8, marginBottom: 28 }}>{h.desc}</p>
+
+        {isActive && (
+          <div className="card-sage" style={{ marginBottom: 24 }}>
+            <p className="eyebrow" style={{ marginBottom: 6 }}>Currently in focus</p>
+            <p className="caption italic">Week {weeksPassed + 1} of 12</p>
+          </div>
+        )}
+
+        <p className="eyebrow" style={{ marginBottom: 16 }}>Today's Ideas</p>
+        {h.daily[day].map((p, i) => (
+          <div key={i} style={{ paddingBottom: i < h.daily[day].length - 1 ? 14 : 0, marginBottom: i < h.daily[day].length - 1 ? 14 : 0, borderBottom: i < h.daily[day].length - 1 ? "1px solid var(--rule)" : "none" }}>
+            <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8 }}>{p}</p>
+          </div>
+        ))}
+
+        {!isActive && (
+          <button className="btn-sage" style={{ width: "100%", marginTop: 32 }}
+            onClick={() => chooseHabit(detailHabit)}>
+            Make This Our Focus
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // ── HABIT LIBRARY VIEW ───────────────────────────────────────────────────
+  if (view === "library") {
+    return (
+      <div className="screen">
+        <button onClick={() => setView("home")}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--sage)", fontSize: 13, letterSpacing: ".08em", textTransform: "uppercase", fontFamily: "'Lato', sans-serif", marginBottom: 28, display: "flex", alignItems: "center", gap: 6 }}>
+          ← Back
+        </button>
+
+        <p className="eyebrow" style={{ marginBottom: 6 }}>The Five Habits</p>
+        <h1 className="display serif" style={{ marginBottom: 8 }}>Choose Your Focus</h1>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 28, lineHeight: 1.7 }}>
+          Charlotte Mason taught that one habit, tended faithfully over time, changes a child far more than many habits pursued at once.
+        </p>
+
+        {HABIT_KEYS.map(key => {
+          const h = HABIT_PROMPTS[key];
+          const HIcon = h.icon;
+          const isActive = activeHabit === key;
+          return (
+            <button key={key}
+              onClick={() => { setDetailHabit(key); setView("detail"); }}
+              style={{ width: "100%", background: isActive ? "var(--sage-bg)" : "none", border: isActive ? "1px solid var(--sage-md)" : "1px solid var(--rule)", borderRadius: 3, padding: "16px 18px", marginBottom: 10, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 14 }}>
+              <HIcon />
+              <div style={{ flex: 1 }}>
+                <p className="serif" style={{ fontSize: 17, color: "var(--ink)", marginBottom: 3 }}>{h.name}</p>
+                <p className="caption italic">{h.desc}</p>
+              </div>
+              {isActive && <span style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", flexShrink: 0 }}>Active</span>}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // ── HOME VIEW ────────────────────────────────────────────────────────────
+  const active = HABIT_PROMPTS[activeHabit];
+  const ActiveIcon = active.icon;
+  const day = new Date().getDay();
 
   return (
     <div className="screen">
-      <p className="eyebrow" style={{ marginBottom: 6 }}>Daily Practice</p>
-      <h1 className="display serif" style={{ marginBottom: 6 }}>Habit Trainer</h1>
-      <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)", marginBottom: 28, lineHeight: 1.6 }}>
-        "Habit is ten natures." — Charlotte Mason
-      </p>
-
-      <div className="card-sage" style={{ marginBottom: 28, textAlign: "center", padding: "16px 20px" }}>
-        <span className="serif" style={{ fontSize: 32, color: "var(--sage)" }}>{count}</span>
-        <span className="caption" style={{ display: "block", marginTop: 4 }}>of {HABITS.length} habits kept today</span>
-        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 12 }}>
-          {HABITS.map(h => (
-            <div
-              key={h.id}
-              className={`habit-dot ${done[h.id] ? "done" : ""}`}
-              onClick={() => toggle(h.id)}
-              style={{ fontSize: 14 }}
-            >
-              {done[h.id] ? <Ic.Check /> : <span>{h.emoji}</span>}
-            </div>
-          ))}
+      {/* App icon + title */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
+        <TendIcon size={52} />
+        <div>
+          <p className="eyebrow" style={{ marginBottom: 4 }}>Habit Formation</p>
+          <h1 className="display-sm serif">The Tended Life</h1>
         </div>
       </div>
 
-      {HABITS.map(h => (
-        <div key={h.id} className="habit-row">
-          <button className={`habit-check ${done[h.id] ? "done" : ""}`} onClick={() => toggle(h.id)}>
-            {done[h.id] && <Ic.Check />}
-          </button>
-          <div style={{ flex: 1 }}>
-            <p className="serif" style={{ fontSize: 17, color: "var(--ink)" }}>{h.name}</p>
-            <p className="caption italic" style={{ marginTop: 3 }}>{h.desc}</p>
-          </div>
-          <span style={{ fontSize: 20 }}>{h.emoji}</span>
-        </div>
-      ))}
-
-      <div style={{ marginTop: 28 }}>
-        <CollapseSection label="Why these five?">
-          <p className="body" style={{ marginBottom: 12 }}>
-            Charlotte Mason identified attention, narration, outdoor time, stillness, and orderly work as the foundational habits of a well-formed mind.
+      {/* 12-week reassess prompt */}
+      {showReassessPrompt && (
+        <div className="card-gold" style={{ marginBottom: 24 }}>
+          <p className="eyebrow" style={{ marginBottom: 8 }}>Twelve Weeks</p>
+          <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8, marginBottom: 16 }}>
+            Your family has been tending <em>{active.name}</em> for twelve weeks. It may be time to pause and reflect before choosing what to tend next.
           </p>
-          <p className="body">These are not rules — they are rhythms. Return to them gently each day.</p>
-        </CollapseSection>
+          <button className="btn-gold" style={{ width: "100%" }} onClick={() => setView("reflect")}>
+            Begin Reflection →
+          </button>
+        </div>
+      )}
+
+      {/* Active habit card */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <ActiveIcon />
+            <p className="eyebrow" style={{ marginBottom: 0 }}>This Season's Habit</p>
+          </div>
+          <button onClick={() => setView("library")}
+            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, color: "var(--ink-faint)", fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase" }}>
+            Change
+          </button>
+        </div>
+
+        <h2 className="serif" style={{ fontSize: 24, marginBottom: 6 }}>{active.name}</h2>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 20, lineHeight: 1.7 }}>{active.desc}</p>
+
+        {/* Week progress */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+            <span className="caption">Week {Math.min(weeksPassed + 1, 12)} of 12</span>
+            <span className="caption">{Math.round(Math.min(weeksPassed / 12, 1) * 100)}%</span>
+          </div>
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${Math.min((weeksPassed / 12) * 100, 100)}%` }} />
+          </div>
+        </div>
+
+        <div className="rule" />
+
+        {/* Daily prompts */}
+        <p className="eyebrow" style={{ marginBottom: 16 }}>Today's Ideas</p>
+        {active.daily[day].map((p, i) => (
+          <div key={i} style={{ paddingBottom: i < active.daily[day].length - 1 ? 14 : 0, marginBottom: i < active.daily[day].length - 1 ? 14 : 0, borderBottom: i < active.daily[day].length - 1 ? "1px solid var(--rule)" : "none" }}>
+            <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8 }}>{p}</p>
+          </div>
+        ))}
       </div>
+
+      <div className="rule" />
+
+      {/* CM quote */}
+      <div className="card-gold" style={{ marginTop: 4 }}>
+        <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8 }}>
+          "Habit is ten natures."
+        </p>
+        <p className="caption" style={{ marginTop: 8 }}>— Charlotte Mason</p>
+      </div>
+
+      <button className="btn-ghost" style={{ width: "100%", marginTop: 20 }} onClick={() => setView("library")}>
+        Explore All Five Habits
+      </button>
     </div>
   );
 }
