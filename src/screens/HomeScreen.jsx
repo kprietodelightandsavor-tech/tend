@@ -1,46 +1,53 @@
 import { useState, useRef } from "react";
 import { DAYS, DAY_SCHEDULE } from "../data/seed";
 
-// ─── ICONS ────────────────────────────────────────────────────────────────────
-const LeafIcon = () => (
-  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6.5 20.5C6.5 20.5 3 17 3 11.5C3 6.5 7.5 3 12 3C16.5 3 20 6 20 10.5C20 14 17.5 16.5 14 17L6.5 20.5Z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3L6.5 20.5" />
-  </svg>
-);
-
-const SlateCheckIcon = () => (
-  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
-const FeatherIcon = () => (
-  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5l6.74-6.76zM16 8L2 22M17.5 15H9" />
-  </svg>
-);
-
-const SunIcon = () => (
-  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m8.66-10H20M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14A7 7 0 0012 5z" />
-  </svg>
-);
-
-const ArrowIcon = () => (
-  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-  </svg>
-);
-
-const BookIcon = () => (
-  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-  </svg>
-);
+// ─── ICONS (simple line, sage or slate) ───────────────────────────────────────
+const Icon = {
+  Leaf: () => (
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/>
+    </svg>
+  ),
+  Check: () => (
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 11l3 3L22 4"/>
+      <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+    </svg>
+  ),
+  Feather: () => (
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5l6.74-6.76z"/>
+      <line x1="16" y1="8" x2="2" y2="22"/>
+      <line x1="17.5" y1="15" x2="9" y2="15"/>
+    </svg>
+  ),
+  Sun: () => (
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  ),
+  Arrow: () => (
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18l6-6-6-6"/>
+    </svg>
+  ),
+  Book: () => (
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+    </svg>
+  ),
+};
 
 // ─── MOTHER CULTURE PROMPTS ───────────────────────────────────────────────────
-// Indexed 0 (Sun) through 6 (Sat) to match getDay()
 const MOTHER_CULTURE = [
   [ // Sunday
     "Rest fully today. The week ahead needs a rested you.",
@@ -94,7 +101,7 @@ function OutdoorTracker() {
   return (
     <div className="card" style={{ marginBottom: 20 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-        <LeafIcon />
+        <Icon.Leaf />
         <p className="eyebrow" style={{ marginBottom: 0 }}>Outside This Week</p>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -128,9 +135,9 @@ function OutdoorTracker() {
               <button key={n} onClick={() => setMinutes(m => m + n)}
                 style={{
                   background: "var(--sage-bg)", border: "1px solid var(--sage-md)",
-                  borderRadius: 2, padding: "5px 10px",
-                  fontSize: 11, fontFamily: "'Lato', sans-serif",
-                  color: "var(--sage)", cursor: "pointer", letterSpacing: ".06em",
+                  borderRadius: 2, padding: "5px 10px", fontSize: 11,
+                  fontFamily: "'Lato', sans-serif", color: "var(--sage)",
+                  cursor: "pointer", letterSpacing: ".06em",
                 }}>
                 +{n}m
               </button>
@@ -138,6 +145,139 @@ function OutdoorTracker() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── MOTHER CULTURE ───────────────────────────────────────────────────────────
+function MotherCulture() {
+  const prompts = MOTHER_CULTURE[new Date().getDay()];
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
+        <Icon.Feather />
+        <p className="eyebrow" style={{ marginBottom: 0 }}>Mother Culture</p>
+      </div>
+      {prompts.map((p, i) => (
+        <div key={i} style={{
+          paddingBottom: i < prompts.length - 1 ? 14 : 0,
+          marginBottom:  i < prompts.length - 1 ? 14 : 0,
+          borderBottom:  i < prompts.length - 1 ? "1px solid var(--rule)" : "none",
+        }}>
+          <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8 }}>
+            {p}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
+function TodaySchedule({ today, blocks, onNavigate }) {
+  const [items, setItems] = useState(
+    blocks.map((b, i) => ({ ...b, id: i, status: "pending" }))
+  );
+  const longPressTimer = useRef(null);
+
+  const markDone = (id) => {
+    setItems(prev => {
+      const updated = prev.map(b => b.id === id ? { ...b, status: "done" } : b);
+      return [
+        ...updated.filter(b => b.status === "pending"),
+        ...updated.filter(b => b.status !== "pending"),
+      ];
+    });
+  };
+
+  const markSkipped = (id) => {
+    setItems(prev => {
+      const updated = prev.map(b => b.id === id ? { ...b, status: "skipped" } : b);
+      return [
+        ...updated.filter(b => b.status === "pending"),
+        ...updated.filter(b => b.status !== "pending"),
+      ];
+    });
+  };
+
+  const startLongPress = (id) => { longPressTimer.current = setTimeout(() => markSkipped(id), 600); };
+  const cancelLongPress = ()  => clearTimeout(longPressTimer.current);
+
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Icon.Sun />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Today · {today}</p>
+        </div>
+        <button
+          onClick={() => onNavigate("planner")}
+          style={{
+            background: "none", border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 4,
+            color: "var(--ink-faint)", fontSize: 11,
+            fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase",
+          }}
+        >
+          Full week <Icon.Arrow />
+        </button>
+      </div>
+
+      {items.map(b => {
+        const isDone    = b.status === "done";
+        const isSkipped = b.status === "skipped";
+        return (
+          <div
+            key={b.id}
+            onClick={() => { if (b.status === "pending") markDone(b.id); }}
+            onTouchStart={() => startLongPress(b.id)}
+            onTouchEnd={cancelLongPress}
+            onMouseDown={() => startLongPress(b.id)}
+            onMouseUp={cancelLongPress}
+            onMouseLeave={cancelLongPress}
+            style={{
+              display: "flex", gap: 14, alignItems: "flex-start",
+              padding: "13px 0", borderBottom: "1px solid var(--rule)",
+              cursor: b.status === "pending" ? "pointer" : "default",
+              opacity: isDone ? 0.38 : isSkipped ? 0.5 : 1,
+              transition: "opacity .4s ease",
+            }}
+          >
+            <div style={{
+              width: 8, height: 8, borderRadius: "50%", marginTop: 7, flexShrink: 0,
+              background: isDone ? "var(--sage)" : isSkipped ? "var(--gold)" : "transparent",
+              border: isDone || isSkipped ? "none" : "1.5px solid var(--rule)",
+              transition: "all .3s ease",
+            }} />
+            <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>
+              {b.time}
+            </span>
+            <div style={{ flex: 1 }}>
+              <p style={{
+                fontSize: 15, color: isDone ? "var(--ink-faint)" : "var(--ink)",
+                fontFamily: "'Playfair Display', serif",
+                textDecoration: isDone ? "line-through" : "none",
+                textDecorationColor: "var(--sage-md)",
+                transition: "all .3s ease",
+              }}>
+                {b.subject}
+              </p>
+              {isSkipped && (
+                <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>
+                  skipped today
+                </p>
+              )}
+              {b.note && !isSkipped && (
+                <p className="caption italic" style={{ marginTop: 2 }}>{b.note}</p>
+              )}
+            </div>
+          </div>
+        );
+      })}
+
+      <p className="caption italic" style={{ marginTop: 14, textAlign: "center" }}>
+        Tap to complete · Hold to skip
+      </p>
     </div>
   );
 }
@@ -163,9 +303,9 @@ function HabitTracker() {
     }));
 
   return (
-    <div className="card" style={{ marginBottom: 20 }}>
+    <div className="card" style={{ marginBottom: 28 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-        <SlateCheckIcon />
+        <Icon.Check />
         <p className="eyebrow" style={{ marginBottom: 0 }}>Habits This Week</p>
       </div>
       <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
@@ -215,148 +355,6 @@ function HabitTracker() {
   );
 }
 
-// ─── MOTHER CULTURE ───────────────────────────────────────────────────────────
-function MotherCulture() {
-  const prompts = MOTHER_CULTURE[new Date().getDay()];
-  return (
-    <div style={{ marginBottom: 32 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
-        <FeatherIcon />
-        <p className="eyebrow" style={{ marginBottom: 0 }}>Mother Culture</p>
-      </div>
-      {prompts.map((p, i) => (
-        <div key={i} style={{
-          paddingBottom: i < prompts.length - 1 ? 14 : 0,
-          marginBottom:  i < prompts.length - 1 ? 14 : 0,
-          borderBottom:  i < prompts.length - 1 ? "1px solid var(--rule)" : "none",
-        }}>
-          <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8 }}>
-            {p}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
-function TodaySchedule({ today, blocks, onNavigate }) {
-  const [items, setItems] = useState(
-    blocks.map((b, i) => ({ ...b, id: i, status: "pending" }))
-  );
-  const longPressTimer = useRef(null);
-
-  const markDone = (id) => {
-    setItems(prev => {
-      const updated = prev.map(b => b.id === id ? { ...b, status: "done" } : b);
-      return [
-        ...updated.filter(b => b.status === "pending"),
-        ...updated.filter(b => b.status !== "pending"),
-      ];
-    });
-  };
-
-  const markSkipped = (id) => {
-    setItems(prev => {
-      const updated = prev.map(b => b.id === id ? { ...b, status: "skipped" } : b);
-      return [
-        ...updated.filter(b => b.status === "pending"),
-        ...updated.filter(b => b.status !== "pending"),
-      ];
-    });
-  };
-
-  const startLongPress = (id) => {
-    longPressTimer.current = setTimeout(() => markSkipped(id), 600);
-  };
-  const cancelLongPress = () => clearTimeout(longPressTimer.current);
-
-  return (
-    <div style={{ marginBottom: 32 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <SunIcon />
-          <p className="eyebrow" style={{ marginBottom: 0 }}>Today · {today}</p>
-        </div>
-        <button
-          onClick={() => onNavigate("planner")}
-          style={{
-            background: "none", border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 4,
-            color: "var(--ink-faint)", fontSize: 11,
-            fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase",
-          }}
-        >
-          Full week <ArrowIcon />
-        </button>
-      </div>
-
-      {items.map(b => {
-        const isDone    = b.status === "done";
-        const isSkipped = b.status === "skipped";
-        return (
-          <div
-            key={b.id}
-            onClick={() => { if (b.status === "pending") markDone(b.id); }}
-            onTouchStart={() => startLongPress(b.id)}
-            onTouchEnd={cancelLongPress}
-            onMouseDown={() => startLongPress(b.id)}
-            onMouseUp={cancelLongPress}
-            onMouseLeave={cancelLongPress}
-            style={{
-              display: "flex", gap: 14, alignItems: "flex-start",
-              padding: "13px 0", borderBottom: "1px solid var(--rule)",
-              cursor: b.status === "pending" ? "pointer" : "default",
-              opacity: isDone ? 0.38 : isSkipped ? 0.5 : 1,
-              transition: "opacity .4s ease",
-            }}
-          >
-            {/* Status dot */}
-            <div style={{
-              width: 8, height: 8, borderRadius: "50%", marginTop: 7, flexShrink: 0,
-              background: isDone ? "var(--sage)" : isSkipped ? "var(--gold)" : "transparent",
-              border: isDone || isSkipped ? "none" : "1.5px solid var(--rule)",
-              transition: "all .3s ease",
-            }} />
-
-            <span style={{
-              fontSize: 11, color: "var(--ink-faint)", width: 36,
-              paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif",
-            }}>
-              {b.time}
-            </span>
-
-            <div style={{ flex: 1 }}>
-              <p style={{
-                fontSize: 15,
-                color: isDone ? "var(--ink-faint)" : "var(--ink)",
-                fontFamily: "'Playfair Display', serif",
-                textDecoration: isDone ? "line-through" : "none",
-                textDecorationColor: "var(--sage-md)",
-                transition: "all .3s ease",
-              }}>
-                {b.subject}
-              </p>
-              {isSkipped && (
-                <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>
-                  skipped today
-                </p>
-              )}
-              {b.note && !isSkipped && (
-                <p className="caption italic" style={{ marginTop: 2 }}>{b.note}</p>
-              )}
-            </div>
-          </div>
-        );
-      })}
-
-      <p className="caption italic" style={{ marginTop: 14, textAlign: "center" }}>
-        Tap to complete · Hold to skip
-      </p>
-    </div>
-  );
-}
-
 // ─── HOME SCREEN ──────────────────────────────────────────────────────────────
 export default function HomeScreen({ onNavigate }) {
   const hour        = new Date().getHours();
@@ -367,6 +365,7 @@ export default function HomeScreen({ onNavigate }) {
 
   return (
     <div className="screen">
+
       {/* Header */}
       <p className="eyebrow" style={{ marginBottom: 6 }}>
         {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
@@ -378,27 +377,35 @@ export default function HomeScreen({ onNavigate }) {
         Begin with what is in front of you.
       </p>
 
+      {/* Outdoor tracker */}
       <OutdoorTracker />
-      <HabitTracker />
 
-      <div style={{ height: 1, background: "var(--rule)", margin: "8px 0 28px" }} />
+      <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 28px" }} />
 
+      {/* Mother culture */}
       <MotherCulture />
 
       <div style={{ height: 1, background: "var(--rule)", margin: "0 0 28px" }} />
 
+      {/* Today's schedule */}
       <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} />
 
       {/* Quick begin */}
-      <div>
+      <div style={{ marginBottom: 28 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <BookIcon />
+          <Icon.Book />
           <p className="eyebrow" style={{ marginBottom: 0 }}>Quick Begin</p>
         </div>
         <button className="btn-text" onClick={() => onNavigate("narration")}>Write a Narration</button>
         <button className="btn-text" onClick={() => onNavigate("lilies")}>Open Consider the Lilies</button>
         <button className="btn-text" onClick={() => onNavigate("outdoors")}>Step Outside</button>
       </div>
+
+      <div style={{ height: 1, background: "var(--rule)", margin: "0 0 28px" }} />
+
+      {/* Habit tracker — bottom of screen */}
+      <HabitTracker />
+
     </div>
   );
 }
