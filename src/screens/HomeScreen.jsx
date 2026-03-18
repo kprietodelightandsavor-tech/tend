@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES } from "../data/seed";
 
-// ─── HABIT ICONS (inline — no external import needed) ─────────────────────────
+// ─── HABIT ICONS ──────────────────────────────────────────────────────────────
 const HABIT_ICONS = {
   attention: () => (
     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -81,9 +81,25 @@ const Icon = {
       <path d="M12 10C12 10 16 9 17 5c-3 0-5 2-5 5z"/>
     </svg>
   ),
+  Moon: () => (
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#B8935A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+    </svg>
+  ),
 };
 
-// ─── MOTHER CULTURE (one line per day) ───────────────────────────────────────
+// ─── BLOCK CATEGORY → COLOR ───────────────────────────────────────────────────
+const getBlockColor = (subject) => {
+  const s = subject.toLowerCase();
+  if (s.includes("wake up") || s.includes("chores") || s.includes("piano") || s.includes("bible") || s.includes("memory") || s.includes("living literature") || s.includes("morning")) return "var(--block-morning)";
+  if (s.includes("math") || s.includes("language") || s.includes("writing") || s.includes("copywork") || s.includes("history") || s.includes("science") || s.includes("geography") || s.includes("historical fiction") || s.includes("spanish") || s.includes("reading") || s.includes("timeline") || s.includes("commonplace")) return "var(--block-academic)";
+  if (s.includes("nature") || s.includes("outdoor") || s.includes("outdoors")) return "var(--block-nature)";
+  if (s.includes("co-op") || s.includes("coop") || s.includes("bach") || s.includes("chispa")) return "var(--block-coop)";
+  if (s.includes("lunch") || s.includes("free") || s.includes("rest") || s.includes("afternoon")) return "var(--block-free)";
+  return "var(--rule)";
+};
+
+// ─── MOTHER CULTURE ───────────────────────────────────────────────────────────
 const MOTHER_CULTURE_DAILY = [
   "Rest fully today. The week ahead needs a rested you.",
   "Step outside alone for 10 minutes before the day begins. Let the morning be yours first.",
@@ -94,13 +110,58 @@ const MOTHER_CULTURE_DAILY = [
   "Linger over breakfast. Let the morning be unhurried.",
 ];
 
-// ─── FREE BLOCK DETECTION ─────────────────────────────────────────────────────
-const FREE_KEYWORDS = [
-  "wake up", "chores", "piano", "free", "rest",
-  "independent", "lunch", "outdoor", "nature", "afternoon",
+// ─── REST WEEK RHYTHM (rotates by day of week) ────────────────────────────────
+const REST_WEEK_RHYTHM = [
+  // Sunday
+  [
+    { label: "Morning Quiet", note: "Sleep in. Linger over breakfast. No agenda." },
+    { label: "Church or Worship", note: "Let Sunday be what it is meant to be." },
+    { label: "Afternoon Rest", note: "Nap, read, sit outside. Simply be." },
+  ],
+  // Monday
+  [
+    { label: "Morning Outside", note: "Begin the rest week outdoors — longer than usual, no nature journal required." },
+    { label: "Creative Morning", note: "Art, music, handicraft. Let the children follow their own curiosity." },
+    { label: "Read Aloud", note: "A longer session than usual. Let the story breathe." },
+    { label: "Free Afternoon", note: "No assignments. No checklist." },
+  ],
+  // Tuesday
+  [
+    { label: "Morning Slow Start", note: "Breakfast together, no rush to begin anything." },
+    { label: "Outing or Errand", note: "Library, farm stand, nature trail, or simply a drive somewhere new." },
+    { label: "Quiet Afternoon", note: "Independent reading, drawing, rest." },
+  ],
+  // Wednesday
+  [
+    { label: "Morning Chores Together", note: "Tend the home slowly. Order as an act of love." },
+    { label: "Cook Something Together", note: "Let the kitchen be today's classroom." },
+    { label: "Outside Time", note: "Unstructured. Let them wander." },
+    { label: "Evening Rest", note: "A good book, early bedtime." },
+  ],
+  // Thursday
+  [
+    { label: "Morning Quiet Time", note: "Bible, journaling, tea. Begin the day gently." },
+    { label: "Creative Project", note: "Something with hands — building, painting, sewing, baking." },
+    { label: "Nature Walk", note: "No sketching required today. Just walk and notice." },
+  ],
+  // Friday
+  [
+    { label: "Morning Outside", note: "End the rest week where you began — in the open air." },
+    { label: "Read Aloud", note: "Revisit a favourite, or begin something new for next term." },
+    { label: "Prepare for the Week", note: "Light tidying, gather books, set the table for Monday." },
+    { label: "Celebrate the Rest", note: "Name one good thing from this week away." },
+  ],
+  // Saturday
+  [
+    { label: "Family Day", note: "No school, no agenda. Just be together." },
+    { label: "Outdoor Adventure", note: "A longer outing — park, trail, town, or simply the back pasture." },
+    { label: "Evening Gathering", note: "Good food, good conversation, early rest." },
+  ],
 ];
-const isFreeBlock = (subject) =>
-  FREE_KEYWORDS.some(k => subject.toLowerCase().includes(k));
+
+// ─── FREE BLOCK DETECTION ─────────────────────────────────────────────────────
+const FREE_KEYWORDS = ["wake up", "chores", "piano", "free", "rest", "independent", "lunch", "outdoor", "nature", "afternoon"];
+const isFreeBlock = (subject) => FREE_KEYWORDS.some(k => subject.toLowerCase().includes(k));
 
 // ─── OUTDOOR TRACKER ──────────────────────────────────────────────────────────
 const OUTDOOR_GOAL_HOURS = 15;
@@ -112,6 +173,8 @@ function OutdoorTracker({ onNavigate }) {
   const pct   = Math.min(minutes / (OUTDOOR_GOAL_HOURS * 60), 1);
   const r = 34, circ = 2 * Math.PI * r, dash = circ * pct;
 
+  const adjust = (n) => setMinutes(m => Math.max(0, m + n));
+
   return (
     <div className="card" style={{ marginBottom: 20 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
@@ -119,7 +182,6 @@ function OutdoorTracker({ onNavigate }) {
           <Icon.Leaf />
           <p className="eyebrow" style={{ marginBottom: 0 }}>Outside This Week</p>
         </div>
-        {/* Link to nature page */}
         <button onClick={() => onNavigate("outdoors")}
           style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase" }}>
           Nature <Icon.Arrow />
@@ -147,15 +209,84 @@ function OutdoorTracker({ onNavigate }) {
               : `${OUTDOOR_GOAL_HOURS - hours} hr${mins > 0 ? ` ${60 - mins} min` : ""} to go`}
           </p>
           <p className="caption italic" style={{ marginBottom: 12 }}>Goal: {OUTDOOR_GOAL_HOURS} hrs / week</p>
-          <div style={{ display: "flex", gap: 8 }}>
+          {/* Add buttons */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
             {[15, 30, 45, 60].map(n => (
-              <button key={n} onClick={() => setMinutes(m => m + n)}
-                style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 2, padding: "5px 10px", fontSize: 11, fontFamily: "'Lato', sans-serif", color: "var(--sage)", cursor: "pointer", letterSpacing: ".06em" }}>
+              <button key={n} onClick={() => adjust(n)}
+                style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 2, padding: "5px 8px", fontSize: 11, fontFamily: "'Lato', sans-serif", color: "var(--sage)", cursor: "pointer", letterSpacing: ".04em" }}>
                 +{n}m
               </button>
             ))}
           </div>
+          {/* Subtract buttons */}
+          <div style={{ display: "flex", gap: 6 }}>
+            {[15, 30].map(n => (
+              <button key={n} onClick={() => adjust(-n)}
+                style={{ background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "4px 8px", fontSize: 10, fontFamily: "'Lato', sans-serif", color: "var(--ink-faint)", cursor: "pointer", letterSpacing: ".04em" }}>
+                −{n}m
+              </button>
+            ))}
+          </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── REST WEEK HOME VIEW ──────────────────────────────────────────────────────
+function RestWeekHome({ name }) {
+  const day      = new Date().getDay();
+  const rhythm   = REST_WEEK_RHYTHM[day];
+  const prompt   = MOTHER_CULTURE_DAILY[day];
+
+  return (
+    <div>
+      {/* Rest week banner */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, padding: "12px 16px", background: "var(--gold-bg)", borderRadius: 3, border: "1px solid #E0CBA8" }}>
+        <Icon.Moon />
+        <div>
+          <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 2 }}>Rest Week</p>
+          <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-lt)", lineHeight: 1.6 }}>
+            The rhythm rests so it can return stronger.
+          </p>
+        </div>
+      </div>
+
+      {/* Gentle rhythm for the day */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+          <Icon.Sun />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>A Gentle Rhythm for Today</p>
+        </div>
+        <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
+          Not a schedule — just a shape for the day.
+        </p>
+        {rhythm.map((r, i) => (
+          <div key={i} style={{
+            display: "flex", gap: 14, alignItems: "flex-start",
+            padding: "12px 0", borderBottom: "1px solid var(--rule)",
+          }}>
+            {/* Soft dot — no checkbox */}
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", opacity: .5, marginTop: 8, flexShrink: 0 }} />
+            <div>
+              <p style={{ fontSize: 16, color: "var(--ink)", fontFamily: "'Playfair Display', serif", marginBottom: 3 }}>
+                {r.label}
+              </p>
+              <p className="caption italic" style={{ lineHeight: 1.6 }}>{r.note}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Mother culture */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <Icon.Feather />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Mother Culture</p>
+        </div>
+        <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8 }}>
+          {prompt}
+        </p>
       </div>
     </div>
   );
@@ -205,8 +336,11 @@ function TodaySchedule({ today, blocks, onNavigate }) {
       </div>
 
       {items.map(b => {
-        const isDone = b.status === "done", isSkipped = b.status === "skipped";
+        const isDone    = b.status === "done";
+        const isSkipped = b.status === "skipped";
         const showMother = isFreeBlock(b.subject) && !isSkipped;
+        const blockColor = getBlockColor(b.subject);
+
         return (
           <div key={b.id} style={{ borderBottom: "1px solid var(--rule)" }}>
             <div
@@ -216,21 +350,46 @@ function TodaySchedule({ today, blocks, onNavigate }) {
               onMouseDown={() => { if (b.status === "pending") startLP(b.id); }}
               onMouseUp={cancelLP}
               onMouseLeave={cancelLP}
-              style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "12px 0 6px", cursor: b.status !== "skipped" ? "pointer" : "default", opacity: isDone ? 0.35 : isSkipped ? 0.45 : 1, transition: "opacity .4s ease" }}
+              style={{
+                display: "flex", gap: 0, alignItems: "flex-start",
+                padding: "12px 0 6px",
+                cursor: b.status !== "skipped" ? "pointer" : "default",
+                opacity: isDone ? 0.35 : isSkipped ? 0.45 : 1,
+                transition: "opacity .4s ease",
+              }}
             >
-              <div style={{ width: 8, height: 8, borderRadius: "50%", marginTop: 6, flexShrink: 0, background: isDone ? "var(--sage)" : isSkipped ? "var(--gold)" : "transparent", border: isDone || isSkipped ? "none" : "1.5px solid var(--rule)", transition: "all .3s ease" }} />
-              <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 1, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{b.time}</span>
+              {/* Category color stripe */}
+              <div style={{
+                width: 3, borderRadius: 2, alignSelf: "stretch",
+                background: isDone || isSkipped ? "var(--rule)" : blockColor,
+                marginRight: 12, flexShrink: 0,
+                transition: "background .3s ease",
+                minHeight: 36,
+              }} />
+
+              <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>
+                {b.time}
+              </span>
+
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 15, color: isDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease" }}>
+                <p style={{
+                  fontSize: 16,
+                  color: isDone ? "var(--ink-faint)" : "var(--ink)",
+                  fontFamily: "'Playfair Display', serif",
+                  textDecoration: isDone ? "line-through" : "none",
+                  textDecorationColor: "var(--sage-md)",
+                  transition: "all .3s ease",
+                }}>
                   {b.subject}
                 </p>
                 {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped today</p>}
-                {b.note && !isSkipped && <p className="caption italic" style={{ marginTop: 2 }}>{b.note}</p>}
+                {b.note && !isSkipped && <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
                 {isDone && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
               </div>
             </div>
+
             {showMother && (
-              <div style={{ paddingLeft: 58, paddingBottom: 8 }} onClick={e => e.stopPropagation()}>
+              <div style={{ paddingLeft: 53, paddingBottom: 8 }} onClick={e => e.stopPropagation()}>
                 {editingNote === b.id ? (
                   <input autoFocus defaultValue={b.motherNote}
                     placeholder="What will you tend during this time?"
@@ -249,6 +408,7 @@ function TodaySchedule({ today, blocks, onNavigate }) {
           </div>
         );
       })}
+
       <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>
         Tap to complete · Tap again to undo · Hold to skip
       </p>
@@ -316,10 +476,9 @@ export default function HomeScreen({ onNavigate, settings }) {
   const todayIndex  = Math.min(Math.max(new Date().getDay() - 1, 0), 4);
   const today       = DAYS[todayIndex] || "Monday";
   const todayBlocks = DAY_SCHEDULE[today] || DAY_SCHEDULE.Monday;
-
-  // Use name from settings if available, fall back to "Kim"
   const name        = settings?.name || "Kim";
   const activeHabit = settings?.activeHabit || "attention";
+  const isRestWeek  = settings?.isRestWeek || false;
 
   return (
     <div className="screen">
@@ -337,13 +496,16 @@ export default function HomeScreen({ onNavigate, settings }) {
 
       <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
 
-      <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} />
-
-      <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
-
-      <MotherCulture />
-
-      <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
+      {isRestWeek ? (
+        <RestWeekHome name={name} />
+      ) : (
+        <>
+          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} />
+          <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
+          <MotherCulture />
+          <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
+        </>
+      )}
 
       <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
     </div>
