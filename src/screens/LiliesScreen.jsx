@@ -42,6 +42,12 @@ const Icon = {
       <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
     </svg>
   ),
+  Home: () => (
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  ),
 };
 
 // ─── BREADCRUMB QUESTIONS ─────────────────────────────────────────────────────
@@ -92,10 +98,9 @@ function TypeBadge({ type }) {
   );
 }
 
-// ─── SKETCH PLACEHOLDER ───────────────────────────────────────────────────────
+// ─── SKETCH BOX ───────────────────────────────────────────────────────────────
 function SketchBox({ image, onUpload, subject }) {
   const fileRef = useRef();
-
   const handleFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -103,17 +108,14 @@ function SketchBox({ image, onUpload, subject }) {
     reader.onload = (ev) => onUpload(ev.target.result);
     reader.readAsDataURL(file);
   };
-
   const chatGptPrompt = subject
     ? `How do I sketch and watercolor ${subject}? Please give me simple step-by-step guidance for a beginner nature journaler.`
     : "How do I sketch and watercolor a nature observation for a beginner nature journaler?";
-
   const chatGptUrl = `https://chatgpt.com/?q=${encodeURIComponent(chatGptPrompt)}`;
 
   return (
     <div style={{ marginTop: 24, marginBottom: 8 }}>
       <p className="eyebrow" style={{ marginBottom: 12 }}>Sketch · Watercolor · Notation</p>
-
       {image ? (
         <div style={{ position: "relative" }}>
           <img src={image} alt="sketch" style={{ width: "100%", borderRadius: 3, border: "1px solid var(--rule)", maxHeight: 280, objectFit: "cover" }} />
@@ -142,10 +144,7 @@ function SketchBox({ image, onUpload, subject }) {
           <p className="caption">Or draw digitally and upload an image.</p>
         </div>
       )}
-
       <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFile} />
-
-      {/* ChatGPT tutorial nudge */}
       <a href={chatGptUrl} target="_blank" rel="noopener noreferrer"
         style={{
           display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12,
@@ -163,75 +162,48 @@ function SketchBox({ image, onUpload, subject }) {
 function printEntry(entry, ownerName) {
   const win = window.open("", "_blank");
   const date = entry.date;
-
   const layerHtml = entry.type === "daily" ? `
-    <div class="layer">
-      <h3>Layer One · The Place</h3>
-      <p>${(entry.layer1 || "").replace(/\n/g, "<br/>")}</p>
-    </div>
-    <div class="layer">
-      <h3>Layer Two · The Moment</h3>
-      <p>${(entry.layer2 || "").replace(/\n/g, "<br/>")}</p>
-    </div>
-    <div class="layer">
-      <h3>Layer Three · The Thought or Wonder</h3>
-      <p>${(entry.layer3 || "").replace(/\n/g, "<br/>")}</p>
-    </div>
+    <div class="layer"><h3>Layer One · The Place</h3><p>${(entry.layer1 || "").replace(/\n/g, "<br/>")}</p></div>
+    <div class="layer"><h3>Layer Two · The Moment</h3><p>${(entry.layer2 || "").replace(/\n/g, "<br/>")}</p></div>
+    <div class="layer"><h3>Layer Three · The Thought or Wonder</h3><p>${(entry.layer3 || "").replace(/\n/g, "<br/>")}</p></div>
     ${entry.image ? `<div class="sketch"><img src="${entry.image}" style="max-width:100%;border-radius:4px;" /></div>` : `<div class="sketch-box"><p style="color:#aaa;font-style:italic;text-align:center;">sketch · watercolor · notation</p></div>`}
   ` : `
-    <div class="quote-block">
-      <p class="quote">"${entry.quote || ""}"</p>
-      <p class="source">— ${entry.source || ""}</p>
-    </div>
-    <div class="layer">
-      <h3>Response · Connection · Wonder</h3>
-      <p>${(entry.response || "").replace(/\n/g, "<br/>")}</p>
-    </div>
+    <div class="quote-block"><p class="quote">"${entry.quote || ""}"</p><p class="source">— ${entry.source || ""}</p></div>
+    <div class="layer"><h3>Response · Connection · Wonder</h3><p>${(entry.response || "").replace(/\n/g, "<br/>")}</p></div>
   `;
-
-  win.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8"/>
-      <title>Consider the Lilies · ${date}</title>
-      <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Lato:wght@300;400&display=swap');
-        body { font-family: 'Cormorant Garamond', Georgia, serif; max-width: 580px; margin: 60px auto; color: #2C2A27; padding: 0 24px; }
-        h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 28px; font-weight: 400; margin-bottom: 4px; }
-        .meta { font-size: 12px; color: #A8A49E; letter-spacing: .1em; text-transform: uppercase; font-family: 'Lato', sans-serif; margin-bottom: 40px; }
-        .layer { margin-bottom: 32px; }
-        h3 { font-family: 'Lato', sans-serif; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: #8A9E89; margin-bottom: 10px; }
-        p { font-size: 17px; line-height: 1.85; color: #6B6760; font-style: italic; }
-        .quote { font-size: 20px; line-height: 1.75; margin-bottom: 8px; }
-        .source { font-size: 13px; color: #A8A49E; font-style: normal; }
-        .sketch-box { border: 1.5px dashed #DDD8CF; border-radius: 4px; height: 200px; margin-top: 32px; display: flex; align-items: center; justify-content: center; }
-        .sketch { margin-top: 32px; }
-        hr { border: none; border-top: 1px solid #DDD8CF; margin: 40px 0; }
-        @media print { body { margin: 40px; } }
-      </style>
-    </head>
-    <body>
-      <p class="meta">Consider the Lilies · ${ownerName} · ${date}</p>
-      <h1>${entry.type === "daily" ? "Daily Entry" : "Commonplace"}</h1>
-      <hr/>
-      ${layerHtml}
-      <hr/>
-      <p style="font-size:11px;color:#A8A49E;text-align:center;font-style:normal;font-family:'Lato',sans-serif;letter-spacing:.1em;">Delight & Savor · Consider the Lilies</p>
-    </body>
-    </html>
-  `);
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+    <title>Consider the Lilies · ${date}</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Lato:wght@300;400&display=swap');
+      body{font-family:'Cormorant Garamond',Georgia,serif;max-width:580px;margin:60px auto;color:#2C2A27;padding:0 24px;}
+      h1{font-family:'Playfair Display',Georgia,serif;font-size:28px;font-weight:400;margin-bottom:4px;}
+      .meta{font-size:12px;color:#A8A49E;letter-spacing:.1em;text-transform:uppercase;font-family:'Lato',sans-serif;margin-bottom:40px;}
+      .layer{margin-bottom:32px;}
+      h3{font-family:'Lato',sans-serif;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#8A9E89;margin-bottom:10px;}
+      p{font-size:17px;line-height:1.85;color:#6B6760;font-style:italic;}
+      .quote{font-size:20px;line-height:1.75;margin-bottom:8px;}
+      .source{font-size:13px;color:#A8A49E;font-style:normal;}
+      .sketch-box{border:1.5px dashed #DDD8CF;border-radius:4px;height:200px;margin-top:32px;display:flex;align-items:center;justify-content:center;}
+      .sketch{margin-top:32px;}
+      hr{border:none;border-top:1px solid #DDD8CF;margin:40px 0;}
+      @media print{body{margin:40px;}}
+    </style></head><body>
+    <p class="meta">Consider the Lilies · ${ownerName} · ${date}</p>
+    <h1>${entry.type === "daily" ? "Daily Entry" : "Commonplace"}</h1>
+    <hr/>${layerHtml}<hr/>
+    <p style="font-size:11px;color:#A8A49E;text-align:center;font-style:normal;font-family:'Lato',sans-serif;letter-spacing:.1em;">Delight & Savor · Consider the Lilies</p>
+    </body></html>`);
   win.document.close();
   win.print();
 }
 
 // ─── NEW DAILY ENTRY FORM ─────────────────────────────────────────────────────
 function NewDailyEntry({ onSave, onClose }) {
-  const [layer1, setLayer1]   = useState("");
-  const [layer2, setLayer2]   = useState("");
-  const [layer3, setLayer3]   = useState("");
+  const [layer1, setLayer1] = useState("");
+  const [layer2, setLayer2] = useState("");
+  const [layer3, setLayer3] = useState("");
   const [subject, setSubject] = useState("");
-  const [image, setImage]     = useState(null);
+  const [image, setImage] = useState(null);
 
   const save = () => {
     if (!layer1.trim() && !layer2.trim() && !layer3.trim()) return;
@@ -248,12 +220,9 @@ function NewDailyEntry({ onSave, onClose }) {
         </div>
         <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)" }}><Icon.X /></button>
       </div>
-
       <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.7, marginBottom: 28 }}>
         Follow only the breadcrumbs that open something in you. They are lanterns, not a checklist.
       </p>
-
-      {/* Layer 1 */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
           <Icon.Leaf />
@@ -269,8 +238,6 @@ function NewDailyEntry({ onSave, onClose }) {
           value={subject} onChange={e => setSubject(e.target.value)}
           style={{ fontSize: 13, marginTop: 8 }} />
       </div>
-
-      {/* Layer 2 */}
       <div style={{ marginBottom: 28 }}>
         <p className="eyebrow" style={{ marginBottom: 10, color: "var(--sage)" }}>Layer Two · The Moment</p>
         {LAYER_TWO_CRUMBS.map((q, i) => (
@@ -280,8 +247,6 @@ function NewDailyEntry({ onSave, onClose }) {
           placeholder="What keeps returning to you?"
           value={layer2} onChange={e => setLayer2(e.target.value)} rows={4} />
       </div>
-
-      {/* Layer 3 */}
       <div style={{ marginBottom: 28 }}>
         <p className="eyebrow" style={{ marginBottom: 10, color: "var(--sage)" }}>Layer Three · The Thought or Wonder</p>
         {LAYER_THREE_CRUMBS.map((q, i) => (
@@ -291,10 +256,7 @@ function NewDailyEntry({ onSave, onClose }) {
           placeholder="What question does this open in you?"
           value={layer3} onChange={e => setLayer3(e.target.value)} rows={4} />
       </div>
-
-      {/* Sketch */}
       <SketchBox image={image} onUpload={setImage} subject={subject} />
-
       <div style={{ marginTop: 28, display: "flex", gap: 12 }}>
         <button className="btn-sage" style={{ flex: 1 }} onClick={save}>Keep This Entry</button>
         <button className="btn-ghost" onClick={onClose}>Cancel</button>
@@ -305,8 +267,8 @@ function NewDailyEntry({ onSave, onClose }) {
 
 // ─── NEW COMMONPLACE ENTRY FORM ───────────────────────────────────────────────
 function NewCommonplaceEntry({ onSave, onClose }) {
-  const [quote, setQuote]       = useState("");
-  const [source, setSource]     = useState("");
+  const [quote, setQuote] = useState("");
+  const [source, setSource] = useState("");
   const [response, setResponse] = useState("");
 
   const save = () => {
@@ -324,19 +286,15 @@ function NewCommonplaceEntry({ onSave, onClose }) {
         </div>
         <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)" }}><Icon.X /></button>
       </div>
-
       <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.7, marginBottom: 28 }}>
         Copy the passage that stopped you. Then follow the thread wherever it leads.
       </p>
-
       <textarea className="textarea" style={{ fontSize: 19, minHeight: 100 }}
         placeholder="The passage, line, or thought…"
         value={quote} onChange={e => setQuote(e.target.value)} rows={4} />
-
       <input className="input-line" placeholder="— Author, Book, Chapter…"
         value={source} onChange={e => setSource(e.target.value)}
         style={{ marginTop: 12, marginBottom: 28 }} />
-
       <p className="eyebrow" style={{ marginBottom: 10 }}>Response · Connection · Wonder</p>
       {[
         "What stopped you when you read it?",
@@ -348,7 +306,6 @@ function NewCommonplaceEntry({ onSave, onClose }) {
       <textarea className="textarea" style={{ marginTop: 12 }}
         placeholder="Write what comes…"
         value={response} onChange={e => setResponse(e.target.value)} rows={5} />
-
       <div style={{ marginTop: 28, display: "flex", gap: 12 }}>
         <button className="btn-sage" style={{ flex: 1 }} onClick={save}>Keep This Entry</button>
         <button className="btn-ghost" onClick={onClose}>Cancel</button>
@@ -365,12 +322,10 @@ function EntryDetail({ entry, ownerName, onBack }) {
         style={{ background: "none", border: "none", cursor: "pointer", color: "var(--sage)", fontSize: 13, letterSpacing: ".08em", textTransform: "uppercase", fontFamily: "'Lato', sans-serif", marginBottom: 24, display: "flex", alignItems: "center", gap: 6 }}>
         ← Journal
       </button>
-
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
         <TypeBadge type={entry.type} />
       </div>
       <p className="caption" style={{ marginBottom: 28 }}>{entry.date}</p>
-
       {entry.type === "daily" ? (
         <>
           {entry.layer1 && (
@@ -415,7 +370,6 @@ function EntryDetail({ entry, ownerName, onBack }) {
           )}
         </>
       )}
-
       <div style={{ height: 1, background: "var(--rule)", margin: "8px 0 20px" }} />
       <button onClick={() => printEntry(entry, ownerName)}
         style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "10px 18px", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
@@ -439,11 +393,12 @@ const SEED_ENTRIES = {
 };
 
 // ─── LILIES SCREEN ────────────────────────────────────────────────────────────
-export default function LiliesScreen() {
+// ✦ FIX: accepts onNavigate prop — was missing entirely, causing home button to fail
+export default function LiliesScreen({ onNavigate }) {
   const owners = buildOwners();
   const [activeOwner, setActiveOwner] = useState(owners[0]);
-  const [entries, setEntries]         = useState(SEED_ENTRIES);
-  const [view, setView]               = useState("journal"); // "journal" | "new-daily" | "new-commonplace" | "detail"
+  const [entries, setEntries] = useState(SEED_ENTRIES);
+  const [view, setView] = useState("journal"); // "journal" | "new-daily" | "new-commonplace" | "detail"
   const [activeEntry, setActiveEntry] = useState(null);
 
   const ownerEntries = entries[activeOwner.id] || [];
@@ -456,18 +411,35 @@ export default function LiliesScreen() {
     setView("journal");
   };
 
-  // ── ENTRY DETAIL ────────────────────────────────────────────────────────
+  // ── ENTRY DETAIL ──────────────────────────────────────────────────────
   if (view === "detail" && activeEntry) {
     return <EntryDetail entry={activeEntry} ownerName={activeOwner.name} onBack={() => setView("journal")} />;
   }
 
-  // ── NEW ENTRY FORMS ─────────────────────────────────────────────────────
-  if (view === "new-daily")       return <NewDailyEntry onSave={addEntry} onClose={() => setView("journal")} />;
+  // ── NEW ENTRY FORMS ───────────────────────────────────────────────────
+  if (view === "new-daily") return <NewDailyEntry onSave={addEntry} onClose={() => setView("journal")} />;
   if (view === "new-commonplace") return <NewCommonplaceEntry onSave={addEntry} onClose={() => setView("journal")} />;
 
-  // ── JOURNAL VIEW ────────────────────────────────────────────────────────
+  // ── JOURNAL VIEW ──────────────────────────────────────────────────────
   return (
     <div className="screen">
+
+      {/* ✦ FIX: Home button in header — was missing entirely */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <button
+          onClick={() => onNavigate("home")}
+          style={{
+            display: "flex", alignItems: "center", gap: 6,
+            background: "none", border: "none", cursor: "pointer",
+            fontSize: 11, fontFamily: "'Lato', sans-serif",
+            letterSpacing: ".1em", textTransform: "uppercase",
+            color: "var(--sage)", padding: 0,
+          }}
+        >
+          <Icon.Home /> Home
+        </button>
+      </div>
+
       {/* Header */}
       <p className="eyebrow" style={{ marginBottom: 6 }}>Commonplace & Nature Journal</p>
       <h1 className="display serif" style={{ marginBottom: 4 }}>Consider the<br />Lilies</h1>
@@ -537,12 +509,12 @@ export default function LiliesScreen() {
         {ownerEntries.length} {ownerEntries.length === 1 ? "entry" : "entries"} · {activeOwner.name}
       </p>
 
-      {/* Minimum faithful entry reminder */}
       <div style={{ marginTop: 28, padding: "16px 0", borderTop: "1px solid var(--rule)" }}>
         <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.8, textAlign: "center" }}>
           The minimum faithful entry: where you were,<br />one thing you noticed, one sentence about where it led.
         </p>
       </div>
+
     </div>
   );
 }
