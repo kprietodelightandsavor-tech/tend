@@ -198,16 +198,18 @@ export default function App() {
 }, []);
 
   const saveSettings = async (updated) => {
-    const updates = {
-      name:         updated.name,
-      active_habit: updated.activeHabit || profile?.active_habit,
-      term:         updated.term,
-      week:         updated.week,
-      is_rest_week: updated.isRestWeek ?? profile?.is_rest_week,
-    };
-    await upsertProfile(session.user.id, updates);
-    setProfile(prev => ({ ...prev, ...updates }));
+  const newData = {
+    ...userData,
+    name:         updated.name,
+    active_habit: updated.activeHabit || userData?.active_habit,
+    term:         updated.term,
+    week:         updated.week,
+    is_rest_week: updated.isRestWeek ?? userData?.is_rest_week,
   };
+  localStorage.setItem('tend_user', JSON.stringify(newData));
+  await saveToMeta(newData);
+  setUserData(newData);
+};
 
   if (loading) {
     return (
