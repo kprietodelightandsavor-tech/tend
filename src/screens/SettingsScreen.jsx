@@ -162,9 +162,19 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
       </button>
 
       <button onClick={() => onNavigate("home")}
-        style={{ width: "100%", background: "none", border: "none", cursor: "pointer", marginTop: 16, fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", padding: "10px 0" }}>
-        Back to Home
-      </button>
-    </div>
+  style={{ width: "100%", background: "none", border: "none", cursor: "pointer", marginTop: 16, fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", padding: "10px 0" }}>
+  Back to Home
+</button>
+
+<div style={{ height: 1, background: "var(--rule)", margin: "24px 0" }} />
+
+<button onClick={async () => {
+  const { supabase } = await import("../lib/supabase");
+  localStorage.removeItem("tend_user");
+  await supabase.auth.signOut();
+}}
+  style={{ width: "100%", background: "none", border: "1px solid #E8C4BB", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--red)" }}>
+  Sign Out
+</button>
   );
 }
