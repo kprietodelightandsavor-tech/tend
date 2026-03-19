@@ -158,11 +158,34 @@ export default function App() {
 };
 
   const completeOnboarding = async ({ name, activeHabit, term, week }) => {
-    const updates = { name, active_habit: activeHabit, term, week, onboarded: true };
-    await upsertProfile(session.user.id, updates);
-    setProfile(prev => ({ ...prev, ...updates }));
-    setScreen("home");
+  const updates = {
+    id: session.user.id,
+    name,
+    active_habit: activeHabit,
+    term,
+    week,
+    onboarded: true,
+    outdoor_minutes: 0,
+    outdoor_week_start: new Date().toISOString().split('T')[0],
+    is_rest_week: false,
   };
+  
+  // Try insert first, then update if exists
+  const { error: insertError } = await supabase
+    .from('profiles')
+    .insert(updates);
+    
+  if (insertError) {
+    // Row exists, update it
+    await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', session.user.id);
+  }
+  
+  setProfile(updates);
+  setScreen("home");
+};
 
   const saveSettings = async (updated) => {
     const updates = {
