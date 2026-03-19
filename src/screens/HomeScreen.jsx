@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS } from "../data/seed";
-import { getOutdoorMinutes, updateOutdoorMinutes } from "../lib/db";
 
 // ─── HABIT ICONS ──────────────────────────────────────────────────────────────
 const HABIT_ICONS = {
@@ -35,13 +34,13 @@ const HABIT_ICONS = {
 };
 
 const Icon = {
-  Leaf: () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>),
+  Leaf:    () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>),
   Feather: () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5l6.74-6.76z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>),
-  Sun: () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>),
-  Arrow: () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>),
-  Sprout: () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 20h10"/><path d="M12 20V10"/><path d="M12 10C12 10 8 9 7 5c3 0 5 2 5 5z"/><path d="M12 10C12 10 16 9 17 5c-3 0-5 2-5 5z"/></svg>),
-  Moon: () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#B8935A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>),
-  X: () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
+  Sun:     () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>),
+  Arrow:   () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>),
+  Sprout:  () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 20h10"/><path d="M12 20V10"/><path d="M12 10C12 10 8 9 7 5c3 0 5 2 5 5z"/><path d="M12 10C12 10 16 9 17 5c-3 0-5 2-5 5z"/></svg>),
+  Moon:    () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#B8935A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>),
+  X:       () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
 };
 
 const getBlockColor = (subject) => {
@@ -91,14 +90,12 @@ export function PremiumModal({ onClose }) {
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)", marginTop: 4 }}><Icon.X /></button>
         </div>
         <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", marginBottom: 24, lineHeight: 1.8 }}>Beauty. Meaning. Connection.</p>
-
         <div className="card-sage" style={{ marginBottom: 24 }}>
           <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.9 }}>
             Tend Premium is for the family that wants to go deeper — a full weekly planner that breathes with your rhythm, a living nature and commonplace journal, all five habits tended over twelve weeks, and the tools to make Charlotte Mason homeschooling feel as beautiful as it actually is.
           </p>
           <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.8, marginTop: 12 }}>When you're ready, we'd love to have you.</p>
         </div>
-
         <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
           <div style={{ flex: 1, border: "2px solid var(--sage)", borderRadius: 3, padding: "14px 16px", textAlign: "center" }}>
             <p className="eyebrow" style={{ marginBottom: 4, color: "var(--sage)" }}>Annual</p>
@@ -111,7 +108,6 @@ export function PremiumModal({ onClose }) {
             <p className="caption">per month</p>
           </div>
         </div>
-
         <div style={{ marginBottom: 16 }}>
           <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 10 }}>Free — always</p>
           {["Daily schedule (one repeating template)", "Outdoor time tracker", "Consider the Lilies journal structure", "One habit focus with today's ideas", "Daily Mother Culture prompt", "CM quote of the day"].map((f, i) => (
@@ -121,7 +117,6 @@ export function PremiumModal({ onClose }) {
             </div>
           ))}
         </div>
-
         <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, padding: "16px", marginBottom: 28 }}>
           <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 12 }}>Premium includes everything, plus</p>
           {["Full weekly planner — different schedule per day, editable blocks, Beauty Loop", "Term counter with rest week gentle rhythm", "All five habits with full library & 12-week reflection", "Nature page with rotating daily outdoor ideas", "Full Consider the Lilies digital journal — photo upload, print, all family members", "Students screen with narration tracking", "Full rotating Mother Culture prompt bank"].map((f, i) => (
@@ -131,12 +126,10 @@ export function PremiumModal({ onClose }) {
             </div>
           ))}
         </div>
-
         <a href="https://payhip.com/b/NMQ4D" target="_blank" rel="noopener noreferrer"
           style={{ display: "block", background: "var(--sage)", borderRadius: 2, padding: "14px 0", width: "100%", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "white", textAlign: "center", textDecoration: "none", marginBottom: 12 }}>
           Join Tend Premium →
         </a>
-
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
           <a href="https://www.delightandsavor.com" target="_blank" rel="noopener noreferrer"
             style={{ display: "block", textAlign: "center", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", textDecoration: "none", padding: "8px 0", borderBottom: "1px solid var(--rule)" }}>
@@ -147,7 +140,6 @@ export function PremiumModal({ onClose }) {
             Follow along on Substack →
           </a>
         </div>
-
         <button onClick={onClose}
           style={{ width: "100%", background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
           Maybe later
@@ -160,18 +152,18 @@ export function PremiumModal({ onClose }) {
 // ─── OUTDOOR TRACKER ──────────────────────────────────────────────────────────
 const OUTDOOR_GOAL_HOURS = 15;
 
-function OutdoorTracker({ onNavigate, userId }) {
-  const [minutes, setMinutes] = useState(0);
+function OutdoorTracker({ onNavigate, initialMinutes, saveToMeta }) {
+  const [minutes, setMinutes] = useState(initialMinutes || 0);
 
+  // Sync if initialMinutes changes (e.g. on load)
   useEffect(() => {
-    if (!userId) return;
-    getOutdoorMinutes(userId).then(m => setMinutes(m));
-  }, [userId]);
+    setMinutes(initialMinutes || 0);
+  }, [initialMinutes]);
 
   const adjust = async (n) => {
     const next = Math.max(0, minutes + n);
     setMinutes(next);
-    if (userId) await updateOutdoorMinutes(userId, next);
+    if (saveToMeta) await saveToMeta({ outdoor_minutes: next });
   };
 
   const hours = Math.floor(minutes / 60);
@@ -302,9 +294,9 @@ function TodaySchedule({ today, blocks, onNavigate }) {
     setItems(prev => prev.map(b => b.id === blockId ? { ...b, subChecked: { ...b.subChecked, [subIdx]: !b.subChecked[subIdx] } } : b));
   };
 
-  const saveNote = (id, note) => { setItems(prev => prev.map(b => b.id === id ? { ...b, motherNote: note } : b)); setEditingNote(null); };
-  const startLP  = (id) => { lpt.current = setTimeout(() => { clearTimeout(lpt.current); markSkipped(id); }, 600); };
-  const cancelLP = () => clearTimeout(lpt.current);
+  const saveNote  = (id, note) => { setItems(prev => prev.map(b => b.id === id ? { ...b, motherNote: note } : b)); setEditingNote(null); };
+  const startLP   = (id) => { lpt.current = setTimeout(() => { clearTimeout(lpt.current); markSkipped(id); }, 600); };
+  const cancelLP  = () => clearTimeout(lpt.current);
 
   return (
     <div style={{ marginBottom: 28 }}>
@@ -339,7 +331,6 @@ function TodaySchedule({ today, blocks, onNavigate }) {
                 {isDone && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
               </div>
             </div>
-
             {isRise && !isDone && !isSkipped && riseShineItems.length > 0 && (
               <div style={{ paddingLeft: 53, paddingBottom: 10 }} onClick={e => e.stopPropagation()}>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -355,7 +346,6 @@ function TodaySchedule({ today, blocks, onNavigate }) {
                 </div>
               </div>
             )}
-
             {showMother && (
               <div style={{ paddingLeft: 53, paddingBottom: 8 }} onClick={e => e.stopPropagation()}>
                 {editingNote === b.id ? (
@@ -425,6 +415,7 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
   );
 }
 
+// ─── HOME SCREEN ──────────────────────────────────────────────────────────────
 export default function HomeScreen({ onNavigate, settings }) {
   const hour        = new Date().getHours();
   const greeting    = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
@@ -434,7 +425,6 @@ export default function HomeScreen({ onNavigate, settings }) {
   const name        = settings?.name || "Friend";
   const activeHabit = settings?.activeHabit || "attention";
   const isRestWeek  = settings?.isRestWeek || false;
-  const userId      = settings?.userId;
 
   return (
     <div className="screen">
@@ -444,7 +434,12 @@ export default function HomeScreen({ onNavigate, settings }) {
       <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
       <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)", marginBottom: 28 }}>Begin with what is in front of you.</p>
 
-      <OutdoorTracker onNavigate={onNavigate} userId={userId} />
+      <OutdoorTracker
+        onNavigate={onNavigate}
+        initialMinutes={settings?.outdoorMinutes || 0}
+        saveToMeta={settings?.saveToMeta}
+      />
+
       <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
 
       {isRestWeek ? <RestWeekHome /> : (
