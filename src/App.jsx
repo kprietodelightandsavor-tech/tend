@@ -134,11 +134,19 @@ export default function App() {
   const [screen, setScreen]   = useState("home");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) loadProfile(session.user.id);
-      else setLoading(false);
-    });
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    setSession(session);
+    if (session) {
+      // Force fresh user data from Supabase
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        const meta = user?.user_metadata || {};
+        setUserData(meta);
+        setLoading(false);
+      });
+    } else {
+      setLoading(false);
+    }
+  });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
