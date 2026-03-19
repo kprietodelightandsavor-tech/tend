@@ -176,5 +176,6 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
   style={{ width: "100%", background: "none", border: "1px solid #E8C4BB", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--red)" }}>
   Sign Out
 </button>
+    </div>
   );
 }
