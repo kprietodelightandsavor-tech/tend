@@ -221,6 +221,10 @@ export default function HabitScreen() {
 
   return (
     <div className="screen">
+      <button onClick={() => onNavigate("home")}
+        style={{ background: "none", border: "none", cursor: "pointer", color: "var(--sage)", fontSize: 13, letterSpacing: ".08em", textTransform: "uppercase", fontFamily: "'Lato', sans-serif", marginBottom: 24, display: "flex", alignItems: "center", gap: 6 }}>
+        ← Home
+      </button>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
         <TendIcon size={52} />
         <div>
