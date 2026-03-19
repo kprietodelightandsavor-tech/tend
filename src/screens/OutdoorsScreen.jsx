@@ -105,6 +105,10 @@ export default function OutdoorsScreen({ onNavigate }) {
 
   return (
     <div className="screen">
+      <button onClick={() => onNavigate("home")}
+        style={{ background: "none", border: "none", cursor: "pointer", color: "var(--sage)", fontSize: 13, letterSpacing: ".08em", textTransform: "uppercase", fontFamily: "'Lato', sans-serif", marginBottom: 24, display: "flex", alignItems: "center", gap: 6 }}>
+        ← Home
+      </button>
       <p className="eyebrow" style={{ marginBottom: 6 }}>Nature Study</p>
       <h1 className="display serif" style={{ marginBottom: 24 }}>Outdoors</h1>
 
