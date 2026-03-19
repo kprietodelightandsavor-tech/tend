@@ -165,35 +165,37 @@ export default function App() {
   setLoading(false);
 };
 
-  const completeOnboarding = async ({ name, activeHabit, term, week }) => {
-  const updates = {
-    id: session.user.id,
-    name,
-    active_habit: activeHabit,
-    term,
-    week,
-    onboarded: true,
-    outdoor_minutes: 0,
-    outdoor_week_start: new Date().toISOString().split('T')[0],
-    is_rest_week: false,
-  };
-  
-  // Try insert first, then update if exists
-  const { error: insertError } = await supabase
-    .from('profiles')
-    .insert(updates);
-    
-  if (insertError) {
-    // Row exists, update it
-    await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', session.user.id);
-  }
-  
-  setProfile(updates);
-  setScreen("home");
-};
+  useEffect(() => {
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    setSession(session);
+    if (session) {
+      // Check localStorage first for instant load
+      const cached = localStorage.getItem('tend_user');
+      if (cached) {
+        setUserData(JSON.parse(cached));
+        setLoading(false);
+      } else {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          const meta = user?.user_metadata || {};
+          if (Object.keys(meta).length > 0) {
+            localStorage.setItem('tend_user', JSON.stringify(meta));
+          }
+          setUserData(meta);
+          setLoading(false);
+        });
+      }
+    } else {
+      setLoading(false);
+    }
+  });
+
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    setSession(session);
+    if (!session) { setUserData(null); setLoading(false); }
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
 
   const saveSettings = async (updated) => {
     const updates = {
