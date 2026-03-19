@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS } from "../data/seed";
+import { PremiumModal } from "./HomeScreen";
 
 // ─── ICONS ────────────────────────────────────────────────────────────────────
 const Icon = {
@@ -54,7 +55,53 @@ const Icon = {
       <path d="M5 13l4 4L19 7"/>
     </svg>
   ),
+  Lock: () => (
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#B8935A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0110 0v4"/>
+    </svg>
+  ),
 };
+
+// ─── FREE TIER PLANNER ────────────────────────────────────────────────────────
+function FreePlanner({ onShowPremium }) {
+  const blocks = DAY_SCHEDULE.Monday || [];
+
+  return (
+    <div>
+      {/* Upgrade prompt */}
+      <div className="card-gold" style={{ marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+          <Icon.Lock />
+          <p className="eyebrow" style={{ marginBottom: 0, color: "var(--gold)" }}>Tend Premium</p>
+        </div>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.8, marginBottom: 14 }}>
+          The full planner — different schedules for each day, editable blocks, the Beauty Loop, term counter, and rest week rhythm — is available with Tend Premium.
+        </p>
+        <button onClick={onShowPremium}
+          style={{ background: "var(--gold)", border: "none", borderRadius: 2, padding: "10px 0", width: "100%", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "white" }}>
+          Learn about Tend Premium →
+        </button>
+      </div>
+
+      {/* Read-only Monday schedule */}
+      <p className="eyebrow" style={{ marginBottom: 6 }}>Your Daily Rhythm</p>
+      <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
+        A preview of your schedule. Upgrade to edit, add days, and build your full weekly rhythm.
+      </p>
+
+      {blocks.map((b, i) => (
+        <div key={i} className="planner-block" style={{ opacity: 0.7 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+            <span className="planner-time">{b.time}</span>
+            <span className="planner-subject">{b.subject}</span>
+          </div>
+          {b.note && <p className="caption italic" style={{ marginTop: 4 }}>{b.note}</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 // ─── TERM COUNTER ─────────────────────────────────────────────────────────────
 function TermCounter({ isRestWeek, onToggleRest, term, week, onEdit }) {
@@ -80,17 +127,8 @@ function TermCounter({ isRestWeek, onToggleRest, term, week, onEdit }) {
           style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, color: "var(--ink-faint)", fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase" }}>
           Edit
         </button>
-        {/* Rest week toggle */}
         <button onClick={onToggleRest}
-          style={{
-            display: "flex", alignItems: "center", gap: 6,
-            background: isRestWeek ? "var(--gold-bg)" : "var(--sage-bg)",
-            border: `1px solid ${isRestWeek ? "#D4B07A" : "var(--sage-md)"}`,
-            borderRadius: 20, padding: "5px 12px", cursor: "pointer",
-            fontSize: 10, fontFamily: "'Lato', sans-serif",
-            letterSpacing: ".1em", textTransform: "uppercase",
-            color: isRestWeek ? "var(--gold)" : "var(--sage)",
-          }}>
+          style={{ display: "flex", alignItems: "center", gap: 6, background: isRestWeek ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${isRestWeek ? "#D4B07A" : "var(--sage-md)"}`, borderRadius: 20, padding: "5px 12px", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: isRestWeek ? "var(--gold)" : "var(--sage)" }}>
           <Icon.Moon />
           {isRestWeek ? "Resume" : "Rest Week"}
         </button>
@@ -102,31 +140,20 @@ function TermCounter({ isRestWeek, onToggleRest, term, week, onEdit }) {
 // ─── REST WEEK VIEW ───────────────────────────────────────────────────────────
 function RestWeekView() {
   const day = new Date().getDay();
-  // Show 3 rotating suggestions based on day
   const suggestions = [
     REST_WEEK_SUGGESTIONS[day % REST_WEEK_SUGGESTIONS.length],
     REST_WEEK_SUGGESTIONS[(day + 1) % REST_WEEK_SUGGESTIONS.length],
     REST_WEEK_SUGGESTIONS[(day + 3) % REST_WEEK_SUGGESTIONS.length],
   ];
-
   return (
     <div style={{ marginTop: 8 }}>
       <div className="card-gold" style={{ marginBottom: 24 }}>
-        <p className="corm italic" style={{ fontSize: 18, color: "var(--ink)", lineHeight: 1.8, marginBottom: 8 }}>
-          A week set apart.
-        </p>
-        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.8 }}>
-          The rhythm rests so it can return stronger. There is nothing to accomplish today except to be.
-        </p>
+        <p className="corm italic" style={{ fontSize: 18, color: "var(--ink)", lineHeight: 1.8, marginBottom: 8 }}>A week set apart.</p>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.8 }}>The rhythm rests so it can return stronger. There is nothing to accomplish today except to be.</p>
       </div>
-
       <p className="eyebrow" style={{ marginBottom: 16 }}>Gentle Invitations</p>
       {suggestions.map((s, i) => (
-        <div key={i} style={{
-          paddingBottom: i < suggestions.length - 1 ? 16 : 0,
-          marginBottom:  i < suggestions.length - 1 ? 16 : 0,
-          borderBottom:  i < suggestions.length - 1 ? "1px solid var(--rule)" : "none",
-        }}>
+        <div key={i} style={{ paddingBottom: i < suggestions.length - 1 ? 16 : 0, marginBottom: i < suggestions.length - 1 ? 16 : 0, borderBottom: i < suggestions.length - 1 ? "1px solid var(--rule)" : "none" }}>
           <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8 }}>{s}</p>
         </div>
       ))}
@@ -136,20 +163,13 @@ function RestWeekView() {
 
 // ─── BEAUTY LOOP SECTION ──────────────────────────────────────────────────────
 function BeautyLoopSection({ day }) {
-  const loops        = BEAUTY_LOOP[day] || [];
+  const loops = BEAUTY_LOOP[day] || [];
   const [items, setItems]   = useState(loops.map(l => ({ ...l, done: false })));
   const [editing, setEditing] = useState(false);
   const [drafts, setDrafts]  = useState(loops.map(l => l.label));
-
   const isThursday = day === "Thursday";
-
   const toggle = (id) => setItems(prev => prev.map(l => l.id === id ? { ...l, done: !l.done } : l));
-
-  const saveDrafts = () => {
-    setItems(prev => prev.map((l, i) => ({ ...l, label: drafts[i] })));
-    setEditing(false);
-  };
-
+  const saveDrafts = () => { setItems(prev => prev.map((l, i) => ({ ...l, label: drafts[i] }))); setEditing(false); };
   return (
     <div style={{ marginBottom: 28 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
@@ -164,7 +184,6 @@ function BeautyLoopSection({ day }) {
           </button>
         )}
       </div>
-
       {isThursday ? (
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.8 }}>
           A full day away. Rest from the loop and trust what has already been tended.
@@ -176,9 +195,7 @@ function BeautyLoopSection({ day }) {
               onChange={e => setDrafts(prev => prev.map((v, j) => j === i ? e.target.value : v))}
               style={{ marginBottom: 8 }} />
           ))}
-          <p className="caption italic" style={{ marginTop: 8 }}>
-            Changes apply to this day each week.
-          </p>
+          <p className="caption italic" style={{ marginTop: 8 }}>Changes apply to this day each week.</p>
         </div>
       ) : (
         <>
@@ -210,21 +227,15 @@ function AddBlockSheet({ onSave, onClose }) {
   const [time, setTime]       = useState("");
   const [subject, setSubject] = useState("");
   const [note, setNote]       = useState("");
-
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200 }}
-      onClick={onClose}>
-      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }}
-        onClick={e => e.stopPropagation()}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200 }} onClick={onClose}>
+      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }} onClick={e => e.stopPropagation()}>
         <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
         <p className="serif" style={{ fontSize: 20, marginBottom: 20 }}>Add a Block</p>
         <input className="input-line" placeholder="Time (e.g. 10:00)" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 14 }} />
         <input className="input-line" placeholder="Subject" value={subject} onChange={e => setSubject(e.target.value)} style={{ marginBottom: 14 }} />
         <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: 28 }} />
-        <button className="btn-sage" style={{ width: "100%" }}
-          onClick={() => { if (subject.trim()) { onSave({ time, subject, note }); onClose(); } }}>
-          Add Block
-        </button>
+        <button className="btn-sage" style={{ width: "100%" }} onClick={() => { if (subject.trim()) { onSave({ time, subject, note }); onClose(); } }}>Add Block</button>
       </div>
     </div>
   );
@@ -235,22 +246,16 @@ function EditBlockSheet({ block, onSave, onDelete, onClose }) {
   const [time, setTime]       = useState(block.time);
   const [subject, setSubject] = useState(block.subject);
   const [note, setNote]       = useState(block.note || "");
-
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200 }}
-      onClick={onClose}>
-      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }}
-        onClick={e => e.stopPropagation()}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200 }} onClick={onClose}>
+      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }} onClick={e => e.stopPropagation()}>
         <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
         <p className="serif" style={{ fontSize: 20, marginBottom: 20 }}>Edit Block</p>
         <input className="input-line" placeholder="Time" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 14 }} />
         <input className="input-line" placeholder="Subject" value={subject} onChange={e => setSubject(e.target.value)} style={{ marginBottom: 14 }} />
         <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: 28 }} />
         <div style={{ display: "flex", gap: 10 }}>
-          <button className="btn-sage" style={{ flex: 1 }}
-            onClick={() => { onSave({ ...block, time, subject, note }); onClose(); }}>
-            Save
-          </button>
+          <button className="btn-sage" style={{ flex: 1 }} onClick={() => { onSave({ ...block, time, subject, note }); onClose(); }}>Save</button>
           <button onClick={() => { onDelete(block.id); onClose(); }}
             style={{ background: "none", border: "1px solid #E8C4BB", borderRadius: 2, padding: "12px 18px", cursor: "pointer", color: "var(--red)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase" }}>
             Delete
@@ -265,12 +270,9 @@ function EditBlockSheet({ block, onSave, onDelete, onClose }) {
 function CopyDaySheet({ fromDay, onCopy, onClose }) {
   const [toDay, setToDay] = useState(null);
   const targets = DAYS.filter(d => d !== fromDay);
-
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200 }}
-      onClick={onClose}>
-      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }}
-        onClick={e => e.stopPropagation()}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200 }} onClick={onClose}>
+      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }} onClick={e => e.stopPropagation()}>
         <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
         <p className="serif" style={{ fontSize: 20, marginBottom: 6 }}>Copy {fromDay} to…</p>
         <p className="caption italic" style={{ marginBottom: 20 }}>This will replace the selected day's blocks entirely.</p>
@@ -282,8 +284,7 @@ function CopyDaySheet({ fromDay, onCopy, onClose }) {
             </button>
           ))}
         </div>
-        <button className="btn-sage" style={{ width: "100%" }} disabled={!toDay}
-          onClick={() => { if (toDay) { onCopy(toDay); onClose(); } }}>
+        <button className="btn-sage" style={{ width: "100%" }} disabled={!toDay} onClick={() => { if (toDay) { onCopy(toDay); onClose(); } }}>
           Copy to {toDay || "…"}
         </button>
       </div>
@@ -292,33 +293,32 @@ function CopyDaySheet({ fromDay, onCopy, onClose }) {
 }
 
 // ─── PLANNER SCREEN ───────────────────────────────────────────────────────────
-export default function PlannerScreen() {
-  const todayIdx   = Math.min(Math.max(new Date().getDay() - 1, 0), 4);
-  const [activeDay, setActiveDay] = useState(DAYS[todayIdx]);
+export default function PlannerScreen({ settings }) {
+  // ── isPaid: flip to true when Stripe subscription is active ──────────────
+  const isPaid = settings?.isPaid || false;
 
-  // Term state
-  const [term, setTerm]           = useState(TERM_SETTINGS.currentTerm);
-  const [week, setWeek]           = useState(TERM_SETTINGS.currentWeek);
-  const [isRestWeek, setRestWeek] = useState(false);
+  const todayIdx = Math.min(Math.max(new Date().getDay() - 1, 0), 4);
+  const [activeDay, setActiveDay]     = useState(DAYS[todayIdx]);
+  const [term, setTerm]               = useState(settings?.term || TERM_SETTINGS.currentTerm);
+  const [week, setWeek]               = useState(settings?.week || TERM_SETTINGS.currentWeek);
+  const [isRestWeek, setRestWeek]     = useState(settings?.isRestWeek || false);
   const [editingTerm, setEditingTerm] = useState(false);
-  const [draftTerm, setDraftTerm] = useState(TERM_SETTINGS.currentTerm);
-  const [draftWeek, setDraftWeek] = useState(TERM_SETTINGS.currentWeek);
+  const [draftTerm, setDraftTerm]     = useState(settings?.term || TERM_SETTINGS.currentTerm);
+  const [draftWeek, setDraftWeek]     = useState(settings?.week || TERM_SETTINGS.currentWeek);
+  const [showPremium, setShowPremium] = useState(false);
 
-  // Schedule state — keyed by day
   const [schedule, setSchedule] = useState(() => {
     const s = {};
     DAYS.forEach(d => { s[d] = DAY_SCHEDULE[d].map((b, i) => ({ ...b, _idx: i })); });
     return s;
   });
 
-  // Sheet state
-  const [editingBlock, setEditingBlock]   = useState(null);
-  const [addingAfterIdx, setAddingAfterIdx] = useState(null); // index to insert after (-1 = top)
-  const [copyingDay, setCopyingDay]       = useState(false);
+  const [editingBlock, setEditingBlock]     = useState(null);
+  const [addingAfterIdx, setAddingAfterIdx] = useState(null);
+  const [copyingDay, setCopyingDay]         = useState(false);
 
   const dayBlocks = schedule[activeDay] || [];
 
-  // ── Block operations ────────────────────────────────────────────────────────
   const moveBlock = (idx, dir) => {
     setSchedule(prev => {
       const blocks = [...prev[activeDay]];
@@ -330,17 +330,11 @@ export default function PlannerScreen() {
   };
 
   const saveBlock = (updated) => {
-    setSchedule(prev => ({
-      ...prev,
-      [activeDay]: prev[activeDay].map(b => b.id === updated.id ? updated : b),
-    }));
+    setSchedule(prev => ({ ...prev, [activeDay]: prev[activeDay].map(b => b.id === updated.id ? updated : b) }));
   };
 
   const deleteBlock = (id) => {
-    setSchedule(prev => ({
-      ...prev,
-      [activeDay]: prev[activeDay].filter(b => b.id !== id),
-    }));
+    setSchedule(prev => ({ ...prev, [activeDay]: prev[activeDay].filter(b => b.id !== id) }));
   };
 
   const addBlock = (newBlock) => {
@@ -355,164 +349,117 @@ export default function PlannerScreen() {
   };
 
   const copyDay = (toDay) => {
-    setSchedule(prev => ({
-      ...prev,
-      [toDay]: prev[activeDay].map(b => ({ ...b, id: `${b.id}-copy-${Date.now()}` })),
-    }));
+    setSchedule(prev => ({ ...prev, [toDay]: prev[activeDay].map(b => ({ ...b, id: `${b.id}-copy-${Date.now()}` })) }));
   };
 
-  // ── Term edit ───────────────────────────────────────────────────────────────
-  const saveTerm = () => {
-    setTerm(Number(draftTerm));
-    setWeek(Number(draftWeek));
-    setEditingTerm(false);
-  };
+  const saveTerm = () => { setTerm(Number(draftTerm)); setWeek(Number(draftWeek)); setEditingTerm(false); };
 
   return (
     <div className="screen">
-      {/* Header */}
       <p className="eyebrow" style={{ marginBottom: 6 }}>Weekly Schedule</p>
       <h1 className="display serif" style={{ marginBottom: 20 }}>Planner</h1>
 
-      {/* Term counter */}
-      <TermCounter
-        isRestWeek={isRestWeek}
-        onToggleRest={() => setRestWeek(r => !r)}
-        term={term} week={week}
-        onEdit={() => setEditingTerm(true)}
-      />
-
-      {/* Term edit inline */}
-      {editingTerm && (
-        <div className="card" style={{ marginBottom: 20 }}>
-          <p className="eyebrow" style={{ marginBottom: 14 }}>Set Term & Week</p>
-          <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-            <div style={{ flex: 1 }}>
-              <p className="caption" style={{ marginBottom: 6 }}>Term</p>
-              <div style={{ display: "flex", gap: 8 }}>
-                {[1, 2, 3].map(n => (
-                  <button key={n} onClick={() => setDraftTerm(n)}
-                    style={{ flex: 1, padding: "10px 0", borderRadius: 2, border: `1px solid ${draftTerm === n ? "var(--sage)" : "var(--rule)"}`, background: draftTerm === n ? "var(--sage-bg)" : "none", cursor: "pointer", fontFamily: "'Playfair Display', serif", fontSize: 16, color: draftTerm === n ? "var(--sage)" : "var(--ink)" }}>
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div style={{ flex: 2 }}>
-              <p className="caption" style={{ marginBottom: 6 }}>Week</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {Array.from({ length: 12 }, (_, i) => i + 1).map(n => (
-                  <button key={n} onClick={() => setDraftWeek(n)}
-                    style={{ width: 32, height: 32, borderRadius: 2, border: `1px solid ${draftWeek === n ? "var(--sage)" : "var(--rule)"}`, background: draftWeek === n ? "var(--sage)" : "none", cursor: "pointer", fontSize: 13, color: draftWeek === n ? "white" : "var(--ink)", fontFamily: "'Lato', sans-serif" }}>
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <button className="btn-sage" onClick={saveTerm} style={{ width: "100%" }}>Save</button>
-        </div>
-      )}
-
-      {/* Rest week view */}
-      {isRestWeek ? (
-        <RestWeekView />
+      {/* ── FREE TIER ── */}
+      {!isPaid ? (
+        <FreePlanner onShowPremium={() => setShowPremium(true)} />
       ) : (
         <>
-          {/* Day tabs */}
-          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 16, marginBottom: 4 }}>
-            {DAYS.map(d => (
-              <button key={d} className={`day-pill ${activeDay === d ? "active" : ""}`}
-                onClick={() => setActiveDay(d)}>
-                {d.slice(0, 3)}
-              </button>
-            ))}
-          </div>
+          {/* ── PAID TIER ── */}
+          <TermCounter
+            isRestWeek={isRestWeek}
+            onToggleRest={() => setRestWeek(r => !r)}
+            term={term} week={week}
+            onEdit={() => setEditingTerm(true)}
+          />
 
-          <div className="rule-gold" style={{ margin: "0 0 20px" }} />
-
-          {/* Copy day button */}
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-            <button onClick={() => setCopyingDay(true)}
-              style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "6px 12px", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
-              <Icon.Copy /> Copy {activeDay}
-            </button>
-          </div>
-
-          {/* Beauty Loop */}
-          <BeautyLoopSection day={activeDay} />
-
-          <div className="rule" style={{ margin: "0 0 20px" }} />
-
-          {/* Add block at top */}
-          <button onClick={() => setAddingAfterIdx(-1)}
-            style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: "4px 0 12px", color: "var(--sage)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase" }}>
-            <Icon.Plus /> Add block here
-          </button>
-
-          {/* Schedule blocks */}
-          {dayBlocks.map((b, idx) => (
-            <div key={b.id}>
-              {/* Block */}
-              <div className="planner-block" style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                {/* Up/down */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 2, paddingTop: 2 }}>
-                  <button onClick={() => moveBlock(idx, -1)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, opacity: idx === 0 ? 0.2 : 1 }}>
-                    <Icon.Up />
-                  </button>
-                  <button onClick={() => moveBlock(idx, 1)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, opacity: idx === dayBlocks.length - 1 ? 0.2 : 1 }}>
-                    <Icon.Down />
-                  </button>
-                </div>
-
-                {/* Content */}
+          {editingTerm && (
+            <div className="card" style={{ marginBottom: 20 }}>
+              <p className="eyebrow" style={{ marginBottom: 14 }}>Set Term & Week</p>
+              <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                    <span className="planner-time">{b.time}</span>
-                    <span className="planner-subject">{b.subject}</span>
+                  <p className="caption" style={{ marginBottom: 6 }}>Term</p>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {[1, 2, 3].map(n => (
+                      <button key={n} onClick={() => setDraftTerm(n)}
+                        style={{ flex: 1, padding: "10px 0", borderRadius: 2, border: `1px solid ${draftTerm === n ? "var(--sage)" : "var(--rule)"}`, background: draftTerm === n ? "var(--sage-bg)" : "none", cursor: "pointer", fontFamily: "'Playfair Display', serif", fontSize: 16, color: draftTerm === n ? "var(--sage)" : "var(--ink)" }}>
+                        {n}
+                      </button>
+                    ))}
                   </div>
-                  {b.note && <p className="caption italic" style={{ marginTop: 4 }}>{b.note}</p>}
                 </div>
+                <div style={{ flex: 2 }}>
+                  <p className="caption" style={{ marginBottom: 6 }}>Week</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map(n => (
+                      <button key={n} onClick={() => setDraftWeek(n)}
+                        style={{ width: 32, height: 32, borderRadius: 2, border: `1px solid ${draftWeek === n ? "var(--sage)" : "var(--rule)"}`, background: draftWeek === n ? "var(--sage)" : "none", cursor: "pointer", fontSize: 13, color: draftWeek === n ? "white" : "var(--ink)", fontFamily: "'Lato', sans-serif" }}>
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <button className="btn-sage" onClick={saveTerm} style={{ width: "100%" }}>Save</button>
+            </div>
+          )}
 
-                {/* Edit */}
-                <button onClick={() => setEditingBlock(b)}
-                  style={{ background: "none", border: "none", cursor: "pointer", padding: 4, flexShrink: 0, marginTop: 2 }}>
-                  <Icon.Edit />
+          {isRestWeek ? (
+            <RestWeekView />
+          ) : (
+            <>
+              <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 16, marginBottom: 4 }}>
+                {DAYS.map(d => (
+                  <button key={d} className={`day-pill ${activeDay === d ? "active" : ""}`} onClick={() => setActiveDay(d)}>
+                    {d.slice(0, 3)}
+                  </button>
+                ))}
+              </div>
+              <div className="rule-gold" style={{ margin: "0 0 20px" }} />
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+                <button onClick={() => setCopyingDay(true)}
+                  style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "6px 12px", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
+                  <Icon.Copy /> Copy {activeDay}
                 </button>
               </div>
-
-              {/* Add block between */}
-              <button onClick={() => setAddingAfterIdx(idx)}
-                style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "6px 0", color: "var(--sage-md)", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", opacity: 0.7 }}>
+              <BeautyLoopSection day={activeDay} />
+              <div className="rule" style={{ margin: "0 0 20px" }} />
+              <button onClick={() => setAddingAfterIdx(-1)}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: "4px 0 12px", color: "var(--sage)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase" }}>
                 <Icon.Plus /> Add block here
               </button>
-            </div>
-          ))}
+              {dayBlocks.map((b, idx) => (
+                <div key={b.id}>
+                  <div className="planner-block" style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2, paddingTop: 2 }}>
+                      <button onClick={() => moveBlock(idx, -1)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, opacity: idx === 0 ? 0.2 : 1 }}><Icon.Up /></button>
+                      <button onClick={() => moveBlock(idx, 1)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, opacity: idx === dayBlocks.length - 1 ? 0.2 : 1 }}><Icon.Down /></button>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                        <span className="planner-time">{b.time}</span>
+                        <span className="planner-subject">{b.subject}</span>
+                      </div>
+                      {b.note && <p className="caption italic" style={{ marginTop: 4 }}>{b.note}</p>}
+                    </div>
+                    <button onClick={() => setEditingBlock(b)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, flexShrink: 0, marginTop: 2 }}>
+                      <Icon.Edit />
+                    </button>
+                  </div>
+                  <button onClick={() => setAddingAfterIdx(idx)}
+                    style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "6px 0", color: "var(--sage-md)", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", opacity: 0.7 }}>
+                    <Icon.Plus /> Add block here
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
         </>
       )}
 
-      {/* ── Sheets ── */}
-      {editingBlock && (
-        <EditBlockSheet
-          block={editingBlock}
-          onSave={saveBlock}
-          onDelete={deleteBlock}
-          onClose={() => setEditingBlock(null)}
-        />
-      )}
-      {addingAfterIdx !== null && (
-        <AddBlockSheet
-          onSave={addBlock}
-          onClose={() => setAddingAfterIdx(null)}
-        />
-      )}
-      {copyingDay && (
-        <CopyDaySheet
-          fromDay={activeDay}
-          onCopy={copyDay}
-          onClose={() => setCopyingDay(false)}
-        />
-      )}
+      {editingBlock && <EditBlockSheet block={editingBlock} onSave={saveBlock} onDelete={deleteBlock} onClose={() => setEditingBlock(null)} />}
+      {addingAfterIdx !== null && <AddBlockSheet onSave={addBlock} onClose={() => setAddingAfterIdx(null)} />}
+      {copyingDay && <CopyDaySheet fromDay={activeDay} onCopy={copyDay} onClose={() => setCopyingDay(false)} />}
+      {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
     </div>
   );
 }
