@@ -295,7 +295,7 @@ function CopyDaySheet({ fromDay, onCopy, onClose }) {
 // ─── PLANNER SCREEN ───────────────────────────────────────────────────────────
 export default function PlannerScreen({ settings }) {
   // ── isPaid: flip to true when Stripe subscription is active ──────────────
-  const isPaid = settings?.isPaid || false;
+  const isPaid = true;
 
   const todayIdx = Math.min(Math.max(new Date().getDay() - 1, 0), 4);
   const [activeDay, setActiveDay]     = useState(DAYS[todayIdx]);
