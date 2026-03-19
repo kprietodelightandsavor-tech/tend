@@ -149,11 +149,13 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const loadProfile = async (userId) => {
-    const p = await getProfile(userId);
-    setProfile(p);
-    setLoading(false);
-  };
+ const loadProfile = async (userId) => {
+  console.log('Loading profile for:', userId);
+  const p = await getProfile(userId);
+  console.log('Profile loaded:', p);
+  setProfile(p);
+  setLoading(false);
+};
 
   const completeOnboarding = async ({ name, activeHabit, term, week }) => {
     const updates = { name, active_habit: activeHabit, term, week, onboarded: true };
