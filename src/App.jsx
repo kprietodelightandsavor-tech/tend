@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import "./styles/globals.css";
 import { supabase } from "./lib/supabase";
-import { getProfile, upsertProfile } from "./lib/db";
 
 import BottomNav        from "./components/BottomNav";
 import OnboardingScreen from "./screens/OnboardingScreen";
@@ -29,6 +28,19 @@ const SCREENS = {
   settings:  SettingsScreen,
 };
 
+const STORAGE_KEY = 'tend_user';
+
+function saveLocal(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
 // ─── AUTH SCREEN ─────────────────────────────────────────────────────────────
 function AuthScreen() {
   const [mode, setMode]         = useState("signin");
@@ -43,7 +55,7 @@ function AuthScreen() {
     if (mode === "signup") {
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) setError(error.message);
-      else setSuccess("Check your email to confirm your account, then sign in.");
+      else setSuccess("Account created! You can now sign in.");
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setError(error.message);
@@ -128,89 +140,97 @@ function AuthScreen() {
 
 // ─── APP ─────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [session, setSession] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [screen, setScreen]   = useState("home");
+  const [session, setSession]   = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [screen, setScreen]     = useState("home");
 
-  useEffect(() => {
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    setSession(session);
-    if (session) {
-      // Force fresh user data from Supabase
-      supabase.auth.getUser().then(({ data: { user } }) => {
-        const meta = user?.user_metadata || {};
-        setUserData(meta);
-        setLoading(false);
-      });
-    } else {
-      setLoading(false);
+  // ── Save to both localStorage and Supabase metadata ──────────────────────
+  const persistData = async (data) => {
+    saveLocal(data);
+    setUserData(data);
+    try {
+      await supabase.auth.updateUser({ data });
+    } catch(e) {
+      console.log('Supabase sync failed, localStorage used:', e);
     }
-  });
+  };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+  // ── Load on mount ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) loadProfile(session.user.id);
-      else { setProfile(null); setLoading(false); }
+      if (session) {
+        // 1. Try localStorage first (instant)
+        const cached = loadLocal();
+        if (cached?.onboarded) {
+          setUserData(cached);
+          setLoading(false);
+        } else {
+          // 2. Fall back to Supabase metadata
+          supabase.auth.getUser().then(({ data: { user } }) => {
+            const meta = user?.user_metadata || {};
+            if (meta.onboarded) {
+              saveLocal(meta);
+              setUserData(meta);
+            } else {
+              setUserData(meta);
+            }
+            setLoading(false);
+          });
+        }
+      } else {
+        setLoading(false);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      if (!session) {
+        setUserData(null);
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
- const loadProfile = async (userId) => {
-  console.log('Loading profile for:', userId);
-  const p = await getProfile(userId);
-  console.log('Profile loaded:', p);
-  setProfile(p);
-  setLoading(false);
-};
-
-  useEffect(() => {
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    setSession(session);
-    if (session) {
-      // Check localStorage first for instant load
-      const cached = localStorage.getItem('tend_user');
-      if (cached) {
-        setUserData(JSON.parse(cached));
-        setLoading(false);
-      } else {
-        supabase.auth.getUser().then(({ data: { user } }) => {
-          const meta = user?.user_metadata || {};
-          if (Object.keys(meta).length > 0) {
-            localStorage.setItem('tend_user', JSON.stringify(meta));
-          }
-          setUserData(meta);
-          setLoading(false);
-        });
-      }
-    } else {
-      setLoading(false);
-    }
-  });
-
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-    setSession(session);
-    if (!session) { setUserData(null); setLoading(false); }
-  });
-
-  return () => subscription.unsubscribe();
-}, []);
-
-  const saveSettings = async (updated) => {
-  const newData = {
-    ...userData,
-    name:         updated.name,
-    active_habit: updated.activeHabit || userData?.active_habit,
-    term:         updated.term,
-    week:         updated.week,
-    is_rest_week: updated.isRestWeek ?? userData?.is_rest_week,
+  // ── Onboarding complete ───────────────────────────────────────────────────
+  const completeOnboarding = async ({ name, activeHabit, term, week }) => {
+    const data = {
+      name,
+      active_habit: activeHabit,
+      term,
+      week,
+      onboarded: true,
+      is_rest_week: false,
+      outdoor_minutes: 0,
+      outdoor_week_start: new Date().toISOString().split('T')[0],
+    };
+    await persistData(data);
+    setScreen("home");
   };
-  localStorage.setItem('tend_user', JSON.stringify(newData));
-  await saveToMeta(newData);
-  setUserData(newData);
-};
 
+  // ── Save settings ─────────────────────────────────────────────────────────
+  const saveSettings = async (updated) => {
+    const newData = {
+      ...userData,
+      name:         updated.name,
+      active_habit: updated.activeHabit || userData?.active_habit,
+      term:         updated.term,
+      week:         updated.week,
+      is_rest_week: updated.isRestWeek ?? userData?.is_rest_week,
+    };
+    await persistData(newData);
+  };
+
+  // ── Save to meta (used by HomeScreen for outdoor minutes) ─────────────────
+  const saveToMeta = async (updates) => {
+    const newData = { ...userData, ...updates };
+    await persistData(newData);
+  };
+
+  // ── Loading ───────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--cream)" }}>
@@ -219,23 +239,28 @@ export default function App() {
     );
   }
 
+  // ── Not logged in ─────────────────────────────────────────────────────────
   if (!session) return <AuthScreen />;
 
-  if (!profile?.onboarded) {
+  // ── Onboarding ────────────────────────────────────────────────────────────
+  if (!userData?.onboarded) {
     return <OnboardingScreen onComplete={completeOnboarding} />;
   }
 
+  // ── Main app ──────────────────────────────────────────────────────────────
   const ScreenComponent = SCREENS[screen] || HomeScreen;
   const showNav = NAV_SCREENS.includes(screen);
 
   const settings = {
-    name:        profile?.name || "Friend",
-    activeHabit: profile?.active_habit || "attention",
-    term:        profile?.term || 1,
-    week:        profile?.week || 1,
-    isRestWeek:  profile?.is_rest_week || false,
-    outdoorGoal: 15,
-    userId:      session.user.id,
+    name:           userData?.name || "Friend",
+    activeHabit:    userData?.active_habit || "attention",
+    term:           userData?.term || 1,
+    week:           userData?.week || 1,
+    isRestWeek:     userData?.is_rest_week || false,
+    outdoorGoal:    15,
+    userId:         session.user.id,
+    outdoorMinutes: userData?.outdoor_minutes || 0,
+    saveToMeta,
   };
 
   return (
