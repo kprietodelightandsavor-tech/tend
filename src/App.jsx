@@ -252,16 +252,17 @@ export default function App() {
   const showNav = NAV_SCREENS.includes(screen);
 
   const settings = {
-    name:           userData?.name || "Friend",
-    activeHabit:    userData?.active_habit || "attention",
-    term:           userData?.term || 1,
-    week:           userData?.week || 1,
-    isRestWeek:     userData?.is_rest_week || false,
-    outdoorGoal:    15,
-    userId:         session.user.id,
-    outdoorMinutes: userData?.outdoor_minutes || 0,
-    saveToMeta,
-  };
+  name: userData?.name || "Friend",
+  activeHabit: userData?.active_habit || "attention",
+  term: userData?.term || 1,
+  week: userData?.week || 1,
+  isRestWeek: userData?.is_rest_week || false,
+  outdoorGoal: 15,
+  userId: session.user.id,
+  outdoorMinutes: userData?.outdoor_minutes || 0,
+  saveToMeta,
+  isPaid: userData?.is_paid || false,   // ← add this line
+};
 
   return (
     <div className="shell">
