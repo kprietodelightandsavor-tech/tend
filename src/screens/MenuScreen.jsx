@@ -82,20 +82,12 @@ export default function MenuScreen({ onNavigate }) {
             onMouseOver={e => e.currentTarget.style.opacity = ".8"}
             onMouseOut={e => e.currentTarget.style.opacity = "1"}
           >
-            {/* Placeholder icon — replace with In the Margin icon once shared */}
-            <div style={{
-              width: 44, height: 44, borderRadius: 10,
-              background: "var(--sage)", flexShrink: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              {/* In the Margin icon will go here */}
-              <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-                <line x1="9" y1="7" x2="15" y2="7"/>
-                <line x1="9" y1="11" x2="15" y2="11"/>
-              </svg>
-            </div>
+            {/* In the Margin real icon */}
+            <img
+              src="/margin_icon.png"
+              alt="In the Margin"
+              style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0, objectFit: "cover" }}
+            />
 
             <div style={{ flex: 1 }}>
               <p style={{
@@ -122,13 +114,36 @@ export default function MenuScreen({ onNavigate }) {
         </a>
       </div>
 
-      {/* Footer */}
-      <div style={{ marginTop: 28, textAlign: "center" }}>
-        <p className="caption">Delight & Savor · Tend</p>
-        <a href="https://delightandsavor.com" target="_blank" rel="noopener noreferrer"
-          style={{ display: "block", marginTop: 4, fontSize: 12, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".06em", textDecoration: "none" }}>
-          delightandsavor.com
+      {/* Footer — D&S website link with real icon */}
+      <div style={{ marginTop: 28, paddingTop: 24, borderTop: "1px solid var(--rule)", textAlign: "center" }}>
+        <a
+          href="https://www.delightandsavor.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: "none", display: "inline-block" }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center" }}
+            onMouseOver={e => e.currentTarget.style.opacity = ".75"}
+            onMouseOut={e => e.currentTarget.style.opacity = "1"}
+          >
+            <img
+              src="/ds_icon.png"
+              alt="Delight & Savor"
+              style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover", flexShrink: 0 }}
+            />
+            <div style={{ textAlign: "left" }}>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", marginBottom: 2 }}>
+                Delight & Savor
+              </p>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".06em", color: "var(--sage)" }}>
+                delightandsavor.com
+              </p>
+            </div>
+          </div>
         </a>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, fontStyle: "italic", color: "var(--ink-faint)", marginTop: 12 }}>
+          Literature · Writing · Living Books
+        </p>
       </div>
 
     </div>
