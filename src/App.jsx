@@ -14,8 +14,19 @@ import StudentsScreen   from "./screens/StudentsScreen";
 import MenuScreen       from "./screens/MenuScreen";
 import SettingsScreen   from "./screens/SettingsScreen";
 
+const NAV_SCREENS = ["home", "planner", "narration", "menu"];
 
-const NAV_SCREENS = ["home", "planner", "narration", "menu", "habits", "lilies", "students", "outdoors", "settings"];
+const SCREENS = {
+  home:      HomeScreen,
+  planner:   PlannerScreen,
+  narration: NarrationScreen,
+  outdoors:  OutdoorsScreen,
+  habits:    HabitsScreen,
+  lilies:    LiliesScreen,
+  students:  StudentsScreen,
+  menu:      MenuScreen,
+  settings:  SettingsScreen,
+};
 
 const STORAGE_KEY = 'tend_user';
 
@@ -145,24 +156,26 @@ export default function App() {
   };
 
   // ── Load user data fresh from Supabase ────────────────────────────────────
-  // ✦ FIX: Always fetch fresh from Supabase on sign-in so is_paid and all
-  //   fields are current. localStorage is only used as a fast first-render
-  //   cache — Supabase always wins on fresh load.
   const loadUserData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    const meta = user?.user_metadata || {};
-
-    // Merge with any locally cached data so nothing is lost
-    const cached  = loadLocal();
-    const merged  = { ...cached, ...meta }; // Supabase wins on conflicts
-
-    if (merged.onboarded) {
-      saveLocal(merged);   // update cache with fresh Supabase data
-      setUserData(merged);
-    } else {
-      setUserData(meta);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const meta   = user?.user_metadata || {};
+      const cached = loadLocal();
+      // Supabase wins on conflicts so is_paid always comes through
+      const merged = { ...cached, ...meta };
+      if (merged.onboarded) {
+        saveLocal(merged);
+        setUserData(merged);
+      } else {
+        setUserData(meta);
+      }
+    } catch(e) {
+      // Fall back to cache if Supabase unreachable
+      const cached = loadLocal();
+      if (cached) setUserData(cached);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // ── Load on mount ─────────────────────────────────────────────────────────
@@ -170,7 +183,6 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
-        // Always fetch fresh — don't rely solely on localStorage
         loadUserData();
       } else {
         setLoading(false);
@@ -180,18 +192,16 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
-        // Re-fetch fresh data on every sign-in
+        setLoading(true);
         loadUserData();
       }
       if (!session) {
-        // ✦ FIX: Don't wipe userData on sign-out — just clear the session.
-        // This prevents the "everything forgotten" problem.
-        // userData will be re-fetched fresh on next sign-in.
         setLoading(false);
       }
     });
 
     return () => subscription.unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Onboarding complete ───────────────────────────────────────────────────
