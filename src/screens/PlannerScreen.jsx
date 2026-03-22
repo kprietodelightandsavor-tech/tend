@@ -318,8 +318,7 @@ export default function PlannerScreen({ settings }) {
       blocks.splice(insertAt, 0, block);
       return { ...prev, [activeDay]: blocks };
     });
-    setAddingAfterIdx(null);
-  };
+ 
 
   const copyDay = (toDay) => setSchedule(prev => ({ ...prev, [toDay]: prev[activeDay].map(b => ({ ...b, id: `${b.id}-copy-${Date.now()}` })) }));
   const saveTerm = () => { setTerm(Number(draftTerm)); setWeek(Number(draftWeek)); setEditingTerm(false); };
