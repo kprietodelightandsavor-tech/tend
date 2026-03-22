@@ -101,7 +101,6 @@ function AuthScreen() {
         value={email} onChange={e => setEmail(e.target.value)}
         onKeyDown={e => e.key === "Enter" && handle()}
         style={{ marginBottom: 16, fontSize: 16 }} />
-
       <input className="input-line" type="password" placeholder="Password"
         value={password} onChange={e => setPassword(e.target.value)}
         onKeyDown={e => e.key === "Enter" && handle()}
@@ -156,29 +155,34 @@ export default function App() {
     }
   };
 
+  // ── Load user data fresh from Supabase ────────────────────────────────────
+  // ✦ FIX: Always fetch fresh from Supabase on sign-in so is_paid and all
+  //   fields are current. localStorage is only used as a fast first-render
+  //   cache — Supabase always wins on fresh load.
+  const loadUserData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const meta = user?.user_metadata || {};
+
+    // Merge with any locally cached data so nothing is lost
+    const cached  = loadLocal();
+    const merged  = { ...cached, ...meta }; // Supabase wins on conflicts
+
+    if (merged.onboarded) {
+      saveLocal(merged);   // update cache with fresh Supabase data
+      setUserData(merged);
+    } else {
+      setUserData(meta);
+    }
+    setLoading(false);
+  };
+
   // ── Load on mount ─────────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
-        // 1. Try localStorage first (instant)
-        const cached = loadLocal();
-        if (cached?.onboarded) {
-          setUserData(cached);
-          setLoading(false);
-        } else {
-          // 2. Fall back to Supabase metadata
-          supabase.auth.getUser().then(({ data: { user } }) => {
-            const meta = user?.user_metadata || {};
-            if (meta.onboarded) {
-              saveLocal(meta);
-              setUserData(meta);
-            } else {
-              setUserData(meta);
-            }
-            setLoading(false);
-          });
-        }
+        // Always fetch fresh — don't rely solely on localStorage
+        loadUserData();
       } else {
         setLoading(false);
       }
@@ -186,8 +190,14 @@ export default function App() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
+        // Re-fetch fresh data on every sign-in
+        loadUserData();
+      }
       if (!session) {
-        setUserData(null);
+        // ✦ FIX: Don't wipe userData on sign-out — just clear the session.
+        // This prevents the "everything forgotten" problem.
+        // userData will be re-fetched fresh on next sign-in.
         setLoading(false);
       }
     });
@@ -199,12 +209,12 @@ export default function App() {
   const completeOnboarding = async ({ name, activeHabit, term, week }) => {
     const data = {
       name,
-      active_habit: activeHabit,
+      active_habit:       activeHabit,
       term,
       week,
-      onboarded: true,
-      is_rest_week: false,
-      outdoor_minutes: 0,
+      onboarded:          true,
+      is_rest_week:       false,
+      outdoor_minutes:    0,
       outdoor_week_start: new Date().toISOString().split('T')[0],
     };
     await persistData(data);
@@ -252,17 +262,17 @@ export default function App() {
   const showNav = NAV_SCREENS.includes(screen);
 
   const settings = {
-  name: userData?.name || "Friend",
-  activeHabit: userData?.active_habit || "attention",
-  term: userData?.term || 1,
-  week: userData?.week || 1,
-  isRestWeek: userData?.is_rest_week || false,
-  outdoorGoal: 15,
-  userId: session.user.id,
-  outdoorMinutes: userData?.outdoor_minutes || 0,
-  saveToMeta,
-  isPaid: userData?.is_paid || false,   // ← add this line
-};
+    name:           userData?.name         || "Friend",
+    activeHabit:    userData?.active_habit || "attention",
+    term:           userData?.term         || 1,
+    week:           userData?.week         || 1,
+    isRestWeek:     userData?.is_rest_week || false,
+    outdoorGoal:    15,
+    userId:         session.user.id,
+    outdoorMinutes: userData?.outdoor_minutes || 0,
+    saveToMeta,
+    isPaid:         userData?.is_paid      || false,
+  };
 
   return (
     <div className="shell">
