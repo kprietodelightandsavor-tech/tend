@@ -382,9 +382,7 @@ export default function PlannerScreen({ settings }) {
               <div className="rule-gold" style={{ margin: "0 0 20px" }} />
 
               {/* Weekend view */}
-              {isWeekend(activeDay) ? (
-                <WeekendRhythmView day={activeDay} week={week} />
-              ) : (
+              {isWeekend(activeDay) ? null : (
                 <>
                   <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
                     <button onClick={() => setCopyingDay(true)}
