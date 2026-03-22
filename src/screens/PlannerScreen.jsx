@@ -1,5 +1,7 @@
 import { useState, useRef } from "react";
-import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS } from "../data/seed";
+import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, SATURDAY_RHYTHMS, SUNDAY_RHYTHMS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
+
+const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 import { PremiumModal } from "./HomeScreen";
 
 // ─── QUICK-FILL SUBJECTS ──────────────────────────────────────────────────────
@@ -471,17 +473,283 @@ function ExportSheet({ schedule, term, week, onClose }) {
 }
 
 // ─── IMPORT SHEET ─────────────────────────────────────────────────────────────
-// Voice + Photo import — both routes end at a review step
-function ImportSheet({ activeDay, onImport, onClose }) {
-  const [mode, setMode]           = useState("choose"); // "choose"|"voice"|"photo"|"review"
-  const [listening, setListening] = useState(false);
+function ImportSheet({ activeDay, schedule, onImport, onClose }) {
+  const [mode, setMode]             = useState("choose");
+  const [listening, setListening]   = useState(false);
   const [transcript, setTranscript] = useState("");
-  const [photoLoading, setPhotoLoading] = useState(false);
-  const [photoError, setPhotoError]   = useState("");
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState("");
   const [pendingBlocks, setPendingBlocks] = useState([]);
-  const [editIdx, setEditIdx]     = useState(null);
-  const fileRef = useRef();
+  const [editIdx, setEditIdx]       = useState(null);
+  const [showSchedule, setShowSchedule] = useState(true);
+  const fileRef  = useRef();
   const recogRef = useRef(null);
+
+  // Detect Safari (not Chrome on iOS)
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const hasVoiceAPI = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  const voiceBlocked = isSafari || !hasVoiceAPI;
+
+  const dayBlocks = schedule[activeDay] || [];
+
+  // ── Schedule preview panel (shown during voice) ──────────────────────────
+  const SchedulePreview = () => (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <p className="eyebrow" style={{ marginBottom: 0 }}>Current {activeDay}</p>
+        <button onClick={() => setShowSchedule(s => !s)}
+          style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
+          {showSchedule ? "Hide" : "Show"}
+        </button>
+      </div>
+      {showSchedule && (
+        <div style={{ maxHeight: 180, overflowY: "auto", border: "1px solid var(--rule)", borderRadius: 3 }}>
+          {dayBlocks.length === 0 ? (
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, fontStyle: "italic", color: "var(--ink-faint)", padding: "12px 14px" }}>
+              No blocks yet for {activeDay}
+            </p>
+          ) : dayBlocks.map((b, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, alignItems: "baseline", padding: "8px 14px", borderBottom: i < dayBlocks.length - 1 ? "1px solid var(--rule)" : "none" }}>
+              <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--ink-faint)", width: 36, flexShrink: 0 }}>{b.time}</span>
+              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 13, color: "var(--ink)" }}>{b.subject}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  // ── Voice ─────────────────────────────────────────────────────────────────
+  const startListening = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recog = new SpeechRecognition();
+    recog.continuous     = true;
+    recog.interimResults = true;
+    recog.lang           = "en-US";
+    recog.onresult = (e) => {
+      let full = "";
+      for (let i = 0; i < e.results.length; i++) full += e.results[i][0].transcript;
+      setTranscript(full);
+    };
+    recog.onerror = () => setListening(false);
+    recog.onend   = () => setListening(false);
+    recogRef.current = recog;
+    recog.start();
+    setListening(true);
+  };
+
+  const stopListening = () => { recogRef.current?.stop(); setListening(false); };
+
+  // ── Parse (voice or photo) via Netlify function ───────────────────────────
+  const parseVoice = async (text) => {
+    if (!text.trim()) return;
+    setMode("review"); setLoading(true);
+    try {
+      const res = await fetch("/.netlify/functions/parse-schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ voiceText: text, day: activeDay, isVoice: true }),
+      });
+      const { blocks } = await res.json();
+      setPendingBlocks(blocks || []);
+    } catch { setError("Couldn't parse. Try again."); setMode("voice"); }
+    finally  { setLoading(false); }
+  };
+
+  const handlePhoto = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setMode("review"); setLoading(true); setError("");
+    try {
+      const base64 = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload  = () => res(reader.result.split(",")[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+      const response = await fetch("/.netlify/functions/parse-schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageData: base64, mediaType: file.type, day: activeDay, isVoice: false }),
+      });
+      const { blocks, error: err } = await response.json();
+      if (err) throw new Error(err);
+      setPendingBlocks(blocks || []);
+    } catch { setError("Couldn't read the image. Try a clearer photo."); setMode("photo"); }
+    finally  { setLoading(false); }
+  };
+
+  const updatePending = (idx, field, val) =>
+    setPendingBlocks(prev => prev.map((b, i) => i === idx ? { ...b, [field]: val } : b));
+  const removePending = (idx) =>
+    setPendingBlocks(prev => prev.filter((_, i) => i !== idx));
+  const confirm = () => { onImport(pendingBlocks); onClose(); };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.45)", zIndex: 200 }} onClick={onClose}>
+      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 24px 52px", maxHeight: "92dvh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+        <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
+
+        {/* ── CHOOSE ── */}
+        {mode === "choose" && (
+          <>
+            <p className="serif" style={{ fontSize: 20, marginBottom: 6 }}>Import Schedule</p>
+            <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.7, marginBottom: 24 }}>
+              Speak your schedule aloud or snap a photo of your paper planner.
+            </p>
+
+            {/* Voice option */}
+            <button onClick={() => voiceBlocked ? null : setMode("voice")}
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "16px", background: voiceBlocked ? "var(--parchment)" : "var(--sage-bg)", border: `1px solid ${voiceBlocked ? "var(--rule)" : "var(--sage-md)"}`, borderRadius: 3, cursor: voiceBlocked ? "default" : "pointer", marginBottom: 10, textAlign: "left", opacity: voiceBlocked ? 0.7 : 1 }}>
+              <div style={{ width: 44, height: 44, borderRadius: "50%", background: voiceBlocked ? "var(--rule)" : "var(--sage)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+                  <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+                  <line x1="12" y1="19" x2="12" y2="23"/>
+                </svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 3 }}>Speak your schedule</p>
+                {voiceBlocked ? (
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, fontStyle: "italic", color: "var(--gold)", lineHeight: 1.5 }}>
+                    ⚠ Requires Chrome — not supported in Safari. Open tend-ds.netlify.app in Chrome to use this.
+                  </p>
+                ) : (
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.5 }}>
+                    Say "Math at 9, narration at 10, lunch at noon" — Tend reads it in
+                  </p>
+                )}
+              </div>
+            </button>
+
+            {/* Photo option */}
+            <button onClick={() => fileRef.current?.click()}
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "16px", background: "white", border: "1px solid var(--rule)", borderRadius: 3, cursor: "pointer", marginBottom: 10, textAlign: "left" }}>
+              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#e8e4dc", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--ink-faint)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+              </div>
+              <div>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 3 }}>Photo of your planner</p>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.5 }}>
+                  Snap or upload — Claude reads handwriting, printed schedules, tables
+                </p>
+              </div>
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={handlePhoto} />
+            <button className="btn-ghost" style={{ width: "100%", marginTop: 8 }} onClick={onClose}>Cancel</button>
+          </>
+        )}
+
+        {/* ── VOICE ── */}
+        {mode === "voice" && (
+          <>
+            <p className="serif" style={{ fontSize: 20, marginBottom: 8 }}>Speak your schedule</p>
+            <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.7, marginBottom: 20 }}>
+              Talk naturally — "Math at 9, narration at 10, lunch at noon." Tend will sort it out.
+            </p>
+
+            {/* Schedule preview */}
+            <SchedulePreview />
+
+            {/* Mic button */}
+            <div style={{ textAlign: "center", marginBottom: 20 }}>
+              <button onClick={listening ? stopListening : startListening}
+                style={{ width: 72, height: 72, borderRadius: "50%", background: listening ? "#c0392b" : "var(--sage)", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: listening ? "0 0 0 10px rgba(192,57,43,.15), 0 0 0 20px rgba(192,57,43,.07)" : "0 4px 16px rgba(169,183,134,.4)", transition: "all .3s" }}>
+                <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+                  <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+                  <line x1="12" y1="19" x2="12" y2="23"/>
+                </svg>
+              </button>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: listening ? "#c0392b" : "var(--ink-faint)", marginTop: 10, transition: "color .3s" }}>
+                {listening ? "Listening… tap to stop" : "Tap to speak"}
+              </p>
+            </div>
+
+            {/* Live transcript */}
+            {transcript && (
+              <div style={{ background: "white", border: "1px solid var(--rule)", borderRadius: 3, padding: "12px 14px", marginBottom: 20, minHeight: 52 }}>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontStyle: "italic", color: "var(--ink)", lineHeight: 1.7 }}>
+                  "{transcript}"
+                </p>
+              </div>
+            )}
+
+            {error && <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: "var(--red)", fontStyle: "italic", marginBottom: 16 }}>{error}</p>}
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <button className="btn-ghost" onClick={() => { setMode("choose"); setTranscript(""); setError(""); }}>Back</button>
+              <button className="btn-sage" style={{ flex: 1 }} disabled={!transcript.trim() || listening} onClick={() => parseVoice(transcript)}>
+                Read my schedule →
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ── REVIEW loading ── */}
+        {mode === "review" && loading && (
+          <div style={{ textAlign: "center", padding: "32px 0" }}>
+            <p className="serif" style={{ fontSize: 18, marginBottom: 8 }}>Reading your schedule…</p>
+            <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.7 }}>Claude is extracting your blocks. Just a moment.</p>
+          </div>
+        )}
+
+        {/* ── REVIEW results ── */}
+        {mode === "review" && !loading && (
+          <>
+            <p className="serif" style={{ fontSize: 20, marginBottom: 6 }}>Review your blocks</p>
+            <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.7, marginBottom: 20 }}>
+              {pendingBlocks.length > 0
+                ? `Found ${pendingBlocks.length} block${pendingBlocks.length !== 1 ? "s" : ""}. Edit or remove any before adding to ${activeDay}.`
+                : "No blocks found. Try a clearer photo or speak again."}
+            </p>
+
+            {pendingBlocks.length === 0 && (
+              <button className="btn-ghost" style={{ width: "100%", marginBottom: 12 }} onClick={() => setMode("choose")}>Try again</button>
+            )}
+
+            {pendingBlocks.map((b, idx) => (
+              <div key={b.id} style={{ background: "white", border: "1px solid var(--rule)", borderRadius: 3, padding: "12px 14px", marginBottom: 8, display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <div style={{ flex: 1 }}>
+                  {editIdx === idx ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <input className="input-line" value={b.time} placeholder="Time" onChange={e => updatePending(idx, "time", e.target.value)} style={{ fontSize: 13 }} />
+                      <input className="input-line" value={b.subject} placeholder="Subject" onChange={e => updatePending(idx, "subject", e.target.value)} style={{ fontSize: 13 }} />
+                      <input className="input-line" value={b.note} placeholder="Note (optional)" onChange={e => updatePending(idx, "note", e.target.value)} style={{ fontSize: 13 }} />
+                      <button onClick={() => setEditIdx(null)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", textAlign: "left", padding: 0 }}>Done ✓</button>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
+                        {b.time && <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 11, color: "var(--ink-faint)" }}>{b.time}</span>}
+                        <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)" }}>{b.subject}</span>
+                      </div>
+                      {b.note && <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, fontStyle: "italic", color: "var(--ink-faint)", marginTop: 2 }}>{b.note}</p>}
+                    </>
+                  )}
+                </div>
+                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                  <button onClick={() => setEditIdx(editIdx === idx ? null : idx)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, color: "var(--sage)", fontFamily: "'Lato', sans-serif" }}>Edit</button>
+                  <button onClick={() => removePending(idx)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, color: "var(--red)", fontFamily: "'Lato', sans-serif" }}>Remove</button>
+                </div>
+              </div>
+            ))}
+
+            {pendingBlocks.length > 0 && (
+              <button className="btn-sage" style={{ width: "100%", marginTop: 16 }} onClick={confirm}>
+                Add {pendingBlocks.length} block{pendingBlocks.length !== 1 ? "s" : ""} to {activeDay} →
+              </button>
+            )}
+            <button className="btn-ghost" style={{ width: "100%", marginTop: 10 }} onClick={onClose}>Cancel</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
   // ── VOICE: parse transcript with Claude ──────────────────────────────────
   const parseVoice = async (text) => {
@@ -760,11 +1028,54 @@ function ImportSheet({ activeDay, onImport, onClose }) {
   );
 }
 
+// ─── WEEKEND RHYTHM VIEW ──────────────────────────────────────────────────────
+function WeekendRhythmView({ day, week }) {
+  const rhythm = day === "Saturday" ? getSaturdayRhythm(week) : getSundayRhythm(week);
+  const isSunday = day === "Sunday";
+
+  return (
+    <div>
+      {/* Theme header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, padding: "14px 16px", background: isSunday ? "var(--gold-bg)" : "var(--sage-bg)", borderRadius: 3, border: `1px solid ${isSunday ? "#E0CBA8" : "var(--sage-md)"}` }}>
+        <div>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: isSunday ? "var(--gold)" : "var(--sage)", marginBottom: 3 }}>
+            {day} · {rhythm.theme}
+          </p>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.7 }}>
+            "{rhythm.quote}"
+          </p>
+        </div>
+      </div>
+
+      {/* Rhythm items */}
+      <p className="eyebrow" style={{ marginBottom: 16 }}>A Gentle Shape for the Day</p>
+      {rhythm.items.map((item, i) => (
+        <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "14px 0", borderBottom: i < rhythm.items.length - 1 ? "1px solid var(--rule)" : "none" }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: isSunday ? "var(--gold)" : "var(--sage)", opacity: .6, marginTop: 8, flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 3 }}>
+              <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--ink-faint)", letterSpacing: ".06em", flexShrink: 0 }}>{item.time}</span>
+              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)" }}>{item.label}</span>
+            </div>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.65 }}>{item.note}</p>
+          </div>
+        </div>
+      ))}
+
+      <p className="caption italic" style={{ marginTop: 20, lineHeight: 1.7, textAlign: "center" }}>
+        Not a schedule — just a gentle shape. This rhythm rotates each week.
+      </p>
+    </div>
+  );
+}
+
 // ─── PLANNER SCREEN ───────────────────────────────────────────────────────────
 export default function PlannerScreen({ settings }) {
   const isPaid   = settings?.isPaid || false;
-  const todayIdx = Math.min(Math.max(new Date().getDay() - 1, 0), 4);
-  const todayDay = DAYS[todayIdx];
+  const todayIdx = new Date().getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const todayDay = todayIdx === 0 ? "Sunday" : todayIdx === 6 ? "Saturday" : DAYS[todayIdx - 1];
+
+  const isWeekend = (day) => day === "Saturday" || day === "Sunday";
 
   const [viewMode, setViewMode]         = useState("day");
   const [activeDay, setActiveDay]       = useState(todayDay);
@@ -946,8 +1257,9 @@ export default function PlannerScreen({ settings }) {
                   {/* Day pills + Today button */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                     <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 12, flex: 1 }}>
-                      {DAYS.map(d => (
-                        <button key={d} className={`day-pill ${activeDay === d ? "active" : ""}`} onClick={() => setActiveDay(d)}>
+                      {ALL_DAYS.map(d => (
+                        <button key={d} className={`day-pill ${activeDay === d ? "active" : ""}`} onClick={() => setActiveDay(d)}
+                          style={{ opacity: isWeekend(d) ? 0.85 : 1 }}>
                           {d.slice(0, 3)}
                         </button>
                       ))}
@@ -967,6 +1279,11 @@ export default function PlannerScreen({ settings }) {
 
                   <div className="rule-gold" style={{ margin: "0 0 20px" }} />
 
+                  {/* Weekend rhythm view — replaces school schedule */}
+                  {isWeekend(activeDay) ? (
+                    <WeekendRhythmView day={activeDay} week={week} />
+                  ) : (
+                    <>
                   {/* Day action buttons */}
                   <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
                     <button onClick={() => setCopyingDay(true)}
@@ -1025,6 +1342,8 @@ export default function PlannerScreen({ settings }) {
                       </button>
                     </div>
                   ))}
+                    </>
+                  )}
                 </div>
               )}
             </>
@@ -1033,7 +1352,7 @@ export default function PlannerScreen({ settings }) {
       )}
 
       {/* Sheets */}
-      {showImport        && <ImportSheet activeDay={activeDay} onImport={importBlocks} onClose={() => setShowImport(false)} />}
+      {showImport        && <ImportSheet activeDay={activeDay} schedule={schedule} onImport={importBlocks} onClose={() => setShowImport(false)} />}
       {editingBlock      && <EditBlockSheet block={editingBlock} onSave={saveBlock} onDelete={deleteBlock} onClose={() => setEditingBlock(null)} />}
       {addingAfterIdx !== null && <AddBlockSheet onSave={addBlock} onClose={() => setAddingAfterIdx(null)} />}
       {copyingDay        && <CopyDaySheet fromDay={activeDay} onCopy={copyDay} onClose={() => setCopyingDay(false)} />}
