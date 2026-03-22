@@ -271,7 +271,7 @@ export default function PlannerScreen({ settings }) {
 
   const [schedule, setSchedule] = useState(() => {
     const s = {};
-    DAYS.forEach(d => { s[d] = DAY_SCHEDULE[d].map((b, i) => ({ ...b, _idx: i })); });
+    DAYS.forEach(d => { s[d] = (DAY_SCHEDULE[d] || []).map((b, i) => ({ ...b, _idx: i })); });
     return s;
   });
 
