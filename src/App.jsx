@@ -16,17 +16,7 @@ import SettingsScreen   from "./screens/SettingsScreen";
 
 const NAV_SCREENS = ["home", "planner", "narration", "menu"];
 
-const SCREENS = {
-  home:      HomeScreen,
-  planner:   PlannerScreen,
-  narration: NarrationScreen,
-  outdoors:  OutdoorsScreen,
-  habits:    HabitsScreen,
-  lilies:    LiliesScreen,
-  students:  StudentsScreen,
-  menu:      MenuScreen,
-  settings:  SettingsScreen,
-};
+const NAV_SCREENS = ["home", "planner", "narration", "menu", "habits", "lilies", "students", "outdoors", "settings"];
 
 const STORAGE_KEY = 'tend_user';
 
