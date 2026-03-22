@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS } from "../data/seed";
 <BeautyLoopSection day={activeDay} />
 import { PremiumModal } from "./HomeScreen";
 
