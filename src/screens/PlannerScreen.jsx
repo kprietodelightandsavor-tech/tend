@@ -1,15 +1,14 @@
 import { useState, useRef } from "react";
-import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS } from "../data/seed";
+import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { PremiumModal } from "./HomeScreen";
 
 const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const isWeekend = (day) => day === "Saturday" || day === "Sunday";
 
-// ─── ICONS ────────────────────────────────────────────────────────────────────
 const Icon = {
   Up:    () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6"/></svg>),
   Down:  () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>),
   Edit:  () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>),
-  Trash: () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#B5604A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>),
   Plus:  () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>),
   Copy:  () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>),
   Leaf:  () => (<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>),
@@ -18,7 +17,6 @@ const Icon = {
   Lock:  () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#B8935A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>),
 };
 
-// ─── FREE TIER PLANNER ────────────────────────────────────────────────────────
 function FreePlanner({ onShowPremium }) {
   const blocks = DAY_SCHEDULE.Monday || [];
   return (
@@ -36,10 +34,6 @@ function FreePlanner({ onShowPremium }) {
           Learn about Tend Premium →
         </button>
       </div>
-      <p className="eyebrow" style={{ marginBottom: 6 }}>Your Daily Rhythm</p>
-      <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
-        A preview of your schedule. Upgrade to edit, add days, and build your full weekly rhythm.
-      </p>
       {blocks.map((b, i) => (
         <div key={i} className="planner-block" style={{ opacity: 0.7 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
@@ -53,7 +47,6 @@ function FreePlanner({ onShowPremium }) {
   );
 }
 
-// ─── TERM COUNTER ─────────────────────────────────────────────────────────────
 function TermCounter({ isRestWeek, onToggleRest, term, week, onEdit }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
@@ -83,7 +76,6 @@ function TermCounter({ isRestWeek, onToggleRest, term, week, onEdit }) {
   );
 }
 
-// ─── REST WEEK VIEW ───────────────────────────────────────────────────────────
 function RestWeekView() {
   const day = new Date().getDay();
   const suggestions = [
@@ -107,7 +99,6 @@ function RestWeekView() {
   );
 }
 
-// ─── BEAUTY LOOP SECTION ──────────────────────────────────────────────────────
 function BeautyLoopSection({ day }) {
   const loops = BEAUTY_LOOP[day] || [];
   const [items, setItems] = useState(loops.map(l => ({ ...l, done: false })));
@@ -139,7 +130,6 @@ function BeautyLoopSection({ day }) {
               onChange={e => setDrafts(prev => prev.map((v, j) => j === i ? e.target.value : v))}
               style={{ marginBottom: 8 }} />
           ))}
-          <p className="caption italic" style={{ marginTop: 8 }}>Changes apply to this day each week.</p>
         </div>
       ) : (
         <>
@@ -156,7 +146,7 @@ function BeautyLoopSection({ day }) {
             </div>
           ))}
           <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.7 }}>
-            Use these as a gathered morning, as quiet anchors throughout your day, or set them aside on full days. There is no wrong way to tend them.
+            Use these as a gathered morning, as quiet anchors throughout your day, or set them aside on full days.
           </p>
         </>
       )}
@@ -164,43 +154,37 @@ function BeautyLoopSection({ day }) {
   );
 }
 
-// ─── WEEKEND RHYTHM VIEW ──────────────────────────────────────────────────────
 function WeekendRhythmView({ day, week }) {
   const rhythm = day === "Saturday" ? getSaturdayRhythm(week) : getSundayRhythm(week);
   const isSunday = day === "Sunday";
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20, padding: "14px 16px", background: isSunday ? "var(--gold-bg)" : "var(--sage-bg)", borderRadius: 3, border: `1px solid ${isSunday ? "#E0CBA8" : "var(--sage-md)"}` }}>
-        <div>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: isSunday ? "var(--gold)" : "var(--sage)", marginBottom: 3 }}>
-            {day} · {rhythm.theme}
-          </p>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.7 }}>
-            "{rhythm.quote}"
-          </p>
-        </div>
+      <div style={{ padding: "14px 16px", background: isSunday ? "var(--gold-bg)" : "var(--sage-bg)", borderRadius: 3, border: `1px solid ${isSunday ? "#E0CBA8" : "var(--sage-md)"}`, marginBottom: 20 }}>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: isSunday ? "var(--gold)" : "var(--sage)", marginBottom: 3 }}>
+          {day} · {rhythm.theme}
+        </p>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.7 }}>
+          "{rhythm.quote}"
+        </p>
       </div>
       <p className="eyebrow" style={{ marginBottom: 16 }}>A Gentle Shape for the Day</p>
       {rhythm.items.map((item, i) => (
-        <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "14px 0", borderBottom: i < rhythm.items.length - 1 ? "1px solid var(--rule)" : "none" }}>
+        <div key={i} style={{ display: "flex", gap: 14, padding: "14px 0", borderBottom: i < rhythm.items.length - 1 ? "1px solid var(--rule)" : "none" }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: isSunday ? "var(--gold)" : "var(--sage)", opacity: .6, marginTop: 8, flexShrink: 0 }} />
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 3 }}>
-              <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--ink-faint)", letterSpacing: ".06em", flexShrink: 0 }}>{item.time}</span>
+          <div>
+            <div style={{ display: "flex", gap: 10, marginBottom: 3 }}>
+              <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--ink-faint)" }}>{item.time}</span>
               <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)" }}>{item.label}</span>
             </div>
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.65 }}>{item.note}</p>
           </div>
         </div>
       ))}
-      <p className="caption italic" style={{ marginTop: 20, lineHeight: 1.7, textAlign: "center" }}>
-        Not a schedule — just a gentle shape. This rhythm rotates each week.
-      </p>
+      <p className="caption italic" style={{ marginTop: 20, textAlign: "center" }}>Not a schedule — just a gentle shape. This rhythm rotates each week.</p>
     </div>
   );
 }
 
-// ─── ADD BLOCK SHEET ──────────────────────────────────────────────────────────
 function AddBlockSheet({ onSave, onClose }) {
   const [time, setTime] = useState("");
   const [subject, setSubject] = useState("");
@@ -219,7 +203,6 @@ function AddBlockSheet({ onSave, onClose }) {
   );
 }
 
-// ─── EDIT BLOCK SHEET ─────────────────────────────────────────────────────────
 function EditBlockSheet({ block, onSave, onDelete, onClose }) {
   const [time, setTime] = useState(block.time);
   const [subject, setSubject] = useState(block.subject);
@@ -244,7 +227,6 @@ function EditBlockSheet({ block, onSave, onDelete, onClose }) {
   );
 }
 
-// ─── COPY DAY SHEET ───────────────────────────────────────────────────────────
 function CopyDaySheet({ fromDay, onCopy, onClose }) {
   const [toDay, setToDay] = useState(null);
   const targets = ALL_DAYS.filter(d => d !== fromDay);
@@ -270,11 +252,9 @@ function CopyDaySheet({ fromDay, onCopy, onClose }) {
   );
 }
 
-// ─── PLANNER SCREEN ───────────────────────────────────────────────────────────
 export default function PlannerScreen({ settings }) {
   const isPaid = settings?.isPaid || false;
-
-  const todayIdx = new Date().getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const todayIdx = new Date().getDay();
   const todayDay = todayIdx === 0 ? "Sunday" : todayIdx === 6 ? "Saturday" : DAYS[todayIdx - 1];
 
   const [activeDay, setActiveDay]       = useState(todayDay);
@@ -318,9 +298,10 @@ export default function PlannerScreen({ settings }) {
       blocks.splice(insertAt, 0, block);
       return { ...prev, [activeDay]: blocks };
     });
- 
+    setAddingAfterIdx(null);
+  };
 
-  const copyDay = (toDay) => setSchedule(prev => ({ ...prev, [toDay]: prev[activeDay].map(b => ({ ...b, id: `${b.id}-copy-${Date.now()}` })) }));
+  const copyDay  = (toDay) => setSchedule(prev => ({ ...prev, [toDay]: prev[activeDay].map(b => ({ ...b, id: `${b.id}-copy-${Date.now()}` })) }));
   const saveTerm = () => { setTerm(Number(draftTerm)); setWeek(Number(draftWeek)); setEditingTerm(false); };
 
   return (
@@ -369,7 +350,6 @@ export default function PlannerScreen({ settings }) {
             <RestWeekView />
           ) : (
             <>
-              {/* Day pills */}
               <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 16, marginBottom: 4 }}>
                 {ALL_DAYS.map(d => (
                   <button key={d} className={`day-pill ${activeDay === d ? "active" : ""}`} onClick={() => setActiveDay(d)}>
@@ -377,14 +357,11 @@ export default function PlannerScreen({ settings }) {
                   </button>
                 ))}
               </div>
-
               <div className="rule-gold" style={{ margin: "0 0 20px" }} />
 
-              {/* Weekend view */}
-              {/* Weekend view */}
-{isWeekend(activeDay) ? (
-  <WeekendRhythmView day={activeDay} week={week} />
-) : (
+              {isWeekend(activeDay) ? (
+                <WeekendRhythmView day={activeDay} week={week} />
+              ) : (
                 <>
                   <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
                     <button onClick={() => setCopyingDay(true)}
@@ -392,15 +369,12 @@ export default function PlannerScreen({ settings }) {
                       <Icon.Copy /> Copy {activeDay}
                     </button>
                   </div>
-
                   <BeautyLoopSection day={activeDay} />
                   <div className="rule" style={{ margin: "0 0 20px" }} />
-
                   <button onClick={() => setAddingAfterIdx(-1)}
                     style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: "4px 0 12px", color: "var(--sage)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase" }}>
                     <Icon.Plus /> Add block here
                   </button>
-
                   {dayBlocks.map((b, idx) => (
                     <div key={b.id}>
                       <div className="planner-block" style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
@@ -435,25 +409,6 @@ export default function PlannerScreen({ settings }) {
       {editingBlock      && <EditBlockSheet block={editingBlock} onSave={saveBlock} onDelete={deleteBlock} onClose={() => setEditingBlock(null)} />}
       {addingAfterIdx !== null && <AddBlockSheet onSave={addBlock} onClose={() => setAddingAfterIdx(null)} />}
       {copyingDay        && <CopyDaySheet fromDay={activeDay} onCopy={copyDay} onClose={() => setCopyingDay(false)} />}
-      {showPremium       && <PremiumModal onClose={() => setShowPremium(false)} />}
-    </div>
-  );
-}
-</>
-              )}
-                </div>
-              )}
-            </>
-          )}
-        </>
-      )}
-
-      {showImport        && <ImportSheet activeDay={activeDay} schedule={schedule} onImport={importBlocks} onClose={() => setShowImport(false)} />}
-      {editingBlock      && <EditBlockSheet block={editingBlock} onSave={saveBlock} onDelete={deleteBlock} onClose={() => setEditingBlock(null)} />}
-      {addingAfterIdx !== null && <AddBlockSheet onSave={addBlock} onClose={() => setAddingAfterIdx(null)} />}
-      {copyingDay        && <CopyDaySheet fromDay={activeDay} onCopy={copyDay} onClose={() => setCopyingDay(false)} />}
-      {savingTemplate    && <SaveTemplateSheet day={activeDay} onSave={saveAsTemplate} onClose={() => setSavingTemplate(false)} />}
-      {showExport        && <ExportSheet schedule={schedule} term={term} week={week} onClose={() => setShowExport(false)} />}
       {showPremium       && <PremiumModal onClose={() => setShowPremium(false)} />}
     </div>
   );
