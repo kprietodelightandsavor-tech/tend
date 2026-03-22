@@ -1,4 +1,34 @@
 import { useState } from "react";
+import { getSaturdayRhythm, getSundayRhythm } from "../data/seed";
+
+const ALL_DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const isWeekend = (d) => d === "Saturday" || d === "Sunday";
+
+function WeekendRhythmView({ day, week }) {
+  const rhythm = day === "Saturday" ? getSaturdayRhythm(week) : getSundayRhythm(week);
+  const sun = day === "Sunday";
+  return (
+    <div>
+      <div style={{ padding:"14px 16px", background: sun?"var(--gold-bg)":"var(--sage-bg)", borderRadius:3, border:`1px solid ${sun?"#E0CBA8":"var(--sage-md)"}`, marginBottom:20 }}>
+        <p style={{ fontFamily:"'Lato',sans-serif", fontSize:10, letterSpacing:".12em", textTransform:"uppercase", color:sun?"var(--gold)":"var(--sage)", marginBottom:3 }}>{day} · {rhythm.theme}</p>
+        <p style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:14, fontStyle:"italic", color:"var(--ink-lt)", lineHeight:1.7 }}>"{rhythm.quote}"</p>
+      </div>
+      <p className="eyebrow" style={{ marginBottom:16 }}>A Gentle Shape for the Day</p>
+      {rhythm.items.map((item,i) => (
+        <div key={i} style={{ display:"flex", gap:14, padding:"14px 0", borderBottom: i<rhythm.items.length-1?"1px solid var(--rule)":"none" }}>
+          <div style={{ width:6, height:6, borderRadius:"50%", background:sun?"var(--gold)":"var(--sage)", opacity:.6, marginTop:8, flexShrink:0 }} />
+          <div>
+            <div style={{ display:"flex", gap:10, marginBottom:3 }}>
+              <span style={{ fontFamily:"'Lato',sans-serif", fontSize:10, color:"var(--ink-faint)" }}>{item.time}</span>
+              <span style={{ fontFamily:"'Playfair Display',serif", fontSize:16, color:"var(--ink)" }}>{item.label}</span>
+            </div>
+            <p style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:14, fontStyle:"italic", color:"var(--ink-faint)", lineHeight:1.65 }}>{item.note}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { PremiumModal } from "./HomeScreen";
 
