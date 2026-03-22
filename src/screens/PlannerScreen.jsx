@@ -1026,6 +1026,7 @@ function ImportSheet({ activeDay, schedule, onImport, onClose }) {
       </div>
     </div>
   );
+}
 
 // ─── WEEKEND RHYTHM VIEW ──────────────────────────────────────────────────────
 function WeekendRhythmView({ day, week }) {
