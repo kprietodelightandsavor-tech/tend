@@ -439,3 +439,22 @@ export default function PlannerScreen({ settings }) {
     </div>
   );
 }
+</>
+              )}
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {showImport        && <ImportSheet activeDay={activeDay} schedule={schedule} onImport={importBlocks} onClose={() => setShowImport(false)} />}
+      {editingBlock      && <EditBlockSheet block={editingBlock} onSave={saveBlock} onDelete={deleteBlock} onClose={() => setEditingBlock(null)} />}
+      {addingAfterIdx !== null && <AddBlockSheet onSave={addBlock} onClose={() => setAddingAfterIdx(null)} />}
+      {copyingDay        && <CopyDaySheet fromDay={activeDay} onCopy={copyDay} onClose={() => setCopyingDay(false)} />}
+      {savingTemplate    && <SaveTemplateSheet day={activeDay} onSave={saveAsTemplate} onClose={() => setSavingTemplate(false)} />}
+      {showExport        && <ExportSheet schedule={schedule} term={term} week={week} onClose={() => setShowExport(false)} />}
+      {showPremium       && <PremiumModal onClose={() => setShowPremium(false)} />}
+    </div>
+  );
+}
