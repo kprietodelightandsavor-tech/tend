@@ -77,69 +77,150 @@ const FREE_KEYWORDS = ["rise", "chores", "piano", "free", "rest", "independent",
 const isFreeBlock = (subject) => FREE_KEYWORDS.some(k => subject.toLowerCase().includes(k));
 
 // ─── PREMIUM MODAL ────────────────────────────────────────────────────────────
+// Drop this into HomeScreen.jsx, replacing the existing PremiumModal function.
+// Everything else in HomeScreen.jsx stays exactly the same.
+
 export function PremiumModal({ onClose }) {
+  const Icon = {
+    X: () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
+  };
+
+  const FREE_FEATURES = [
+    "Daily schedule — one repeating template",
+    "Outdoor time tracker toward your weekly goal",
+    "Consider the Lilies — up to 3 journal entries",
+    "One habit focus (Attention) with today's ideas",
+    "5 free narration sessions",
+    "One student profile",
+    "Daily Mother Culture prompt",
+    "CM quote of the day",
+  ];
+
+  const PREMIUM_FEATURES = [
+    "Full weekly planner — different schedule per day, editable blocks",
+    "Week grid view — see your whole week at a glance",
+    "Voice & photo import — speak or snap your paper planner",
+    "Print your weekly schedule & export to Apple / Google Calendar",
+    "Save day templates — set it once, reset anytime",
+    "Beauty Loop with editable enrichments per day",
+    "Term counter with rest week gentle rhythm",
+    "All five Charlotte Mason habits with 12-week reflection",
+    "Unlimited Consider the Lilies entries for every family member",
+    "Unlimited narration sessions with AI coaching",
+    "Unlimited student profiles with narration history",
+    "Full rotating Mother Culture prompt bank",
+  ];
+
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
-      <div style={{ width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 52px", maxHeight: "88dvh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+    <div
+      style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+      onClick={onClose}
+    >
+      <div
+        style={{ width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 52px", maxHeight: "92dvh", overflowY: "auto" }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Handle */}
         <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
+
+        {/* Header */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
           <div>
-            <p className="eyebrow" style={{ marginBottom: 4 }}>Delight & Savor</p>
-            <h2 className="serif" style={{ fontSize: 24 }}>Tend Premium</h2>
+            <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 4 }}>
+              Delight & Savor
+            </p>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 400, color: "var(--ink)" }}>
+              Tend Premium
+            </h2>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)", marginTop: 4 }}><Icon.X /></button>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)", marginTop: 4 }}>
+            <Icon.X />
+          </button>
         </div>
-        <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", marginBottom: 24, lineHeight: 1.8 }}>Beauty. Meaning. Connection.</p>
-        <div className="card-sage" style={{ marginBottom: 24 }}>
-          <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.9 }}>
+
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontStyle: "italic", color: "var(--ink-lt)", marginBottom: 24, lineHeight: 1.8 }}>
+          Beauty. Meaning. Connection.
+        </p>
+
+        {/* Description */}
+        <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, padding: "16px 18px", marginBottom: 24 }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.9 }}>
             Tend Premium is for the family that wants to go deeper — a full weekly planner that breathes with your rhythm, a living nature and commonplace journal, all five habits tended over twelve weeks, and the tools to make Charlotte Mason homeschooling feel as beautiful as it actually is.
           </p>
-          <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.8, marginTop: 12 }}>When you're ready, we'd love to have you.</p>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.8, marginTop: 12 }}>
+            When you're ready, we'd love to have you.
+          </p>
         </div>
-        <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
-          <div style={{ flex: 1, border: "2px solid var(--sage)", borderRadius: 3, padding: "14px 16px", textAlign: "center" }}>
-            <p className="eyebrow" style={{ marginBottom: 4, color: "var(--sage)" }}>Annual</p>
-            <p className="serif" style={{ fontSize: 28, color: "var(--ink)", marginBottom: 2 }}>$47</p>
-            <p className="caption">per year · best value</p>
-          </div>
-          <div style={{ flex: 1, border: "1px solid var(--rule)", borderRadius: 3, padding: "14px 16px", textAlign: "center" }}>
-            <p className="eyebrow" style={{ marginBottom: 4 }}>Monthly</p>
-            <p className="serif" style={{ fontSize: 28, color: "var(--ink)", marginBottom: 2 }}>$4.99</p>
-            <p className="caption">per month</p>
-          </div>
-        </div>
-        <div style={{ marginBottom: 16 }}>
-          <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 10 }}>Free — always</p>
-          {["Daily schedule (one repeating template)", "Outdoor time tracker", "Consider the Lilies journal structure", "One habit focus with today's ideas", "Daily Mother Culture prompt", "CM quote of the day"].map((f, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 7 }}>
-              <span style={{ color: "var(--sage)", fontSize: 14, flexShrink: 0, marginTop: 1 }}>✓</span>
-              <p style={{ fontSize: 14, color: "var(--ink-lt)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", lineHeight: 1.5 }}>{f}</p>
+
+        {/* Pricing */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 28 }}>
+          <div style={{ flex: 1, border: "2px solid var(--sage)", borderRadius: 3, padding: "16px", textAlign: "center", position: "relative" }}>
+            <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: "var(--sage)", borderRadius: 20, padding: "2px 10px" }}>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "white" }}>Best value</p>
             </div>
-          ))}
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 6 }}>Annual</p>
+            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, color: "var(--ink)", marginBottom: 2, lineHeight: 1 }}>$47</p>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--ink-faint)", letterSpacing: ".06em" }}>per year</p>
+          </div>
+          <div style={{ flex: 1, border: "1px solid var(--rule)", borderRadius: 3, padding: "16px", textAlign: "center" }}>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 6, marginTop: 6 }}>Monthly</p>
+            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, color: "var(--ink)", marginBottom: 2, lineHeight: 1 }}>$4.99</p>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--ink-faint)", letterSpacing: ".06em" }}>per month</p>
+          </div>
         </div>
-        <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, padding: "16px", marginBottom: 28 }}>
-          <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 12 }}>Premium includes everything, plus</p>
-          {["Full weekly planner — different schedule per day, editable blocks, Beauty Loop", "Term counter with rest week gentle rhythm", "All five habits with full library & 12-week reflection", "Nature page with rotating daily outdoor ideas", "Full Consider the Lilies digital journal — photo upload, print, all family members", "Students screen with narration tracking", "Full rotating Mother Culture prompt bank"].map((f, i) => (
+
+        {/* Free features */}
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 12 }}>
+            Free — always
+          </p>
+          {FREE_FEATURES.map((f, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
-              <span style={{ color: "var(--sage)", fontSize: 14, flexShrink: 0, marginTop: 1 }}>✦</span>
-              <p style={{ fontSize: 14, color: "var(--ink-lt)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", lineHeight: 1.5 }}>{f}</p>
+              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>✓</span>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.5 }}>{f}</p>
             </div>
           ))}
         </div>
-        <a href="https://payhip.com/b/NMQ4D" target="_blank" rel="noopener noreferrer"
-          style={{ display: "block", background: "var(--sage)", borderRadius: 2, padding: "14px 0", width: "100%", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "white", textAlign: "center", textDecoration: "none", marginBottom: 12 }}>
+
+        {/* Premium features */}
+        <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, padding: "18px", marginBottom: 28 }}>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 14 }}>
+            Premium — everything above, plus
+          </p>
+          {PREMIUM_FEATURES.map((f, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
+              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>✦</span>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.5 }}>{f}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <a
+          href="https://delightnsavor.gumroad.com/l/qrxxi"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: "block", background: "var(--sage)", borderRadius: 2, padding: "14px 0", width: "100%", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "white", textAlign: "center", textDecoration: "none", marginBottom: 12 }}
+        >
           Join Tend Premium →
         </a>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, fontStyle: "italic", color: "var(--ink-faint)", textAlign: "center", marginBottom: 20, lineHeight: 1.6 }}>
+          $47/year or $4.99/month · cancel anytime
+        </p>
+
+        {/* Links */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 0, marginBottom: 20, borderTop: "1px solid var(--rule)", borderBottom: "1px solid var(--rule)" }}>
           <a href="https://www.delightandsavor.com" target="_blank" rel="noopener noreferrer"
-            style={{ display: "block", textAlign: "center", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", textDecoration: "none", padding: "8px 0", borderBottom: "1px solid var(--rule)" }}>
+            style={{ display: "block", textAlign: "center", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", textDecoration: "none", padding: "12px 0", borderBottom: "1px solid var(--rule)" }}>
             Explore curriculum & the blog at Delight & Savor →
           </a>
           <a href="https://substack.com/@delightandsavor" target="_blank" rel="noopener noreferrer"
-            style={{ display: "block", textAlign: "center", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", textDecoration: "none", padding: "8px 0" }}>
+            style={{ display: "block", textAlign: "center", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", textDecoration: "none", padding: "12px 0" }}>
             Follow along on Substack →
           </a>
         </div>
+
         <button onClick={onClose}
           style={{ width: "100%", background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
           Maybe later
@@ -148,7 +229,6 @@ export function PremiumModal({ onClose }) {
     </div>
   );
 }
-
 // ─── OUTDOOR TRACKER ──────────────────────────────────────────────────────────
 const OUTDOOR_GOAL_HOURS = 15;
 
