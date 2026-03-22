@@ -14,7 +14,6 @@ import StudentsScreen   from "./screens/StudentsScreen";
 import MenuScreen       from "./screens/MenuScreen";
 import SettingsScreen   from "./screens/SettingsScreen";
 
-const NAV_SCREENS = ["home", "planner", "narration", "menu"];
 
 const NAV_SCREENS = ["home", "planner", "narration", "menu", "habits", "lilies", "students", "outdoors", "settings"];
 
