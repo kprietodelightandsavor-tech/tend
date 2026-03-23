@@ -84,9 +84,7 @@ function AuthScreen() {
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)" }}>A daily rhythm for Charlotte Mason families</p>
       </div>
 
-     <div
-  style={{
-    display: "flex",
+    <div style={{ display: "flex", marginBottom: 28, border: "1px solid var(--rule)", borderRadius: 2, overflow: "hidden" }}>
 
       <input className="input-line" type="email" placeholder="Email address"
         value={email} onChange={e => setEmail(e.target.value)}
