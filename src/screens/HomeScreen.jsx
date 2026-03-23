@@ -403,7 +403,7 @@ function BeautyLoopHome({ today }) {
         <p className="eyebrow" style={{ marginBottom: 0 }}>Beauty Loop · {today}</p>
       </div>
       {loops.map((l, i) => (
-        <div key={l.id} style={{ padding: "12px 0", borderBottom: i < loops.length - 1 ? "1px solid var(--rule)" : "none" }}>
+        <div key={l.id} style={{ padding: "10px 0", borderBottom: i < loops.length - 1 ? "1px solid rgba(169,183,134,.25)" : "none" }}>
           <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: l.note ? 4 : 0 }}>{l.label}</p>
           {l.note && <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.65 }}>{l.note}</p>}
         </div>
@@ -415,10 +415,10 @@ function BeautyLoopHome({ today }) {
 // ─── MOTHER CULTURE ───────────────────────────────────────────────────────────
 function MotherCulture() {
   return (
-    <div style={{ marginBottom: 28 }}>
+    <div style={{ marginBottom: 28, background: "var(--gold-bg)", border: "1px solid #E0CBA8", borderRadius: 4, padding: "16px 18px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <Icon.Feather />
-        <p className="eyebrow" style={{ marginBottom: 0 }}>Mother Culture</p>
+        <p className="eyebrow" style={{ marginBottom: 0, color: "var(--gold)" }}>Mother Culture</p>
       </div>
       <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8 }}>{MOTHER_CULTURE_DAILY[new Date().getDay()]}</p>
     </div>
@@ -432,7 +432,7 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
   const day     = new Date().getDay();
   const prompts = habit.daily[day].slice(0, 2);
   return (
-    <div style={{ marginBottom: 32 }}>
+    <div style={{ marginBottom: 32, background: "#f0eff0", border: "1px solid #dddde0", borderRadius: 4, padding: "16px 18px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
         <Icon.Sprout />
         <p className="eyebrow" style={{ marginBottom: 0 }}>Habit in Focus</p>
@@ -442,7 +442,7 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
         <p className="serif" style={{ fontSize: 18, color: "var(--ink)" }}>{habit.name}</p>
       </div>
       {prompts.map((p, i) => (
-        <div key={i} style={{ paddingBottom: i < prompts.length - 1 ? 12 : 0, marginBottom: i < prompts.length - 1 ? 12 : 0, borderBottom: i < prompts.length - 1 ? "1px solid var(--rule)" : "none" }}>
+        <div key={i} style={{ paddingBottom: i < prompts.length - 1 ? 12 : 0, marginBottom: i < prompts.length - 1 ? 12 : 0, borderBottom: i < prompts.length - 1 ? "1px solid rgba(180,180,185,.3)" : "none" }}>
           <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.8 }}>{p}</p>
         </div>
       ))}
@@ -494,11 +494,8 @@ export default function HomeScreen({ onNavigate, settings }) {
       ) : (
         <>
           <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} />
-          <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
           <BeautyLoopHome today={today} />
-          <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
           <MotherCulture />
-          <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
           <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
         </>
       )}
