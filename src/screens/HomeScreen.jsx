@@ -499,9 +499,9 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
 export default function HomeScreen({ onNavigate, settings }) {
   const hour        = new Date().getHours();
   const greeting    = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
-  const todayIndex  = Math.min(Math.max(new Date().getDay() - 1, 0), 4);
-  const today       = DAYS[todayIndex] || "Monday";
-  const todayBlocks = DAY_SCHEDULE[today] || DAY_SCHEDULE.Monday;
+  const todayIdx    = new Date().getDay();
+const today       = todayIdx === 0 ? "Sunday" : todayIdx === 6 ? "Saturday" : DAYS[todayIdx - 1];
+const todayBlocks = DAY_SCHEDULE[today] || [];
   const name        = settings?.name || "Friend";
   const activeHabit = settings?.activeHabit || "attention";
   const isRestWeek  = settings?.isRestWeek || false;
