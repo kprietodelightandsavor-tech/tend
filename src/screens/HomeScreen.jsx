@@ -223,8 +223,9 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today }) {
 
   return (
     <div className="card" style={{ marginBottom: 20 }}>
+
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Icon.Leaf />
           <p className="eyebrow" style={{ marginBottom: 0 }}>Nature & Outdoors</p>
@@ -235,11 +236,11 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today }) {
         </button>
       </div>
 
-      {/* This week's topic */}
-      <div style={{ marginBottom: 16, padding: "10px 12px", background: "var(--sage-bg)", borderRadius: 3, border: "1px solid var(--sage-md)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)" }}>
-            This week · {season.charAt(0).toUpperCase() + season.slice(1)}
+      {/* Section 1 — This week's subject */}
+      <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid var(--rule)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
+            This week's subject · {season.charAt(0).toUpperCase() + season.slice(1)}
           </p>
           <button onClick={() => { setDraft(topic); setEditing(e => !e); }}
             style={{ background: "none", border: "none", cursor: "pointer", fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
@@ -247,9 +248,9 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today }) {
           </button>
         </div>
         {editing ? (
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <input value={draft} onChange={e => setDraft(e.target.value)}
-              style={{ flex: 1, background: "none", border: "none", borderBottom: "1px solid var(--sage-md)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink)", outline: "none", padding: "2px 0" }}
+              style={{ flex: 1, background: "none", border: "none", borderBottom: "1px solid var(--rule)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "var(--ink)", outline: "none", padding: "2px 0" }}
               onKeyDown={e => e.key === "Enter" && saveTopic()} autoFocus />
             <button onClick={saveTopic}
               style={{ background: "none", border: "none", cursor: "pointer", fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)" }}>
@@ -257,15 +258,15 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today }) {
             </button>
           </div>
         ) : (
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "var(--ink)", marginTop: 2 }}>{topic}</p>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 17, color: "var(--ink)" }}>{topic}</p>
         )}
       </div>
 
-      {/* Today's nature study step */}
-      {natureDay && (
-        <div style={{ marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid var(--rule)" }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
-            <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 20, padding: "2px 8px" }}>
+      {/* Section 2 — Today's nature study step */}
+      {natureDay ? (
+        <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid var(--rule)" }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
+            <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)" }}>
               {natureDay.step}
             </span>
             <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)" }}>{natureDay.label}</p>
@@ -274,9 +275,15 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today }) {
             {natureDay.instruction.replace("this week's subject", topic).replace("what you read about yesterday", topic)}
           </p>
         </div>
+      ) : (
+        <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid var(--rule)" }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.7 }}>
+            No nature study today — rest, observe freely, or spend time outside without an agenda.
+          </p>
+        </div>
       )}
 
-      {/* Outdoor time tracker */}
+      {/* Section 3 — Outdoor time tracker */}
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         <div style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}>
           <svg width="64" height="64" style={{ transform: "rotate(-90deg)" }}>
@@ -292,11 +299,13 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today }) {
           </div>
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 13, color: "var(--ink)", fontFamily: "'Playfair Display', serif", marginBottom: 2 }}>
-            {hours >= OUTDOOR_GOAL_HOURS ? "Goal reached ✦" : `${OUTDOOR_GOAL_HOURS - hours}h to go`}
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 4 }}>
+            Time outside this week
           </p>
-          <p className="caption italic" style={{ marginBottom: 8 }}>Outside this week · goal {OUTDOOR_GOAL_HOURS}h</p>
-          <div style={{ display: "flex", gap: 5 }}>
+          <p style={{ fontSize: 13, color: "var(--ink)", fontFamily: "'Playfair Display', serif", marginBottom: 6 }}>
+            {hours >= OUTDOOR_GOAL_HOURS ? "Goal reached ✦" : `${OUTDOOR_GOAL_HOURS - hours}h to go · goal ${OUTDOOR_GOAL_HOURS}h`}
+          </p>
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
             {[15, 30, 45, 60].map(n => (
               <button key={n} onClick={() => adjust(n)}
                 style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 2, padding: "4px 6px", fontSize: 10, fontFamily: "'Lato', sans-serif", color: "var(--sage)", cursor: "pointer" }}>
@@ -310,6 +319,7 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today }) {
           </div>
         </div>
       </div>
+
     </div>
   );
 }
