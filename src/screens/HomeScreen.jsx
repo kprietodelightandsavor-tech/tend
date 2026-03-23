@@ -583,6 +583,6 @@ const todayBlocks = DAY_SCHEDULE[today] || [];
 <MotherCulture />
 
      <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
-      </div>
+      </>
     );
   }
