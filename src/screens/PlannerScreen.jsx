@@ -252,12 +252,58 @@ function CopyDaySheet({ fromDay, onCopy, onClose }) {
   );
 }
 
+function WeekGrid({ schedule, onDayTap, todayDay }) {
+  const getBlockColor = (subject) => {
+    const s = subject.toLowerCase();
+    if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("morning")) return "#C29B61";
+    if (s.includes("nature") || s.includes("outdoor") || s.includes("narration")) return "#A9B786";
+    if (s.includes("co-op") || s.includes("chispa")) return "#8A7A9E";
+    if (s.includes("lunch") || s.includes("free") || s.includes("rest")) return "#9a9488";
+    return "#7a8f9e";
+  };
+  return (
+    <div style={{ overflowX: "auto", marginBottom: 24 }}>
+      <div style={{ display: "flex", gap: 8, minWidth: 300 }}>
+        {DAYS.map(day => {
+          const blocks = schedule[day] || [];
+          const isToday = day === todayDay;
+          return (
+            <div key={day} style={{ flex: 1, minWidth: 52, cursor: "pointer" }} onClick={() => onDayTap(day)}>
+              <div style={{ textAlign: "center", padding: "6px 4px 8px", borderBottom: `2px solid ${isToday ? "var(--sage)" : "var(--rule)"}`, marginBottom: 8 }}>
+                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: isToday ? "var(--sage)" : "var(--ink-faint)", fontWeight: isToday ? 700 : 400 }}>
+                  {day.slice(0, 3)}
+                </p>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                {blocks.length === 0 ? (
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic", textAlign: "center", marginTop: 8 }}>—</p>
+                ) : blocks.slice(0, 9).map((b, i) => {
+                  const color = getBlockColor(b.subject);
+                  return (
+                    <div key={i} style={{ borderLeft: `3px solid ${color}`, paddingLeft: 4, paddingTop: 2, paddingBottom: 2, background: `${color}18`, borderRadius: "0 2px 2px 0" }}>
+                      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 8, color: "var(--ink)", lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 48 }}>{b.subject}</p>
+                      {b.time && <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 7, color: "var(--ink-faint)", lineHeight: 1.2 }}>{b.time}</p>}
+                    </div>
+                  );
+                })}
+                {blocks.length > 9 && <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 7, color: "var(--ink-faint)", textAlign: "center" }}>+{blocks.length - 9}</p>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap a day to edit</p>
+    </div>
+  );
+}
+
 export default function PlannerScreen({ settings }) {
   const isPaid = settings?.isPaid || false;
   const todayIdx = new Date().getDay();
   const todayDay = todayIdx === 0 ? "Sunday" : todayIdx === 6 ? "Saturday" : DAYS[todayIdx - 1];
 
   const [activeDay, setActiveDay]       = useState(todayDay);
+  const [viewMode, setViewMode]         = useState("day");
   const [term, setTerm]                 = useState(settings?.term || TERM_SETTINGS.currentTerm);
   const [week, setWeek]                 = useState(settings?.week || TERM_SETTINGS.currentWeek);
   const [isRestWeek, setRestWeek]       = useState(settings?.isRestWeek || false);
@@ -271,7 +317,7 @@ export default function PlannerScreen({ settings }) {
 
   const [schedule, setSchedule] = useState(() => {
     const s = {};
-    DAYS.forEach(d => { s[d] = (DAY_SCHEDULE[d] || []).map((b, i) => ({ ...b, _idx: i })); });
+    DAYS.forEach(d => { s[d] = DAY_SCHEDULE[d].map((b, i) => ({ ...b, _idx: i })); });
     return s;
   });
 
@@ -304,9 +350,30 @@ export default function PlannerScreen({ settings }) {
   const copyDay  = (toDay) => setSchedule(prev => ({ ...prev, [toDay]: prev[activeDay].map(b => ({ ...b, id: `${b.id}-copy-${Date.now()}` })) }));
   const saveTerm = () => { setTerm(Number(draftTerm)); setWeek(Number(draftWeek)); setEditingTerm(false); };
 
+  const getBlockColor = (subject) => {
+    const s = subject.toLowerCase();
+    if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("morning")) return "#C29B61";
+    if (s.includes("nature") || s.includes("outdoor") || s.includes("narration")) return "#A9B786";
+    if (s.includes("co-op") || s.includes("chispa")) return "#8A7A9E";
+    if (s.includes("lunch") || s.includes("free") || s.includes("rest")) return "#9a9488";
+    return "#7a8f9e";
+  };
+
   return (
     <div className="screen">
-      <p className="eyebrow" style={{ marginBottom: 6 }}>Weekly Schedule</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <p className="eyebrow" style={{ marginBottom: 0 }}>Weekly Schedule</p>
+        {!isRestWeek && (
+          <div style={{ display: "flex", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 20, padding: 2 }}>
+            {["day", "week"].map(v => (
+              <button key={v} onClick={() => setViewMode(v)}
+                style={{ padding: "5px 12px", borderRadius: 18, border: "none", cursor: "pointer", background: viewMode === v ? "var(--sage)" : "none", color: viewMode === v ? "white" : "var(--sage)", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", transition: "all .2s" }}>
+                {v}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
       <h1 className="display serif" style={{ marginBottom: 20 }}>Planner</h1>
 
       {!isPaid ? (
@@ -350,6 +417,18 @@ export default function PlannerScreen({ settings }) {
             <RestWeekView />
           ) : (
             <>
+              {/* Week grid view */}
+              {viewMode === "week" && (
+                <WeekGrid
+                  schedule={schedule}
+                  onDayTap={(day) => { setActiveDay(day); setViewMode("day"); }}
+                  todayDay={todayDay}
+                />
+              )}
+
+              {/* Day view */}
+              {viewMode === "day" && (
+              <>
               <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 16, marginBottom: 4 }}>
                 {ALL_DAYS.map(d => (
                   <button key={d} className={`day-pill ${activeDay === d ? "active" : ""}`} onClick={() => setActiveDay(d)}>
@@ -400,6 +479,8 @@ export default function PlannerScreen({ settings }) {
                     </div>
                   ))}
                 </>
+              )}
+              </>
               )}
             </>
           )}
