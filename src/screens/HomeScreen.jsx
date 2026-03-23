@@ -582,9 +582,7 @@ const todayBlocks = DAY_SCHEDULE[today] || [];
 <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
 <MotherCulture />
 
-     return (
-  <>
-    {/* component content */}
-    <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
-  </>
-);
+     <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
+      </div>
+    );
+  }
