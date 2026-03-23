@@ -66,7 +66,7 @@ function AuthScreen() {
   return (
     <div style={{ minHeight: "100dvh", background: "var(--cream)", display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px 32px", maxWidth: 430, margin: "0 auto" }}>
       <div style={{ textAlign: "center", marginBottom: 48 }}>
-        <svg width="52" height="52" viewBox="0 0 64 64" fill="none" style={{ margin: "0 auto 16px", display: "block" }}>
+        <img src="/tend.icon.png" alt="Tend" style={{ width: 72, height: 72, borderRadius: 16, display: "block", margin: "0 auto 16px" }} /> fill="none" style={{ margin: "0 auto 16px", display: "block" }}>
           <circle cx="32" cy="32" r="30" stroke="#A9B786" strokeWidth="1" fill="#F7F4EF"/>
           <line x1="32" y1="52" x2="32" y2="14" stroke="#A9B786" strokeWidth="1.2" strokeLinecap="round"/>
           <line x1="32" y1="44" x2="24" y2="40" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
