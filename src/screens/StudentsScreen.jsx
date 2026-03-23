@@ -225,7 +225,7 @@ function StudentDetail({ student, onBack, onAddNarration, onDelete }) {
 }
 
 // ─── STUDENTS SCREEN ──────────────────────────────────────────────────────────
-export default function StudentsScreen() {
+export default function StudentsScreen({ onNavigate, settings }) {
   const [students, setStudents]     = useState(SEED_STUDENTS);
   const [activeIdx, setActiveIdx]   = useState(null);
   const [showAdd, setShowAdd]       = useState(false);
