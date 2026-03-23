@@ -31,11 +31,11 @@ export const BEAUTY_LOOP = {
 
 // ─── RISE & SHINE SUB-ITEMS (per day) ────────────────────────────────────────
 export const RISE_SHINE_ITEMS = {
-  Monday:    ["Using Language Well", "Independent Reading", "Nature Journal", "Commonplace Book"],
-  Tuesday:   ["Independent Reading", "Nature Journal", "Free Morning"],
-  Wednesday: ["Using Language Well", "Independent Reading", "History Reader", "Science Reader"],
-  Thursday:  ["Pack for Co-op", "Independent Reading", "Memory Work Review"],
-  Friday:    ["Using Language Well", "Independent Reading", "History Reader", "Commonplace Book"],
+  Monday:    ["Piano", "Math", "Reading", "Writing"],
+Tuesday:   ["Piano", "Math", "Reading", "Copywork"],
+Wednesday: ["Piano", "Math", "Reading", "Writing"],
+Thursday:  ["Piano", "Math", "Reading", "Copywork"],
+Friday:    ["Piano", "Math", "Reading", "Writing"],
 };
 
 // ─── DAILY SCHEDULE ───────────────────────────────────────────────────────────
