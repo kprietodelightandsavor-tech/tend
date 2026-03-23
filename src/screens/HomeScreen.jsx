@@ -397,7 +397,7 @@ function BeautyLoopHome({ today }) {
   const loops = BEAUTY_LOOP[today] || [];
   if (loops.length === 0) return null;
   return (
-    <div style={{ marginBottom: 28 }}>
+    <div style={{ marginBottom: 28, background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 4, padding: "16px 18px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
         <Icon.Leaf />
         <p className="eyebrow" style={{ marginBottom: 0 }}>Beauty Loop · {today}</p>
