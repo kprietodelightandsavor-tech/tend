@@ -522,14 +522,16 @@ const todayBlocks = DAY_SCHEDULE[today] || [];
 
       <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
 
-      {isRestWeek ? <RestWeekHome /> : (
-        <>
-          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} />
-          <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
-          <MotherCulture />
-          <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
-        </>
-      )}
+      {isRestWeek ? <RestWeekHome /> : (today === "Saturday" || today === "Sunday") ? (
+  <WeekendRhythmHome today={today} week={settings?.week || 1} />
+) : (
+  <>
+    <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} />
+    <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
+    <MotherCulture />
+    <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
+  </>
+)}
 
       <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
     </div>
