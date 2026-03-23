@@ -46,7 +46,7 @@ function NarrationPaywall() {
         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.75, maxWidth: 280, margin: "0 auto 22px" }}>
           Tend Premium unlocks unlimited narration sessions, all five habits, a full Lilies journal, and more.
         </p>
-        <a href="https://payhip.com/b/NMQ4D" target="_blank" rel="noopener noreferrer"
+        <a href="https://delightnsavor.gumroad.com/l/qrxxi" target="_blank" rel="noopener noreferrer"
           style={{ display: "inline-block", background: "var(--sage)", color: "white", fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", textDecoration: "none", padding: "13px 32px", borderRadius: 2, marginBottom: 10 }}>
           Unlock Premium · $47/year
         </a>
@@ -118,7 +118,7 @@ export default function NarrationScreen({ settings, onNavigate }) {
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.7, marginBottom: 12 }}>
               That was your last free narration. Upgrade to keep the practice going.
             </p>
-            <a href="https://payhip.com/b/NMQ4D" target="_blank" rel="noopener noreferrer"
+            <a href="https://delightnsavor.gumroad.com/l/qrxxi" target="_blank" rel="noopener noreferrer"
               style={{ display: "block", background: "var(--sage)", color: "white", fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", textDecoration: "none", padding: "11px 0", borderRadius: 2, textAlign: "center" }}>
               Unlock Premium →
             </a>
@@ -144,7 +144,7 @@ export default function NarrationScreen({ settings, onNavigate }) {
           <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--sage)", margin: 0 }}>
             {FREE_LIMIT - sessionCount} of {FREE_LIMIT} free sessions remaining
           </p>
-          <a href="https://payhip.com/b/NMQ4D" target="_blank" rel="noopener noreferrer"
+          <a href="https://delightnsavor.gumroad.com/l/qrxxi" target="_blank" rel="noopener noreferrer"
             style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".06em", color: "var(--sage)", textDecoration: "none" }}>
             Upgrade →
           </a>
