@@ -66,25 +66,19 @@ function AuthScreen() {
   return (
     <div style={{ minHeight: "100dvh", background: "var(--cream)", display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px 32px", maxWidth: 430, margin: "0 auto" }}>
       <div style={{ textAlign: "center", marginBottom: 48 }}>
-  <img src="/tend.icon.png" alt="Tend" style={{ width: 72, height: 72, borderRadius: 16, display: "block", margin: "0 auto 16px" }} />
-  <h1 className="display serif" style={{ fontSize: 32, marginBottom: 4 }}>Tend</h1>
-  <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)" }}>A daily rhythm for Charlotte Mason families</p>
-</div>
-          <line x1="32" y1="52" x2="32" y2="14" stroke="#A9B786" strokeWidth="1.2" strokeLinecap="round"/>
-          <line x1="32" y1="44" x2="24" y2="40" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="44" x2="40" y2="40" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="38" x2="23" y2="33" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="38" x2="41" y2="33" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="32" x2="24" y2="27" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="32" x2="40" y2="27" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="26" x2="25" y2="21" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="26" x2="39" y2="21" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-          
+        <img src="/tend.icon.png" alt="Tend" style={{ width: 72, height: 72, borderRadius: 16, display: "block", margin: "0 auto 16px" }} />
         <h1 className="display serif" style={{ fontSize: 32, marginBottom: 4 }}>Tend</h1>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)" }}>A daily rhythm for Charlotte Mason families</p>
       </div>
 
-    <div style={{ display: "flex", marginBottom: 28, border: "1px solid var(--rule)", borderRadius: 2, overflow: "hidden" }}>
+      <div style={{ display: "flex", marginBottom: 28, border: "1px solid var(--rule)", borderRadius: 2, overflow: "hidden" }}>
+        {["signin", "signup"].map(m => (
+          <button key={m} onClick={() => { setMode(m); setError(""); setSuccess(""); }}
+            style={{ flex: 1, padding: "10px 0", background: mode === m ? "var(--sage)" : "none", border: "none", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: mode === m ? "white" : "var(--ink-faint)", transition: "all .2s" }}>
+            {m === "signin" ? "Sign In" : "Create Account"}
+          </button>
+        ))}
+      </div>
 
       <input className="input-line" type="email" placeholder="Email address"
         value={email} onChange={e => setEmail(e.target.value)}
