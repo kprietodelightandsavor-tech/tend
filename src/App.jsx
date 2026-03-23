@@ -84,7 +84,7 @@ function AuthScreen() {
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)" }}>A daily rhythm for Charlotte Mason families</p>
       </div>
 
-      <div style={{ display: "flex", marginBottom: 28, border: "1px solid var(--rule)", borderRadius: 2, overflow: "hidden" }}>
+     <div style={{ display: "flex", marginBottom: 28, border: "1px solid var(--rule)", borderRadius: 2, overflow: "hidden" }}>
         {["signin", "signup"].map(m => (
           <button key={m} onClick={() => { setMode(m); setError(""); setSuccess(""); }}
             style={{ flex: 1, padding: "10px 0", background: mode === m ? "var(--sage)" : "none", border: "none", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: mode === m ? "white" : "var(--ink-faint)", transition: "all .2s" }}>
