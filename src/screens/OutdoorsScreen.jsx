@@ -89,12 +89,12 @@ const INITIAL_OBSERVATIONS = [
   { date: "March 11", note: "Tiny purple wildflowers along the fence line — first of the season." },
 ];
 
-export default function OutdoorsScreen({ onNavigate }) {
+export default function OutdoorsScreen({ onNavigate, settings }) {
   const [text, setText]         = useState("");
   const [logged, setLogged]     = useState(false);
   const [observations, setObs]  = useState(INITIAL_OBSERVATIONS);
   const [showPremium, setShowPremium] = useState(false);
-  const isPaid = false;
+  const isPaid = settings?.isPaid || false;
 
   const save = () => {
     if (!text.trim()) return;
