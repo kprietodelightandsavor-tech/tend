@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
+import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS,BEATUY_LOOP, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 
 // ─── HABIT ICONS ──────────────────────────────────────────────────────────────
 const HABIT_ICONS = {
@@ -494,7 +494,26 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
     </div>
   );
 }
-
+function BeautyLoopHome({ today }) {
+  const loops = BEAUTY_LOOP[today] || [];
+  if (loops.length === 0) return null;
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/>
+        </svg>
+        <p className="eyebrow" style={{ marginBottom: 0 }}>Beauty Loop · {today}</p>
+      </div>
+      {loops.map((l, i) => (
+        <div key={l.id} style={{ padding: "12px 0", borderBottom: i < loops.length - 1 ? "1px solid var(--rule)" : "none" }}>
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: l.note ? 4 : 0 }}>{l.label}</p>
+          {l.note && <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.65 }}>{l.note}</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
 // ─── HOME SCREEN ──────────────────────────────────────────────────────────────
 function WeekendRhythmHome({ today, week }) {
   const rhythm = today === "Saturday" ? getSaturdayRhythm(week) : getSundayRhythm(week);
@@ -558,11 +577,10 @@ const todayBlocks = DAY_SCHEDULE[today] || [];
 ) : (
   <>
     <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} />
-    <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
-    <MotherCulture />
-    <div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
-  </>
-)}
+<div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
+<BeautyLoopHome today={today} />
+<div style={{ height: 1, background: "var(--rule)", margin: "0 0 24px" }} />
+<MotherCulture />
 
       <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
     </div>
