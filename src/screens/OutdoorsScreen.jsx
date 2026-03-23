@@ -89,6 +89,127 @@ const INITIAL_OBSERVATIONS = [
   { date: "March 11", note: "Tiny purple wildflowers along the fence line — first of the season." },
 ];
 
+// NatureLoreBooks component — drop this into OutdoorsScreen.jsx
+// Place it after <NatureIdeaCard /> and before the observation log / text entry
+mponent
+
+const NATURE_LORE_BOOKS = [
+  {
+    title: "The Year Round",
+    author: "C.J. Hylander",
+    note: "A classic field guide organized by season — fauna, flora, and pen-and-ink drawings. Works alongside whatever you're seeing outside right now.",
+    tag: "All ages · Seasons",
+    current: true,
+  },
+  {
+    title: "Burgess Bird Book for Children",
+    author: "Thornton W. Burgess",
+    note: "Peter Rabbit and Jenny Wren spend a summer meeting every bird in the Old Orchard. Habits, songs, nesting — learned through story, not lecture.",
+    tag: "Living book · Birds",
+    current: true,
+  },
+  {
+    title: "Burgess Flower Book for Children",
+    author: "Thornton W. Burgess",
+    note: "Peter is back, this time discovering wildflowers across the Green Forest. Perfect for spring — read it as the bluebonnets and Indian paintbrushes come up.",
+    tag: "Living book · Wildflowers",
+    current: false,
+    seasonal: "Spring",
+  },
+  {
+    title: "Burgess Animal Book for Children",
+    author: "Thornton W. Burgess",
+    note: "The same gentle story-format as the bird and flower books — now covering mammals. A natural companion once you've finished the others.",
+    tag: "Living book · Animals",
+    current: false,
+  },
+];
+
+function NatureLoreBooks() {
+  const [expanded, setExpanded] = React.useState(false);
+
+  const visible = expanded ? NATURE_LORE_BOOKS : NATURE_LORE_BOOKS.slice(0, 2);
+
+  return (
+    <div style={{ marginTop: 28 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14 }}>
+        <p className="eyebrow" style={{ color: "var(--sage)", fontSize: 9 }}>Nature Lore</p>
+        <p className="caption italic" style={{ fontSize: 11, color: "var(--ink-lt)" }}>living books for the study of nature</p>
+      </div>
+
+      {visible.map((book, i) => (
+        <div key={i} style={{
+          padding: "16px 0",
+          borderBottom: "1px solid var(--rule)",
+          display: "flex",
+          gap: 14,
+          alignItems: "flex-start",
+        }}>
+          {/* Leaf ornament */}
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: "var(--sage-pale, rgba(107,120,95,0.08))",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0, marginTop: 2,
+          }}>
+            <span style={{ fontSize: 16, opacity: 0.7 }}>🌿</span>
+          </div>
+
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 3 }}>
+              <p className="serif" style={{ fontSize: 15, color: "var(--ink)", fontStyle: "italic", lineHeight: 1.2 }}>
+                {book.title}
+              </p>
+              {book.current && (
+                <span style={{
+                  fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase",
+                  padding: "2px 6px", borderRadius: 10,
+                  background: "rgba(107,120,95,0.12)", color: "var(--sage)",
+                  fontFamily: "'Lato', sans-serif",
+                }}>reading now</span>
+              )}
+              {book.seasonal && !book.current && (
+                <span style={{
+                  fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase",
+                  padding: "2px 6px", borderRadius: 10,
+                  background: "rgba(191,155,111,0.12)", color: "var(--amber, #9E7A4A)",
+                  fontFamily: "'Lato', sans-serif",
+                }}>{book.seasonal}</span>
+              )}
+            </div>
+            <p className="caption" style={{ marginBottom: 6, color: "var(--ink-lt)", fontSize: 11 }}>
+              {book.author}
+            </p>
+            <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-lt)", lineHeight: 1.7 }}>
+              {book.note}
+            </p>
+            <p style={{
+              fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase",
+              color: "var(--ink-lt)", marginTop: 6, fontFamily: "'Lato', sans-serif", opacity: 0.7,
+            }}>
+              {book.tag}
+            </p>
+          </div>
+        </div>
+      ))}
+
+      {NATURE_LORE_BOOKS.length > 2 && (
+        <button
+          onClick={() => setExpanded(e => !e)}
+          style={{
+            background: "none", border: "none", cursor: "pointer",
+            marginTop: 10, fontSize: 11, color: "var(--sage)",
+            fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase",
+            display: "block", width: "100%", textAlign: "left", padding: "4px 0",
+          }}
+        >
+          {expanded ? "Show less ↑" : `+ ${NATURE_LORE_BOOKS.length - 2} more books`}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function OutdoorsScreen({ onNavigate, settings }) {
   const [text, setText]         = useState("");
   const [logged, setLogged]     = useState(false);
@@ -126,7 +247,9 @@ export default function OutdoorsScreen({ onNavigate, settings }) {
 
       <div className="rule" />
 
-      <NatureIdeaCard isPaid={isPaid} onShowPremium={() => setShowPremium(true)} />
+     <NatureIdeaCard isPaid={isPaid} onShowPremium={() => setShowPremium(true)} />
+
+<NatureLoreBooks />
 
       {logged ? (
         <div style={{ textAlign: "center", padding: "20px 0" }}>
