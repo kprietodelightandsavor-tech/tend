@@ -154,64 +154,159 @@ export function PremiumModal({ onClose }) {
 // ─── OUTDOOR TRACKER ──────────────────────────────────────────────────────────
 const OUTDOOR_GOAL_HOURS = 15;
 
-function OutdoorTracker({ onNavigate, initialMinutes, saveToMeta }) {
+// ─── NATURE STUDY DATA ────────────────────────────────────────────────────────
+const NATURE_STORAGE_KEY = "tend_nature_topic";
+const NATURE_SEASON_KEY  = "tend_nature_season";
+
+const getSeason = () => {
+  const m = new Date().getMonth();
+  if (m >= 2 && m <= 4) return "spring";
+  if (m >= 5 && m <= 7) return "summer";
+  if (m >= 8 && m <= 10) return "autumn";
+  return "winter";
+};
+
+const SEASON_SUGGESTIONS = {
+  spring: ["spring wildflowers", "birds and their nests", "budding trees", "planting a garden"],
+  summer: ["beach and shore life", "shells and tide pools", "garden harvest", "summer insects"],
+  autumn: ["late-season wildflowers", "wild fruit and berries", "migratory birds", "harvest and winter garden"],
+  winter: ["deciduous and coniferous trees", "birds in winter", "buds on twigs", "winter skies"],
+};
+
+const NATURE_DAYS = {
+  Monday:    { step: "Read",     label: "Nature Lore Reading",        instruction: "Read aloud from your nature lore book. Introduce this week's subject." },
+  Tuesday:   { step: "Observe",  label: "Nature Walk",                instruction: "Go outside and look for what you read about yesterday. No pressure to find it — just look with fresh eyes." },
+  Wednesday: { step: "Record",   label: "Consider the Lilies Entry",  instruction: "Words or sentences, a sketch, and watercolor. Let the page be a living record of what you noticed." },
+  Thursday:  { step: "Finish",   label: "Continue Nature Lore",       instruction: "Finish any remaining reading, or revisit Tuesday's walk through narration or conversation." },
+  Friday:    { step: "Watch",    label: "Nature Clip",                 instruction: "Find a short video about this week's subject. Let the children see it in motion." },
+};
+
+function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today }) {
   const [minutes, setMinutes] = useState(initialMinutes || 0);
+  const [topic, setTopic]     = useState(() => {
+    try {
+      const season  = getSeason();
+      const saved   = JSON.parse(localStorage.getItem(NATURE_STORAGE_KEY) || "null");
+      const savedSeason = localStorage.getItem(NATURE_SEASON_KEY);
+      if (saved && savedSeason === season) return saved;
+      const suggestions = SEASON_SUGGESTIONS[season];
+      const idx = Math.floor(new Date().getDate() / 7) % suggestions.length;
+      return suggestions[idx];
+    } catch { return SEASON_SUGGESTIONS[getSeason()][0]; }
+  });
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft]     = useState(topic);
+
   useEffect(() => { setMinutes(initialMinutes || 0); }, [initialMinutes]);
+
+  const saveTopic = () => {
+    try {
+      localStorage.setItem(NATURE_STORAGE_KEY, JSON.stringify(draft));
+      localStorage.setItem(NATURE_SEASON_KEY, getSeason());
+    } catch {}
+    setTopic(draft);
+    setEditing(false);
+  };
+
   const adjust = async (n) => {
     const next = Math.max(0, minutes + n);
     setMinutes(next);
     if (saveToMeta) await saveToMeta({ outdoor_minutes: next });
   };
+
   const hours = Math.floor(minutes / 60);
   const mins  = minutes % 60;
   const pct   = Math.min(minutes / (OUTDOOR_GOAL_HOURS * 60), 1);
-  const r = 34, circ = 2 * Math.PI * r, dash = circ * pct;
+  const r = 28, circ = 2 * Math.PI * r, dash = circ * pct;
+  const season = getSeason();
+  const natureDay = NATURE_DAYS[today];
+
   return (
     <div className="card" style={{ marginBottom: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Icon.Leaf />
-          <p className="eyebrow" style={{ marginBottom: 0 }}>Outside This Week</p>
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Nature & Outdoors</p>
         </div>
         <button onClick={() => onNavigate("outdoors")}
           style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase" }}>
-          Nature <Icon.Arrow />
+          Log <Icon.Arrow />
         </button>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        <div style={{ position: "relative", width: 80, height: 80, flexShrink: 0 }}>
-          <svg width="80" height="80" style={{ transform: "rotate(-90deg)" }}>
-            <circle cx="40" cy="40" r={r} fill="none" stroke="var(--rule)" strokeWidth="5"/>
-            <circle cx="40" cy="40" r={r} fill="none" stroke="var(--sage)" strokeWidth="5"
+
+      {/* This week's topic */}
+      <div style={{ marginBottom: 16, padding: "10px 12px", background: "var(--sage-bg)", borderRadius: 3, border: "1px solid var(--sage-md)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)" }}>
+            This week · {season.charAt(0).toUpperCase() + season.slice(1)}
+          </p>
+          <button onClick={() => { setDraft(topic); setEditing(e => !e); }}
+            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
+            {editing ? "cancel" : "edit"}
+          </button>
+        </div>
+        {editing ? (
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
+            <input value={draft} onChange={e => setDraft(e.target.value)}
+              style={{ flex: 1, background: "none", border: "none", borderBottom: "1px solid var(--sage-md)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink)", outline: "none", padding: "2px 0" }}
+              onKeyDown={e => e.key === "Enter" && saveTopic()} autoFocus />
+            <button onClick={saveTopic}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)" }}>
+              save
+            </button>
+          </div>
+        ) : (
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "var(--ink)", marginTop: 2 }}>{topic}</p>
+        )}
+      </div>
+
+      {/* Today's nature study step */}
+      {natureDay && (
+        <div style={{ marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid var(--rule)" }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+            <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 20, padding: "2px 8px" }}>
+              {natureDay.step}
+            </span>
+            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)" }}>{natureDay.label}</p>
+          </div>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.65 }}>
+            {natureDay.instruction.replace("this week's subject", topic).replace("what you read about yesterday", topic)}
+          </p>
+        </div>
+      )}
+
+      {/* Outdoor time tracker */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}>
+          <svg width="64" height="64" style={{ transform: "rotate(-90deg)" }}>
+            <circle cx="32" cy="32" r={r} fill="none" stroke="var(--rule)" strokeWidth="4"/>
+            <circle cx="32" cy="32" r={r} fill="none" stroke="var(--sage)" strokeWidth="4"
               strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" style={{ transition: "stroke-dasharray .5s ease" }}/>
           </svg>
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <span className="serif" style={{ fontSize: 15, color: "var(--sage)", lineHeight: 1 }}>
-              {hours}<span style={{ fontSize: 10 }}>h</span>
-              {mins > 0 && <span>{mins}<span style={{ fontSize: 10 }}>m</span></span>}
+            <span className="serif" style={{ fontSize: 13, color: "var(--sage)", lineHeight: 1 }}>
+              {hours}<span style={{ fontSize: 9 }}>h</span>
+              {mins > 0 && <span>{mins}<span style={{ fontSize: 9 }}>m</span></span>}
             </span>
           </div>
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 14, color: "var(--ink)", fontFamily: "'Playfair Display', serif", marginBottom: 3 }}>
-            {hours >= OUTDOOR_GOAL_HOURS ? "Goal reached this week ✦" : `${OUTDOOR_GOAL_HOURS - hours} hr${mins > 0 ? ` ${60 - mins} min` : ""} to go`}
+          <p style={{ fontSize: 13, color: "var(--ink)", fontFamily: "'Playfair Display', serif", marginBottom: 2 }}>
+            {hours >= OUTDOOR_GOAL_HOURS ? "Goal reached ✦" : `${OUTDOOR_GOAL_HOURS - hours}h to go`}
           </p>
-          <p className="caption italic" style={{ marginBottom: 10 }}>Goal: {OUTDOOR_GOAL_HOURS} hrs / week</p>
-          <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+          <p className="caption italic" style={{ marginBottom: 8 }}>Outside this week · goal {OUTDOOR_GOAL_HOURS}h</p>
+          <div style={{ display: "flex", gap: 5 }}>
             {[15, 30, 45, 60].map(n => (
               <button key={n} onClick={() => adjust(n)}
-                style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 2, padding: "5px 7px", fontSize: 10, fontFamily: "'Lato', sans-serif", color: "var(--sage)", cursor: "pointer" }}>
+                style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 2, padding: "4px 6px", fontSize: 10, fontFamily: "'Lato', sans-serif", color: "var(--sage)", cursor: "pointer" }}>
                 +{n}m
               </button>
             ))}
-          </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            {[15, 30].map(n => (
-              <button key={n} onClick={() => adjust(-n)}
-                style={{ background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "4px 7px", fontSize: 10, fontFamily: "'Lato', sans-serif", color: "var(--ink-faint)", cursor: "pointer" }}>
-                −{n}m
-              </button>
-            ))}
+            <button onClick={() => adjust(-15)}
+              style={{ background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "4px 6px", fontSize: 10, fontFamily: "'Lato', sans-serif", color: "var(--ink-faint)", cursor: "pointer" }}>
+              −15m
+            </button>
           </div>
         </div>
       </div>
@@ -479,10 +574,11 @@ export default function HomeScreen({ onNavigate, settings }) {
         <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
 
-      <OutdoorTracker
+      <NatureOutdoorCard
         onNavigate={onNavigate}
         initialMinutes={settings?.outdoorMinutes || 0}
         saveToMeta={settings?.saveToMeta}
+        today={today}
       />
 
       <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
