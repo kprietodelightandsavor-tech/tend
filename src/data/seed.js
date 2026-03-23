@@ -3,22 +3,97 @@
 export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 // ─── BEAUTY LOOP (per day) ────────────────────────────────────────────────────
+// ─── UPDATED DAY_SCHEDULE and BEAUTY_LOOP for seed.js ────────────────────────
+// Replace the existing DAY_SCHEDULE and BEAUTY_LOOP exports in src/data/seed.js
+// with these. Everything else in seed.js stays the same.
+
+// ─── BEAUTY LOOP (per day) ────────────────────────────────────────────────────
 export const BEAUTY_LOOP = {
   Monday: [
-    { id: "bl-m-1", label: "Artist & Picture Study" },
-    { id: "bl-m-2", label: "Poet & Poetry Study" },
+    { id: "bl-m-1", label: "Artist Study", note: "Picture study — observe, narrate, sketch from memory." },
+    { id: "bl-m-2", label: "Poet & Poetry Study", note: "Read the poem aloud twice. What image stayed?" },
   ],
   Tuesday: [
-    { id: "bl-t-1", label: "Composer Study" },
+    { id: "bl-t-1", label: "Nature Walk", note: "Observe together — no agenda, just noticing." },
   ],
   Wednesday: [
-    { id: "bl-w-1", label: "Biography or Citizenship" },
-    { id: "bl-w-2", label: "Folk Song" },
+    { id: "bl-w-1", label: "Biography & Citizenship", note: "A life worth knowing. What made this person who they were?" },
+    { id: "bl-w-2", label: "Folk Song & Recitation", note: "Sing the folk song together. Practice current recitation piece." },
   ],
   Thursday: [],
   Friday: [
-    { id: "bl-f-1", label: "Hymn Study", note: "Introduce this term's hymn — it will carry through morning alarms." },
-    { id: "bl-f-2", label: "Recitation" },
+    { id: "bl-f-1", label: "Composer Study", note: "Listen to one piece all the way through without doing anything else." },
+    { id: "bl-f-2", label: "Hymn Study", note: "This term's hymn — sing it slowly. Let the words land." },
+  ],
+  Saturday: [],
+  Sunday: [],
+};
+
+// ─── RISE & SHINE SUB-ITEMS (per day) ────────────────────────────────────────
+export const RISE_SHINE_ITEMS = {
+  Monday:    ["Using Language Well", "Independent Reading", "Nature Journal", "Commonplace Book"],
+  Tuesday:   ["Independent Reading", "Nature Journal", "Free Morning"],
+  Wednesday: ["Using Language Well", "Independent Reading", "History Reader", "Science Reader"],
+  Thursday:  ["Pack for Co-op", "Independent Reading", "Memory Work Review"],
+  Friday:    ["Using Language Well", "Independent Reading", "History Reader", "Commonplace Book"],
+};
+
+// ─── DAILY SCHEDULE ───────────────────────────────────────────────────────────
+export const DAY_SCHEDULE = {
+  Monday: [
+    { id: "m-1",  subject: "Rise & Shine",                   time: "8:30",  note: "Wake up, morning chores, independent morning work", free: true, riseShine: true },
+    { id: "m-2",  subject: "Hymn, Bible & Scripture Memory", time: "10:15", note: "A Gentle Feast · hymn, scripture memory, family Bible reading" },
+    { id: "m-3",  subject: "Living Literature",              time: "10:45", note: "Read-aloud — Read Aloud Revival or A Gentle Feast list" },
+    { id: "m-4",  subject: "Outdoor Break",                  time: "11:00", note: "Play outside or finish morning animal chores", free: true },
+    { id: "m-5",  subject: "Using Language Well",            time: "11:45", note: "Grammar and language arts together before math" },
+    { id: "m-6",  subject: "Math + Independent Rotation",    time: "12:00", note: "Math lesson with one child · others rotate: Spanish/Rosetta Stone, nature journal, literature, history reader, science reader, commonplace book" },
+    { id: "m-7",  subject: "Lunch",                          time: "12:30", note: "", free: true },
+    { id: "m-8",  subject: "Artist Study & Science",         time: "1:15",  note: "Artist Study / Poet Study · anchor to science reading and narration" },
+    { id: "m-9",  subject: "Math + Independent Rotation",    time: "2:00",  note: "Math lesson with second child · others rotate independently" },
+    { id: "m-10", subject: "Spanish",                        time: "2:30",  note: "Spanish with Sophie" },
+    { id: "m-11", subject: "Afternoon Pursuits",             time: "3:00",  note: "Handicrafts, art, free reading, outdoor time, creative work", free: true },
+    { id: "m-12", subject: "House Reset & Animal Chores",    time: "5:30",  note: "Evening chores together — tend the home and animals", free: true },
+  ],
+  Tuesday: [
+    { id: "t-1",  subject: "Rise & Shine",                   time: "8:30",  note: "Wake up, morning chores, independent morning work", free: true, riseShine: true },
+    { id: "t-2",  subject: "Tuesday Rhythm",                 time: "9:30",  note: "CHISPA co-op · volunteer at rehab center · nature walk · field trip · or errand day — this day breathes", free: true },
+    { id: "t-3",  subject: "Afternoon Pursuits",             time: "3:00",  note: "Handicrafts, free reading, outdoor time, creative work", free: true },
+    { id: "t-4",  subject: "House Reset & Animal Chores",    time: "5:30",  note: "Evening chores together", free: true },
+  ],
+  Wednesday: [
+    { id: "w-1",  subject: "Rise & Shine",                   time: "8:30",  note: "Wake up, morning chores, independent morning work", free: true, riseShine: true },
+    { id: "w-2",  subject: "Hymn, Bible & Scripture Memory", time: "10:15", note: "A Gentle Feast · hymn, scripture memory, family Bible reading" },
+    { id: "w-3",  subject: "Living Literature",              time: "10:45", note: "Read-aloud — Read Aloud Revival or A Gentle Feast list" },
+    { id: "w-4",  subject: "Outdoor Break",                  time: "11:00", note: "Play outside or finish morning animal chores", free: true },
+    { id: "w-5",  subject: "Using Language Well",            time: "11:45", note: "Grammar and language arts together before math" },
+    { id: "w-6",  subject: "Math + Independent Rotation",    time: "12:00", note: "Math lesson with one child · others rotate: history reader, science reader, nature journal, commonplace book" },
+    { id: "w-7",  subject: "Lunch",                         time: "12:30", note: "", free: true },
+    { id: "w-8",  subject: "Biography & History",            time: "1:15",  note: "Biography/Citizenship · anchor to history spine reading and narration" },
+    { id: "w-9",  subject: "Math + Independent Rotation",    time: "2:00",  note: "Math lesson with second child · others rotate independently" },
+    { id: "w-10", subject: "Tennis",                         time: "2:30",  note: "Tennis · 2:30–4:00" },
+    { id: "w-11", subject: "Afternoon Pursuits",             time: "4:00",  note: "Handicrafts, free reading, creative work", free: true },
+    { id: "w-12", subject: "House Reset & Animal Chores",    time: "5:30",  note: "Evening chores together", free: true },
+  ],
+  Thursday: [
+    { id: "th-1", subject: "Rise & Shine",                   time: "8:30",  note: "Wake up, morning chores, pack for co-op", free: true, riseShine: true },
+    { id: "th-2", subject: "Hymn, Bible & Scripture Memory", time: "10:00", note: "A Gentle Feast · brief morning time before co-op" },
+    { id: "th-3", subject: "Co-op — BACH",                   time: "10:30", note: "Full co-op day — Living Literature & Language" },
+    { id: "th-4", subject: "Afternoon Pursuits",             time: "3:30",  note: "Rest, free time, outdoor play after co-op", free: true },
+    { id: "th-5", subject: "House Reset & Animal Chores",    time: "5:30",  note: "Evening chores together", free: true },
+  ],
+  Friday: [
+    { id: "f-1",  subject: "Rise & Shine",                   time: "8:30",  note: "Wake up, morning chores, independent morning work", free: true, riseShine: true },
+    { id: "f-2",  subject: "Hymn, Bible & Scripture Memory", time: "10:15", note: "A Gentle Feast · hymn, scripture memory, family Bible reading" },
+    { id: "f-3",  subject: "Living Literature",              time: "10:45", note: "Read-aloud — Read Aloud Revival or A Gentle Feast list" },
+    { id: "f-4",  subject: "Outdoor Break",                  time: "11:00", note: "Play outside or finish morning animal chores", free: true },
+    { id: "f-5",  subject: "Using Language Well",            time: "11:45", note: "Grammar and language arts together before math" },
+    { id: "f-6",  subject: "Math + Independent Rotation",    time: "12:00", note: "Math lesson with one child · others rotate: history reader, geography, nature journal, commonplace book" },
+    { id: "f-7",  subject: "Lunch",                          time: "12:30", note: "", free: true },
+    { id: "f-8",  subject: "Composer Study & Geography",     time: "1:15",  note: "Composer Study / Hymn Study · anchor to geography — Draw the World or current unit" },
+    { id: "f-9",  subject: "Math + Independent Rotation",    time: "2:00",  note: "Math lesson with second child · others rotate independently" },
+    { id: "f-10", subject: "Spanish",                        time: "2:30",  note: "Spanish with Sophie" },
+    { id: "f-11", subject: "Afternoon Pursuits",             time: "3:00",  note: "Handicrafts, art, free reading, outdoor time, creative work", free: true },
+    { id: "f-12", subject: "House Reset & Animal Chores",    time: "5:30",  note: "Evening chores together", free: true },
   ],
 };
 
