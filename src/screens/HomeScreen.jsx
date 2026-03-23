@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS } from "../data/seed";
+import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 
 // ─── HABIT ICONS ──────────────────────────────────────────────────────────────
 const HABIT_ICONS = {
@@ -496,6 +496,37 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
 }
 
 // ─── HOME SCREEN ──────────────────────────────────────────────────────────────
+function WeekendRhythmHome({ today, week }) {
+  const rhythm = today === "Saturday" ? getSaturdayRhythm(week) : getSundayRhythm(week);
+  const isSunday = today === "Sunday";
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ padding: "14px 16px", background: isSunday ? "var(--gold-bg)" : "var(--sage-bg)", borderRadius: 3, border: `1px solid ${isSunday ? "#E0CBA8" : "var(--sage-md)"}`, marginBottom: 20 }}>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: isSunday ? "var(--gold)" : "var(--sage)", marginBottom: 3 }}>
+          {today} · {rhythm.theme}
+        </p>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.7 }}>
+          "{rhythm.quote}"
+        </p>
+      </div>
+      <p className="eyebrow" style={{ marginBottom: 16 }}>A Gentle Shape for the Day</p>
+      {rhythm.items.map((item, i) => (
+        <div key={i} style={{ display: "flex", gap: 14, padding: "14px 0", borderBottom: i < rhythm.items.length - 1 ? "1px solid var(--rule)" : "none" }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: isSunday ? "var(--gold)" : "var(--sage)", opacity: .6, marginTop: 8, flexShrink: 0 }} />
+          <div>
+            <div style={{ display: "flex", gap: 10, marginBottom: 3 }}>
+              <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--ink-faint)" }}>{item.time}</span>
+              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)" }}>{item.label}</span>
+            </div>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.65 }}>{item.note}</p>
+          </div>
+        </div>
+      ))}
+      <p className="caption italic" style={{ marginTop: 16, textAlign: "center" }}>Not a schedule — just a gentle shape for the day.</p>
+    </div>
+  );
+}
+
 export default function HomeScreen({ onNavigate, settings }) {
   const hour        = new Date().getHours();
   const greeting    = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
