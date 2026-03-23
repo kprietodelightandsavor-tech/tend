@@ -448,7 +448,7 @@ export default function PlannerScreen({ settings }) {
                       <Icon.Copy /> Copy {activeDay}
                     </button>
                   </div>
-                  <BeautyLoopSection day={activeDay} />
+                  <BeautyLoopSection key={activeDay} day={activeDay} />
                   <div className="rule" style={{ margin: "0 0 20px" }} />
                   <button onClick={() => setAddingAfterIdx(-1)}
                     style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: "4px 0 12px", color: "var(--sage)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase" }}>
