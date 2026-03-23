@@ -79,13 +79,7 @@ function AuthScreen() {
           <line x1="32" y1="32" x2="40" y2="27" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
           <line x1="32" y1="26" x2="25" y2="21" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
           <line x1="32" y1="26" x2="39" y2="21" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-          <circle cx="32" cy="14" r="2" fill="#A9B786"/>
-          <circle cx="24" cy="40" r="1.2" fill="#A9B786"/><circle cx="40" cy="40" r="1.2" fill="#A9B786"/>
-          <circle cx="23" cy="33" r="1.2" fill="#A9B786"/><circle cx="41" cy="33" r="1.2" fill="#A9B786"/>
-          <circle cx="24" cy="27" r="1.2" fill="#A9B786"/><circle cx="40" cy="27" r="1.2" fill="#A9B786"/>
-          <circle cx="25" cy="21" r="1.2" fill="#A9B786"/><circle cx="39" cy="21" r="1.2" fill="#A9B786"/>
-          <text x="32" y="58" textAnchor="middle" fontFamily="Georgia, serif" fontSize="5" fill="#A9B786" fontStyle="italic" letterSpacing="0.08em">tend</text>
-        </svg>
+          
         <h1 className="display serif" style={{ fontSize: 32, marginBottom: 4 }}>Tend</h1>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)" }}>A daily rhythm for Charlotte Mason families</p>
       </div>
