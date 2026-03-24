@@ -154,69 +154,13 @@ export function PremiumModal({ onClose }) {
 // ─── OUTDOOR TRACKER ──────────────────────────────────────────────────────────
 const OUTDOOR_GOAL_HOURS = 15;
 
-// ─── NATURE STUDY CURRICULUM ──────────────────────────────────────────────────
-// Free tier gets the first topic per season. All others require Premium.
-const FREE_TOPIC_IDS = [0, 4, 7, 11]; // one per season
-
-// Season by astronomical dates (equinoxes/solstices)
+// Season by astronomical dates
 function getSeason() {
-  const now   = new Date();
-  const month = now.getMonth(); // 0-indexed
-  const day   = now.getDate();
-  // Spring: Mar 20 – Jun 20
+  const now = new Date(), month = now.getMonth(), day = now.getDate();
   if ((month === 2 && day >= 20) || month === 3 || month === 4 || (month === 5 && day < 21)) return "spring";
-  // Summer: Jun 21 – Sep 21
   if ((month === 5 && day >= 21) || month === 6 || month === 7 || (month === 8 && day < 22)) return "summer";
-  // Autumn: Sep 22 – Dec 20
   if ((month === 8 && day >= 22) || month === 9 || month === 10 || (month === 11 && day < 21)) return "autumn";
-  // Winter: Dec 21 – Mar 19
   return "winter";
-}
-
-const NATURE_TOPICS = [
-  { id: 0, season: "spring", title: "The Story of the Tadpole", subtitle: "Frogs, toads, tree frogs, spring peepers", book: "The Year Round · Spring section, Chapter 1", observe: "Go to a pond edge, puddle, or wet ditch and look for eggs, tadpoles, or frogs. Listen quietly for peeping. No pressure to find them — just look and listen with fresh eyes.", action: "Sit quietly near water for 5 minutes and watch for movement. Or sketch a simple frog shape from memory.", next: "When Trees Have Flowers" },
-  { id: 1, season: "spring", title: "When Trees Have Flowers", subtitle: "Dogwood, redbud, fruit trees, catkins of willow and oak", book: "The Year Round · Spring section, Chapter 2", observe: "Look for blooming trees on your walk. Notice the shape of the flowers — do they have petals, or are they fuzzy catkins? Smell one if you can reach it.", action: "Collect a fallen petal or catkin and press it into your journal. Sketch the shape of one blooming branch.", next: "The Birds Return" },
-  { id: 2, season: "spring", title: "The Birds Return", subtitle: "Woodpeckers, swallows, bluebirds, orioles, blue jays", book: "The Year Round · Spring section, Chapter 3", observe: "Stand still outside for 5 minutes and listen before you look. How many different bird voices can you hear? Then scan the trees for movement or nesting activity.", action: "Draw a bird silhouette on a branch. Write down one sound you heard — describe it in your own words.", next: "Pioneers Among the Flowers" },
-  { id: 3, season: "spring", title: "Pioneers Among the Flowers", subtitle: "Early spring wildflowers, skunk cabbage, jack-in-the-pulpit", book: "The Year Round · Spring section, Chapter 4", observe: "Hunt for the first brave blooms in damp, shady spots. Bluebonnets and Indian paintbrush are Texas pioneers. Look low to the ground — early wildflowers are often small.", action: "Press one small wildflower or leaf. Sketch its shape and note where you found it.", next: "The Story of the Caterpillar" },
-  { id: 4, season: "summer", title: "The Story of the Caterpillar", subtitle: "Monarch, swallowtail, luna moth — metamorphosis", book: "The Year Round · Summer section, Chapter 1", observe: "Look carefully on the undersides of leaves, especially milkweed, fennel, and parsley. Watch for tiny eggs, caterpillars, or chrysalises. Move slowly.", action: "Sketch a caterpillar's body — count the segments. Write one sentence about where you found it and what it was eating.", next: "Dwellers in the Damp and Shade" },
-  { id: 5, season: "summer", title: "Dwellers in the Damp and Shade", subtitle: "Mosses, ferns, lichens", book: "The Year Round · Summer section, Chapter 2", observe: "Find a shady, damp spot and look closely at what grows there. Touch different mosses — are they soft, springy, scratchy? Look for fern fronds unfurling.", action: "Make a rubbing of a fern frond or moss patch by laying paper over it and rubbing gently with a pencil.", next: "Animals Clad in Armor" },
-  { id: 6, season: "summer", title: "Animals Clad in Armor", subtitle: "Turtles, snakes, lizards", book: "The Year Round · Summer section, Chapter 3", observe: "Watch for reptiles sunning on rocks, logs, or pavement. Observe from a distance — notice the pattern on the skin, how still they stay, how quickly they move when disturbed.", action: "Sketch the scale pattern on a lizard or turtle shell from memory or a careful look.", next: "The Rear Guard of the Flowers" },
-  { id: 7, season: "autumn", title: "The Rear Guard of the Flowers", subtitle: "Asters, goldenrods, late wildflowers", book: "The Year Round · Autumn section, Chapter 1", observe: "Look for the last colorful blooms of the season — often purple, yellow, or white. Notice what insects are still visiting them.", action: "Sketch one late wildflower with attention to petal shape and color. Note the date.", next: "When Plants Travel" },
-  { id: 8, season: "autumn", title: "When Plants Travel", subtitle: "Seeds on wind, animals, and water — maples, dandelions, burrs", book: "The Year Round · Autumn section, Chapter 2", observe: "Look for seeds that are ready to travel. Blow a dandelion if you find one. Check your socks after a walk for hitchhiker seeds.", action: "Collect 3 different seeds and tape them into your journal. Label how each one travels.", next: "What's What Among the Berries" },
-  { id: 9, season: "autumn", title: "What's What Among the Berries", subtitle: "Viburnum, dogberry, wintergreen, beautyberry", book: "The Year Round · Autumn section, Chapter 3", observe: "Look for colorful berries and seed heads — Texas beautyberry is a vivid purple treat in autumn. Note which birds are eating them.", action: "Sketch a cluster of berries with attention to color and how they attach to the stem.", next: "How the Trees and Animals Prepare for Winter" },
-  { id: 10, season: "autumn", title: "How the Trees and Animals Prepare for Winter", subtitle: "Leaf color change, bare twigs, squirrel activity, bird flocks", book: "The Year Round · Autumn section, Chapter 4", observe: "Notice what is changing. Are leaves turning? Are squirrels burying acorns? Are birds gathering in flocks?", action: "Press two leaves from the same tree — one still green, one turning. Write what you notice about the differences.", next: "Christmas Trees" },
-  { id: 11, season: "winter", title: "Christmas Trees", subtitle: "Pines, spruces, firs, cedars, live oaks", book: "The Year Round · Winter section, Chapter 1", observe: "Find an evergreen tree and look closely. Compare needles — are they long or short, in bundles or single? Find a cone and notice how it opens and closes.", action: "Collect one small branch or needle cluster and sketch it carefully.", next: "The Leafless Trees" },
-  { id: 12, season: "winter", title: "The Leafless Trees", subtitle: "Buds, leaf scars, twigs of oaks, maples, pecans", book: "The Year Round · Winter section, Chapter 2", observe: "Look at a bare tree's silhouette against the sky. Notice the branching pattern. Find a twig with buds and look closely at their shape and color.", action: "Sketch the silhouette of one bare tree, or draw a single twig with its buds and leaf scars.", next: "Our Winter Birds" },
-  { id: 13, season: "winter", title: "Our Winter Birds", subtitle: "Chickadees, juncos, woodpeckers, ducks, winter residents", book: "The Year Round · Winter section, Chapter 3", observe: "Watch your feeders or a nearby tree for 10 minutes. Count how many different species you see. Notice which birds share space and which chase others away.", action: "Draw one bird you saw today — pay attention to where the colors are, not just what color it is.", next: "What the Earth Is Made Of" },
-  { id: 14, season: "winter", title: "What the Earth Is Made Of", subtitle: "Rocks, soil, minerals, frost patterns", book: "The Year Round · Winter section, Chapter 4", observe: "Pick up three rocks and really look at them. Are they smooth or rough? Do they have layers, sparkles, or color variation? Look at soil — notice its texture and smell.", action: "Arrange your three rocks from lightest to darkest. Sketch one with shading to show its texture.", next: "The Story of the Tadpole" },
-];
-
-function getNatureStudyTopic() {
-  try {
-    const manualIdx = localStorage.getItem("tend_nature_manual_idx");
-    if (manualIdx !== null) {
-      const idx = parseInt(manualIdx, 10);
-      if (!isNaN(idx) && idx >= 0 && idx < NATURE_TOPICS.length) {
-        return { ...NATURE_TOPICS[idx], index: idx, total: NATURE_TOPICS.length };
-      }
-    }
-    // Auto-detect: find first topic matching current season, advance by 2-week periods
-    const season = getSeason();
-    const seasonTopics = NATURE_TOPICS.filter(t => t.season === season);
-    const seasonStart = new Date();
-    // Use week of year within season to pick topic (2-week rotation)
-    const start = new Date(new Date().getFullYear(), 0, 1);
-    const weekOfYear = Math.floor((new Date() - start) / (7 * 24 * 60 * 60 * 1000));
-    const seasonIdx = Math.floor(weekOfYear / 2) % seasonTopics.length;
-    const topic = seasonTopics[seasonIdx];
-    return { ...topic, index: topic.id, total: NATURE_TOPICS.length };
-  } catch { return { ...NATURE_TOPICS[0], index: 0, total: NATURE_TOPICS.length }; }
-}
-
-function advanceNatureTopic(currentIdx) {
-  const next = (currentIdx + 1) % NATURE_TOPICS.length;
-  try { localStorage.setItem("tend_nature_manual_idx", String(next)); } catch {}
-  return next;
 }
 
 const NATURE_DAYS = {
@@ -228,22 +172,16 @@ const NATURE_DAYS = {
 };
 
 function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPaid }) {
-  const [minutes, setMinutes]   = useState(initialMinutes || 0);
-  const [topicIdx, setTopicIdx] = useState(() => getNatureStudyTopic()?.index || 0);
-  const [editing, setEditing]   = useState(false);
-  const [draft, setDraft]       = useState("");
+  const [minutes, setMinutes] = useState(initialMinutes || 0);
+  const [current, setCurrent] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("tend_nature_current") || "null");
+      if (saved?.subject) return saved;
+    } catch {}
+    return { subject: "The Story of the Tadpole", read: "Handbook of Nature Study – Spring section" };
+  });
 
   useEffect(() => { setMinutes(initialMinutes || 0); }, [initialMinutes]);
-
-  const topic     = getNatureStudyTopic ? getNatureStudyTopic() : null;
-  const season    = getSeason();
-  const natureDay = NATURE_DAYS[today];
-
-  const handleAdvance = () => {
-    if (!topic) return;
-    const nextIdx = advanceNatureTopic ? advanceNatureTopic(topic.index) : 0;
-    setTopicIdx(nextIdx);
-  };
 
   const adjust = async (n) => {
     const next = Math.max(0, minutes + n);
@@ -255,10 +193,11 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPa
   const mins  = minutes % 60;
   const pct   = Math.min(minutes / (OUTDOOR_GOAL_HOURS * 60), 1);
   const r = 28, circ = 2 * Math.PI * r, dash = circ * pct;
+  const season    = getSeason();
+  const natureDay = NATURE_DAYS[today];
 
   return (
     <div className="card" style={{ marginBottom: 20 }}>
-
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -268,78 +207,33 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPa
             {season.charAt(0).toUpperCase() + season.slice(1)}
           </span>
         </div>
-        <button onClick={() => onNavigate("outdoors")}
-          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase" }}>
-          Log <Icon.Arrow />
+        <button onClick={() => onNavigate("naturestudy")}
+          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "var(--sage)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase" }}>
+          All topics <Icon.Arrow />
         </button>
       </div>
 
-      {/* Section 1 — This week's subject */}
-      {topic && (
-        <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid var(--rule)" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 3 }}>
-                This week
-              </p>
-              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 2 }}>{topic.title}</p>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", marginBottom: 4 }}>{topic.subtitle}</p>
-              {topic.book && (
-                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".08em", color: "var(--sage)", opacity: 0.8 }}>
-                  📖 {topic.book}
-                </p>
-              )}
-            </div>
-            {isPaid && (
-              <button onClick={handleAdvance}
-                style={{ background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "4px 8px", cursor: "pointer", fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", flexShrink: 0, marginTop: 16 }}>
-                Next →
-              </button>
-            )}
-          </div>
-          {isPaid && topic.next && (
-            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".08em", color: "var(--ink-faint)", marginTop: 6, opacity: 0.7 }}>
-              Up next: {topic.next}
-            </p>
-          )}
-          {!isPaid && !FREE_TOPIC_IDS.includes(topic.id) && (
-            <div style={{ marginTop: 8, padding: "8px 10px", background: "var(--gold-bg)", border: "1px solid #E0CBA8", borderRadius: 3 }}>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--gold)", lineHeight: 1.6 }}>
-                ✦ Unlock all 15 nature study topics with Tend Premium.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Current topic */}
+      <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid var(--rule)" }}>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 3 }}>This week</p>
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 2 }}>{current.subject}</p>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".06em", color: "var(--sage)", opacity: 0.8 }}>📖 {current.read}</p>
+      </div>
 
-      {/* Section 2 — Today's nature study step */}
-      {natureDay && topic ? (
+      {/* Today's step */}
+      {natureDay && (
         <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid var(--rule)" }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
-            <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)" }}>
-              {natureDay.step}
-            </span>
+            <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)" }}>{natureDay.step}</span>
             <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)" }}>{natureDay.label}</p>
           </div>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", lineHeight: 1.6 }}>
-            {natureDay.getInstruction(topic)}
-          </p>
-          {today === "Tuesday" && topic.action && (
-            <div style={{ marginTop: 8 }}>
-              <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--gold)" }}>Action</span>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", lineHeight: 1.6, marginTop: 2 }}>{topic.action}</p>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid var(--rule)" }}>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", lineHeight: 1.6 }}>
-            No nature study step today — rest, observe freely, or spend time outside without an agenda.
+            {natureDay.getInstruction(current)}
           </p>
         </div>
       )}
 
-      {/* Section 3 — Outdoor time tracker */}
+      {/* Outdoor time tracker */}
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <div style={{ position: "relative", width: 56, height: 56, flexShrink: 0 }}>
           <svg width="56" height="56" style={{ transform: "rotate(-90deg)" }}>
