@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./styles/globals.css";
 import { supabase } from "./lib/supabase";
 
@@ -15,6 +15,172 @@ import MenuScreen       from "./screens/MenuScreen";
 import SettingsScreen   from "./screens/SettingsScreen";
 
 const NAV_SCREENS = ["home", "planner", "narration", "menu"];
+
+// ─── QUICK NOTES ─────────────────────────────────────────────────────────────
+const NOTES_KEY = "tend_quick_notes";
+const SUBJECTS  = ["General", "Math", "Language Arts", "History", "Science", "Geography", "Nature Study", "Read Aloud", "Spanish", "Co-op", "Other"];
+
+function loadNotes() {
+  try { return JSON.parse(localStorage.getItem(NOTES_KEY) || "[]"); } catch { return []; }
+}
+function saveNotes(notes) {
+  try { localStorage.setItem(NOTES_KEY, JSON.stringify(notes)); } catch {}
+}
+
+function QuickNotesSheet({ onClose, students }) {
+  const [notes, setNotes]       = useState(loadNotes);
+  const [text, setText]         = useState("");
+  const [subject, setSubject]   = useState("General");
+  const [child, setChild]       = useState("All");
+  const [listening, setListening] = useState(false);
+  const [view, setView]         = useState("add"); // "add" | "list"
+  const recogRef                = useRef(null);
+
+  const childOptions = ["All", ...(students || []).map(s => s.name)];
+
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const hasVoice = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  const voiceOk  = hasVoice && !isSafari;
+
+  const startListening = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const r  = new SR();
+    r.continuous = true; r.interimResults = true; r.lang = "en-US";
+    r.onresult = (e) => {
+      let t = "";
+      for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+      setText(t);
+    };
+    r.onerror = r.onend = () => setListening(false);
+    recogRef.current = r;
+    r.start();
+    setListening(true);
+  };
+  const stopListening = () => { recogRef.current?.stop(); setListening(false); };
+
+  const save = () => {
+    if (!text.trim()) return;
+    const note = {
+      id:      Date.now(),
+      text:    text.trim(),
+      subject,
+      child,
+      date:    new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      time:    new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+    };
+    const updated = [note, ...notes];
+    setNotes(updated);
+    saveNotes(updated);
+    setText("");
+    setView("list");
+  };
+
+  const deleteNote = (id) => {
+    const updated = notes.filter(n => n.id !== id);
+    setNotes(updated);
+    saveNotes(updated);
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.45)", zIndex: 400 }} onClick={onClose}>
+      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "24px 24px 52px", maxHeight: "88dvh", overflowY: "auto" }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 20px" }} />
+
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <p className="serif" style={{ fontSize: 20 }}>Quick Notes</p>
+          <div style={{ display: "flex", gap: 8 }}>
+            {["add", "list"].map(v => (
+              <button key={v} onClick={() => setView(v)}
+                style={{ padding: "5px 12px", borderRadius: 20, border: `1px solid ${view === v ? "var(--sage)" : "var(--rule)"}`, background: view === v ? "var(--sage-bg)" : "none", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: view === v ? "var(--sage)" : "var(--ink-faint)" }}>
+                {v === "add" ? "+ Add" : `Notes (${notes.length})`}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ADD VIEW */}
+        {view === "add" && (
+          <>
+            {/* Tags */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 6 }}>Subject</p>
+                <select value={subject} onChange={e => setSubject(e.target.value)}
+                  style={{ width: "100%", background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "7px 8px", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink)", outline: "none" }}>
+                  {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              {childOptions.length > 1 && (
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 6 }}>Child</p>
+                  <select value={child} onChange={e => setChild(e.target.value)}
+                    style={{ width: "100%", background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "7px 8px", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink)", outline: "none" }}>
+                    {childOptions.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Text area */}
+            <textarea className="textarea" placeholder="What do you want to remember?"
+              value={text} onChange={e => setText(e.target.value)} rows={4}
+              style={{ marginBottom: 14 }} />
+
+            {/* Voice + Save */}
+            <div style={{ display: "flex", gap: 10 }}>
+              {voiceOk && (
+                <button onClick={listening ? stopListening : startListening}
+                  style={{ width: 44, height: 44, borderRadius: "50%", background: listening ? "#c0392b" : "var(--sage-bg)", border: `1px solid ${listening ? "#c0392b" : "var(--sage-md)"}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .2s" }}>
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke={listening ? "white" : "var(--sage)"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+                    <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                  </svg>
+                </button>
+              )}
+              {!voiceOk && (
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", alignSelf: "center" }}>
+                  Voice requires Chrome
+                </p>
+              )}
+              <button className="btn-sage" style={{ flex: 1 }} onClick={save} disabled={!text.trim()}>
+                Save Note
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* LIST VIEW */}
+        {view === "list" && (
+          <>
+            {notes.length === 0 ? (
+              <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)", textAlign: "center", padding: "24px 0", lineHeight: 1.7 }}>
+                No notes yet. Tap + Add to capture something.
+              </p>
+            ) : notes.map(n => (
+              <div key={n.id} style={{ padding: "14px 0", borderBottom: "1px solid var(--rule)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 20, padding: "2px 7px" }}>{n.subject}</span>
+                    {n.child !== "All" && <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--gold)", background: "var(--gold-bg)", border: "1px solid #E0CBA8", borderRadius: 20, padding: "2px 7px" }}>{n.child}</span>}
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, color: "var(--ink-faint)" }}>{n.date} · {n.time}</p>
+                    <button onClick={() => deleteNote(n.id)}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", padding: 0 }}>✕</button>
+                  </div>
+                </div>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, color: "var(--ink)", lineHeight: 1.7 }}>{n.text}</p>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const SCREENS = {
   home:      HomeScreen,
@@ -242,6 +408,7 @@ export default function App() {
   // ── Main app ──────────────────────────────────────────────────────────────
   const ScreenComponent = SCREENS[screen] || HomeScreen;
   const showNav = NAV_SCREENS.includes(screen);
+  const [showNotes, setShowNotes] = useState(false);
 
   const settings = {
     name:           userData?.name         || "Friend",
@@ -262,7 +429,18 @@ export default function App() {
         <ScreenComponent onNavigate={id => setScreen(id)} settings={settings} onSave={saveSettings} />
       </div>
       <div style={{ position: "fixed", bottom: showNav ? 90 : 22, right: 22, fontFamily: "'Playfair Display', serif", fontSize: 56, color: "var(--sage)", opacity: .05, pointerEvents: "none", userSelect: "none", lineHeight: 1 }}>❧</div>
+
+      {/* Floating Quick Notes button */}
+      <button onClick={() => setShowNotes(true)}
+        style={{ position: "fixed", bottom: showNav ? 104 : 24, left: 22, width: 44, height: 44, borderRadius: "50%", background: "var(--cream)", border: "1.5px solid var(--sage-md)", boxShadow: "0 2px 12px rgba(0,0,0,.1)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, transition: "all .2s" }}>
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--sage)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+      </button>
+
       {showNav && <BottomNav active={screen} onNavigate={id => setScreen(id)} />}
+      {showNotes && <QuickNotesSheet onClose={() => setShowNotes(false)} students={userData?.children || []} />}
     </div>
   );
 }
