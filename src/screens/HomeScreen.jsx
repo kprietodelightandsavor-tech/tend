@@ -219,14 +219,6 @@ function advanceNatureTopic(currentIdx) {
   return next;
 }
 
-const getSeason = () => {
-  const m = new Date().getMonth();
-  if (m >= 2 && m <= 4) return "spring";
-  if (m >= 5 && m <= 7) return "summer";
-  if (m >= 8 && m <= 10) return "autumn";
-  return "winter";
-};
-
 const NATURE_DAYS = {
   Monday:    { step: "Read",    label: "Nature Lore Reading",        getInstruction: (t) => `Read aloud from your nature lore book. This week: ${t.title}. ${t.subtitle}.` },
   Tuesday:   { step: "Observe", label: "Nature Walk",               getInstruction: (t) => t.observe },
