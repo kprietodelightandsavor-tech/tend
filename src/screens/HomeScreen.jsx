@@ -155,22 +155,40 @@ export function PremiumModal({ onClose }) {
 const OUTDOOR_GOAL_HOURS = 15;
 
 // ─── NATURE STUDY CURRICULUM ──────────────────────────────────────────────────
+// Free tier gets the first topic per season. All others require Premium.
+const FREE_TOPIC_IDS = [0, 4, 7, 11]; // one per season
+
+// Season by astronomical dates (equinoxes/solstices)
+function getSeason() {
+  const now   = new Date();
+  const month = now.getMonth(); // 0-indexed
+  const day   = now.getDate();
+  // Spring: Mar 20 – Jun 20
+  if ((month === 2 && day >= 20) || month === 3 || month === 4 || (month === 5 && day < 21)) return "spring";
+  // Summer: Jun 21 – Sep 21
+  if ((month === 5 && day >= 21) || month === 6 || month === 7 || (month === 8 && day < 22)) return "summer";
+  // Autumn: Sep 22 – Dec 20
+  if ((month === 8 && day >= 22) || month === 9 || month === 10 || (month === 11 && day < 21)) return "autumn";
+  // Winter: Dec 21 – Mar 19
+  return "winter";
+}
+
 const NATURE_TOPICS = [
-  { id: 0, season: "spring", title: "The Story of the Tadpole", subtitle: "Frogs, toads, tree frogs, spring peepers", observe: "Go to a pond edge, puddle, or wet ditch and look for eggs, tadpoles, or frogs. Listen quietly for peeping. No pressure to find them — just look and listen with fresh eyes.", action: "Sit quietly near water for 5 minutes and watch for movement. Or sketch a simple frog shape from memory.", next: "When Trees Have Flowers" },
-  { id: 1, season: "spring", title: "When Trees Have Flowers", subtitle: "Dogwood, redbud, fruit trees, catkins of willow and oak", observe: "Look for blooming trees on your walk. Notice the shape of the flowers — do they have petals, or are they fuzzy catkins? Smell one if you can reach it.", action: "Collect a fallen petal or catkin and press it into your journal. Sketch the shape of one blooming branch.", next: "The Birds Return" },
-  { id: 2, season: "spring", title: "The Birds Return", subtitle: "Woodpeckers, swallows, bluebirds, orioles, blue jays", observe: "Stand still outside for 5 minutes and listen before you look. How many different bird voices can you hear? Then scan the trees for movement or nesting activity.", action: "Draw a bird silhouette on a branch. Write down one sound you heard — describe it in your own words.", next: "Pioneers Among the Flowers" },
-  { id: 3, season: "spring", title: "Pioneers Among the Flowers", subtitle: "Skunk cabbage, jack-in-the-pulpit, early spring wildflowers", observe: "Hunt for the first brave blooms in damp, shady spots. Bluebonnets and Indian paintbrush are Texas pioneers. Look low to the ground — early wildflowers are often small.", action: "Press one small wildflower or leaf. Sketch its shape and note where you found it.", next: "The Story of the Caterpillar" },
-  { id: 4, season: "summer", title: "The Story of the Caterpillar", subtitle: "Monarch, swallowtail, luna moth — metamorphosis", observe: "Look carefully on the undersides of leaves, especially milkweed, fennel, and parsley. Watch for tiny eggs, caterpillars, or chrysalises. Move slowly.", action: "Sketch a caterpillar's body — count the segments. Write one sentence about where you found it and what it was eating.", next: "Dwellers in the Damp and Shade" },
-  { id: 5, season: "summer", title: "Dwellers in the Damp and Shade", subtitle: "Mosses, ferns, lichens", observe: "Find a shady, damp spot and look closely at what grows there. Touch different mosses — are they soft, springy, scratchy? Look for fern fronds unfurling.", action: "Make a rubbing of a fern frond or moss patch by laying paper over it and rubbing gently with a pencil.", next: "Animals Clad in Armor" },
-  { id: 6, season: "summer", title: "Animals Clad in Armor", subtitle: "Turtles, snakes, lizards", observe: "Watch for reptiles sunning on rocks, logs, or pavement. Observe from a distance — notice the pattern on the skin, how still they stay, how quickly they move when disturbed.", action: "Sketch the scale pattern on a lizard or turtle shell from memory or a careful look.", next: "The Rear Guard of the Flowers" },
-  { id: 7, season: "autumn", title: "The Rear Guard of the Flowers", subtitle: "Asters, goldenrods, late wildflowers", observe: "Look for the last colorful blooms of the season — often purple, yellow, or white. Notice what insects are still visiting them.", action: "Sketch one late wildflower with attention to petal shape and color. Note the date.", next: "When Plants Travel" },
-  { id: 8, season: "autumn", title: "When Plants Travel", subtitle: "Seeds on wind, animals, and water — maples, dandelions, burrs", observe: "Look for seeds that are ready to travel. Blow a dandelion if you find one. Check your socks after a walk for hitchhiker seeds.", action: "Collect 3 different seeds and tape them into your journal. Label how each one travels.", next: "What's What Among the Berries" },
-  { id: 9, season: "autumn", title: "What's What Among the Berries", subtitle: "Viburnum, dogberry, wintergreen, beautyberry", observe: "Look for colorful berries and seed heads — Texas beautyberry is a vivid purple treat in autumn. Note which birds are eating them.", action: "Sketch a cluster of berries with attention to color and how they attach to the stem.", next: "How the Trees and Animals Prepare for Winter" },
-  { id: 10, season: "autumn", title: "How the Trees and Animals Prepare for Winter", subtitle: "Leaf color change, bare twigs, squirrel activity, bird flocks", observe: "Notice what is changing. Are leaves turning? Are squirrels burying acorns? Are birds gathering in flocks?", action: "Press two leaves from the same tree — one still green, one turning. Write what you notice about the differences.", next: "Christmas Trees" },
-  { id: 11, season: "winter", title: "Christmas Trees", subtitle: "Pines, spruces, firs, cedars, live oaks", observe: "Find an evergreen tree and look closely. Compare needles — are they long or short, in bundles or single? Find a cone and notice how it opens and closes.", action: "Collect one small branch or needle cluster and sketch it carefully.", next: "The Leafless Trees" },
-  { id: 12, season: "winter", title: "The Leafless Trees", subtitle: "Buds, leaf scars, twigs of oaks, maples, pecans", observe: "Look at a bare tree's silhouette against the sky. Notice the branching pattern. Find a twig with buds and look closely at their shape and color.", action: "Sketch the silhouette of one bare tree, or draw a single twig with its buds and leaf scars.", next: "Our Winter Birds" },
-  { id: 13, season: "winter", title: "Our Winter Birds", subtitle: "Chickadees, juncos, woodpeckers, ducks, winter residents", observe: "Watch your feeders or a nearby tree for 10 minutes. Count how many different species you see. Notice which birds share space and which chase others away.", action: "Draw one bird you saw today — pay attention to where the colors are, not just what color it is.", next: "What the Earth Is Made Of" },
-  { id: 14, season: "winter", title: "What the Earth Is Made Of", subtitle: "Rocks, soil, minerals, frost patterns", observe: "Pick up three rocks and really look at them. Are they smooth or rough? Do they have layers, sparkles, or color variation? Look at soil — notice its texture and smell.", action: "Arrange your three rocks from lightest to darkest. Sketch one with shading to show its texture.", next: "The Story of the Tadpole" },
+  { id: 0, season: "spring", title: "The Story of the Tadpole", subtitle: "Frogs, toads, tree frogs, spring peepers", book: "The Year Round · Spring section, Chapter 1", observe: "Go to a pond edge, puddle, or wet ditch and look for eggs, tadpoles, or frogs. Listen quietly for peeping. No pressure to find them — just look and listen with fresh eyes.", action: "Sit quietly near water for 5 minutes and watch for movement. Or sketch a simple frog shape from memory.", next: "When Trees Have Flowers" },
+  { id: 1, season: "spring", title: "When Trees Have Flowers", subtitle: "Dogwood, redbud, fruit trees, catkins of willow and oak", book: "The Year Round · Spring section, Chapter 2", observe: "Look for blooming trees on your walk. Notice the shape of the flowers — do they have petals, or are they fuzzy catkins? Smell one if you can reach it.", action: "Collect a fallen petal or catkin and press it into your journal. Sketch the shape of one blooming branch.", next: "The Birds Return" },
+  { id: 2, season: "spring", title: "The Birds Return", subtitle: "Woodpeckers, swallows, bluebirds, orioles, blue jays", book: "The Year Round · Spring section, Chapter 3", observe: "Stand still outside for 5 minutes and listen before you look. How many different bird voices can you hear? Then scan the trees for movement or nesting activity.", action: "Draw a bird silhouette on a branch. Write down one sound you heard — describe it in your own words.", next: "Pioneers Among the Flowers" },
+  { id: 3, season: "spring", title: "Pioneers Among the Flowers", subtitle: "Early spring wildflowers, skunk cabbage, jack-in-the-pulpit", book: "The Year Round · Spring section, Chapter 4", observe: "Hunt for the first brave blooms in damp, shady spots. Bluebonnets and Indian paintbrush are Texas pioneers. Look low to the ground — early wildflowers are often small.", action: "Press one small wildflower or leaf. Sketch its shape and note where you found it.", next: "The Story of the Caterpillar" },
+  { id: 4, season: "summer", title: "The Story of the Caterpillar", subtitle: "Monarch, swallowtail, luna moth — metamorphosis", book: "The Year Round · Summer section, Chapter 1", observe: "Look carefully on the undersides of leaves, especially milkweed, fennel, and parsley. Watch for tiny eggs, caterpillars, or chrysalises. Move slowly.", action: "Sketch a caterpillar's body — count the segments. Write one sentence about where you found it and what it was eating.", next: "Dwellers in the Damp and Shade" },
+  { id: 5, season: "summer", title: "Dwellers in the Damp and Shade", subtitle: "Mosses, ferns, lichens", book: "The Year Round · Summer section, Chapter 2", observe: "Find a shady, damp spot and look closely at what grows there. Touch different mosses — are they soft, springy, scratchy? Look for fern fronds unfurling.", action: "Make a rubbing of a fern frond or moss patch by laying paper over it and rubbing gently with a pencil.", next: "Animals Clad in Armor" },
+  { id: 6, season: "summer", title: "Animals Clad in Armor", subtitle: "Turtles, snakes, lizards", book: "The Year Round · Summer section, Chapter 3", observe: "Watch for reptiles sunning on rocks, logs, or pavement. Observe from a distance — notice the pattern on the skin, how still they stay, how quickly they move when disturbed.", action: "Sketch the scale pattern on a lizard or turtle shell from memory or a careful look.", next: "The Rear Guard of the Flowers" },
+  { id: 7, season: "autumn", title: "The Rear Guard of the Flowers", subtitle: "Asters, goldenrods, late wildflowers", book: "The Year Round · Autumn section, Chapter 1", observe: "Look for the last colorful blooms of the season — often purple, yellow, or white. Notice what insects are still visiting them.", action: "Sketch one late wildflower with attention to petal shape and color. Note the date.", next: "When Plants Travel" },
+  { id: 8, season: "autumn", title: "When Plants Travel", subtitle: "Seeds on wind, animals, and water — maples, dandelions, burrs", book: "The Year Round · Autumn section, Chapter 2", observe: "Look for seeds that are ready to travel. Blow a dandelion if you find one. Check your socks after a walk for hitchhiker seeds.", action: "Collect 3 different seeds and tape them into your journal. Label how each one travels.", next: "What's What Among the Berries" },
+  { id: 9, season: "autumn", title: "What's What Among the Berries", subtitle: "Viburnum, dogberry, wintergreen, beautyberry", book: "The Year Round · Autumn section, Chapter 3", observe: "Look for colorful berries and seed heads — Texas beautyberry is a vivid purple treat in autumn. Note which birds are eating them.", action: "Sketch a cluster of berries with attention to color and how they attach to the stem.", next: "How the Trees and Animals Prepare for Winter" },
+  { id: 10, season: "autumn", title: "How the Trees and Animals Prepare for Winter", subtitle: "Leaf color change, bare twigs, squirrel activity, bird flocks", book: "The Year Round · Autumn section, Chapter 4", observe: "Notice what is changing. Are leaves turning? Are squirrels burying acorns? Are birds gathering in flocks?", action: "Press two leaves from the same tree — one still green, one turning. Write what you notice about the differences.", next: "Christmas Trees" },
+  { id: 11, season: "winter", title: "Christmas Trees", subtitle: "Pines, spruces, firs, cedars, live oaks", book: "The Year Round · Winter section, Chapter 1", observe: "Find an evergreen tree and look closely. Compare needles — are they long or short, in bundles or single? Find a cone and notice how it opens and closes.", action: "Collect one small branch or needle cluster and sketch it carefully.", next: "The Leafless Trees" },
+  { id: 12, season: "winter", title: "The Leafless Trees", subtitle: "Buds, leaf scars, twigs of oaks, maples, pecans", book: "The Year Round · Winter section, Chapter 2", observe: "Look at a bare tree's silhouette against the sky. Notice the branching pattern. Find a twig with buds and look closely at their shape and color.", action: "Sketch the silhouette of one bare tree, or draw a single twig with its buds and leaf scars.", next: "Our Winter Birds" },
+  { id: 13, season: "winter", title: "Our Winter Birds", subtitle: "Chickadees, juncos, woodpeckers, ducks, winter residents", book: "The Year Round · Winter section, Chapter 3", observe: "Watch your feeders or a nearby tree for 10 minutes. Count how many different species you see. Notice which birds share space and which chase others away.", action: "Draw one bird you saw today — pay attention to where the colors are, not just what color it is.", next: "What the Earth Is Made Of" },
+  { id: 14, season: "winter", title: "What the Earth Is Made Of", subtitle: "Rocks, soil, minerals, frost patterns", book: "The Year Round · Winter section, Chapter 4", observe: "Pick up three rocks and really look at them. Are they smooth or rough? Do they have layers, sparkles, or color variation? Look at soil — notice its texture and smell.", action: "Arrange your three rocks from lightest to darkest. Sketch one with shading to show its texture.", next: "The Story of the Tadpole" },
 ];
 
 function getNatureStudyTopic() {
@@ -182,10 +200,16 @@ function getNatureStudyTopic() {
         return { ...NATURE_TOPICS[idx], index: idx, total: NATURE_TOPICS.length };
       }
     }
+    // Auto-detect: find first topic matching current season, advance by 2-week periods
+    const season = getSeason();
+    const seasonTopics = NATURE_TOPICS.filter(t => t.season === season);
+    const seasonStart = new Date();
+    // Use week of year within season to pick topic (2-week rotation)
     const start = new Date(new Date().getFullYear(), 0, 1);
-    const week  = Math.floor((new Date() - start) / (7 * 24 * 60 * 60 * 1000));
-    const idx   = Math.floor(week / 2) % NATURE_TOPICS.length;
-    return { ...NATURE_TOPICS[idx], index: idx, total: NATURE_TOPICS.length };
+    const weekOfYear = Math.floor((new Date() - start) / (7 * 24 * 60 * 60 * 1000));
+    const seasonIdx = Math.floor(weekOfYear / 2) % seasonTopics.length;
+    const topic = seasonTopics[seasonIdx];
+    return { ...topic, index: topic.id, total: NATURE_TOPICS.length };
   } catch { return { ...NATURE_TOPICS[0], index: 0, total: NATURE_TOPICS.length }; }
 }
 
@@ -211,7 +235,7 @@ const NATURE_DAYS = {
   Friday:    { step: "Watch",   label: "Nature Clip",               getInstruction: (t) => `Find a short video about ${t.title.toLowerCase()}. Let the children see it in motion before the weekend.` },
 };
 
-function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today }) {
+function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPaid }) {
   const [minutes, setMinutes]   = useState(initialMinutes || 0);
   const [topicIdx, setTopicIdx] = useState(() => getNatureStudyTopic()?.index || 0);
   const [editing, setEditing]   = useState(false);
@@ -267,17 +291,31 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today }) {
                 This week
               </p>
               <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 2 }}>{topic.title}</p>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)" }}>{topic.subtitle}</p>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", marginBottom: 4 }}>{topic.subtitle}</p>
+              {topic.book && (
+                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".08em", color: "var(--sage)", opacity: 0.8 }}>
+                  📖 {topic.book}
+                </p>
+              )}
             </div>
-            <button onClick={handleAdvance}
-              style={{ background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "4px 8px", cursor: "pointer", fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", flexShrink: 0, marginTop: 16 }}>
-              Next →
-            </button>
+            {isPaid && (
+              <button onClick={handleAdvance}
+                style={{ background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "4px 8px", cursor: "pointer", fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", flexShrink: 0, marginTop: 16 }}>
+                Next →
+              </button>
+            )}
           </div>
-          {topic.next && (
+          {isPaid && topic.next && (
             <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".08em", color: "var(--ink-faint)", marginTop: 6, opacity: 0.7 }}>
               Up next: {topic.next}
             </p>
+          )}
+          {!isPaid && !FREE_TOPIC_IDS.includes(topic.id) && (
+            <div style={{ marginTop: 8, padding: "8px 10px", background: "var(--gold-bg)", border: "1px solid #E0CBA8", borderRadius: 3 }}>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--gold)", lineHeight: 1.6 }}>
+                ✦ Unlock all 15 nature study topics with Tend Premium.
+              </p>
+            </div>
           )}
         </div>
       )}
@@ -416,22 +454,37 @@ function WeekendRhythmHome({ today, week }) {
 }
 
 // ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
+const SCHEDULE_KEY = "tend_schedule_state";
+
 function TodaySchedule({ today, blocks, onNavigate }) {
-  const [items, setItems]             = useState(blocks.map(b => ({ ...b, status: "pending", motherNote: "", subChecked: {} })));
+  const dateKey = new Date().toISOString().slice(0, 10); // "2026-03-24"
+
+  const [items, setItems] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(SCHEDULE_KEY) || "null");
+      if (saved && saved.date === dateKey && saved.day === today) {
+        return saved.items;
+      }
+    } catch {}
+    return blocks.map(b => ({ ...b, status: "pending", motherNote: "", subChecked: {} }));
+  });
+
   const [editingNote, setEditingNote] = useState(null);
   const lpt = useRef(null);
   const riseShineItems = RISE_SHINE_ITEMS[today] || [];
+
+  // Save to localStorage whenever items change
+  useEffect(() => {
+    try {
+      localStorage.setItem(SCHEDULE_KEY, JSON.stringify({ date: dateKey, day: today, items }));
+    } catch {}
+  }, [items]);
 
   const toggleDone = (id) => {
     setItems(prev => {
       const t = prev.find(b => b.id === id);
       if (!t) return prev;
-      if (t.status === "skipped") {
-        // unskip — restore to pending in original order
-        return prev.map(b => b.id === id ? { ...b, status: "pending" } : b)
-          .sort((a, b) => blocks.findIndex(x => x.id === a.id) - blocks.findIndex(x => x.id === b.id));
-      }
-      if (t.status === "done") {
+      if (t.status === "skipped" || t.status === "done") {
         return prev.map(b => b.id === id ? { ...b, status: "pending" } : b)
           .sort((a, b) => blocks.findIndex(x => x.id === a.id) - blocks.findIndex(x => x.id === b.id));
       }
@@ -641,6 +694,7 @@ export default function HomeScreen({ onNavigate, settings }) {
         initialMinutes={settings?.outdoorMinutes || 0}
         saveToMeta={settings?.saveToMeta}
         today={today}
+        isPaid={settings?.isPaid || false}
       />
 
       <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
