@@ -13,6 +13,7 @@ import LiliesScreen     from "./screens/LiliesScreen";
 import StudentsScreen   from "./screens/StudentsScreen";
 import MenuScreen       from "./screens/MenuScreen";
 import SettingsScreen   from "./screens/SettingsScreen";
+import NatureStudyScreen from "./screens/NatureStudyScreen";
 
 const NAV_SCREENS = ["home", "planner", "narration", "menu"];
 
@@ -192,6 +193,7 @@ const SCREENS = {
   students:  StudentsScreen,
   menu:      MenuScreen,
   settings:  SettingsScreen,
+  naturestudy: NatureStudyScreen,
 };
 
 const STORAGE_KEY = 'tend_user';
