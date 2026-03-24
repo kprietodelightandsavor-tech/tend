@@ -292,6 +292,7 @@ export default function App() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading]   = useState(true);
   const [screen, setScreen]     = useState("home");
+  const [showNotes, setShowNotes] = useState(false);
 
   // ── Save to both localStorage and Supabase metadata ──────────────────────
   const persistData = async (data) => {
@@ -408,7 +409,6 @@ export default function App() {
   // ── Main app ──────────────────────────────────────────────────────────────
   const ScreenComponent = SCREENS[screen] || HomeScreen;
   const showNav = NAV_SCREENS.includes(screen);
-  const [showNotes, setShowNotes] = useState(false);
 
   const settings = {
     name:           userData?.name         || "Friend",
