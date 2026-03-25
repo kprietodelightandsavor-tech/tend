@@ -14,6 +14,7 @@ import StudentsScreen   from "./screens/StudentsScreen";
 import MenuScreen       from "./screens/MenuScreen";
 import SettingsScreen   from "./screens/SettingsScreen";
 import NatureStudyScreen from "./screens/NatureStudyScreen";
+import TeachingLogScreen from "./screens/TeachingLogScreen";
 
 const NAV_SCREENS = ["home", "planner", "narration", "menu"];
 
@@ -21,65 +22,65 @@ const NAV_SCREENS = ["home", "planner", "narration", "menu"];
 const NOTES_KEY = "tend_quick_notes";
 const SUBJECTS  = ["General", "Math", "Language Arts", "History", "Science", "Geography", "Nature Study", "Read Aloud", "Spanish", "Co-op", "Other"];
 
-function loadNotes() {
-  try { return JSON.parse(localStorage.getItem(NOTES_KEY) || "[]"); } catch { return []; }
-}
-function saveNotes(notes) {
-  try { localStorage.setItem(NOTES_KEY, JSON.stringify(notes)); } catch {}
-}
-
-function QuickNotesSheet({ onClose, students }) {
-  const [notes, setNotes]       = useState(loadNotes);
-  const [text, setText]         = useState("");
-  const [subject, setSubject]   = useState("General");
-  const [child, setChild]       = useState("All");
+function QuickNotesSheet({ onClose, students, userId }) {
+  const [notes, setNotes]         = useState([]);
+  const [text, setText]           = useState("");
+  const [subject, setSubject]     = useState("General");
+  const [child, setChild]         = useState("All");
   const [listening, setListening] = useState(false);
-  const [view, setView]         = useState("add"); // "add" | "list"
-  const recogRef                = useRef(null);
+  const [saving, setSaving]       = useState(false);
+  const [loading, setLoading]     = useState(true);
+  const [view, setView]           = useState("add");
+  const recogRef                  = useRef(null);
 
   const childOptions = ["All", ...(students || []).map(s => s.name)];
-
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   const hasVoice = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
   const voiceOk  = hasVoice && !isSafari;
+
+  // Load notes from Supabase on open
+  useEffect(() => {
+    if (!userId) return;
+    supabase.from("notes").select("*").eq("user_id", userId).order("created_at", { ascending: false })
+      .then(({ data }) => { setNotes(data || []); setLoading(false); });
+  }, [userId]);
 
   const startListening = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const r  = new SR();
     r.continuous = true; r.interimResults = true; r.lang = "en-US";
-    r.onresult = (e) => {
-      let t = "";
-      for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
-      setText(t);
-    };
+    r.onresult = (e) => { let t = ""; for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript; setText(t); };
     r.onerror = r.onend = () => setListening(false);
-    recogRef.current = r;
-    r.start();
-    setListening(true);
+    recogRef.current = r; r.start(); setListening(true);
   };
   const stopListening = () => { recogRef.current?.stop(); setListening(false); };
 
-  const save = () => {
-    if (!text.trim()) return;
-    const note = {
-      id:      Date.now(),
-      text:    text.trim(),
+  const save = async () => {
+    if (!text.trim() || !userId) return;
+    setSaving(true);
+    const { data, error } = await supabase.from("notes").insert({
+      user_id:    userId,
+      text:       text.trim(),
       subject,
-      child,
-      date:    new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      time:    new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-    };
-    const updated = [note, ...notes];
-    setNotes(updated);
-    saveNotes(updated);
-    setText("");
-    setView("list");
+      child_name: child,
+    }).select().single();
+    if (!error && data) {
+      setNotes(prev => [data, ...prev]);
+      setText("");
+      setView("list");
+    }
+    setSaving(false);
   };
 
-  const deleteNote = (id) => {
-    const updated = notes.filter(n => n.id !== id);
-    setNotes(updated);
-    saveNotes(updated);
+  const deleteNote = async (id) => {
+    await supabase.from("notes").delete().eq("id", id);
+    setNotes(prev => prev.filter(n => n.id !== id));
+  };
+
+  const formatDate = (ts) => {
+    const d = new Date(ts);
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
+      " · " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   };
 
   return (
@@ -146,8 +147,8 @@ function QuickNotesSheet({ onClose, students }) {
                   Voice requires Chrome
                 </p>
               )}
-              <button className="btn-sage" style={{ flex: 1 }} onClick={save} disabled={!text.trim()}>
-                Save Note
+              <button className="btn-sage" style={{ flex: 1 }} onClick={save} disabled={!text.trim() || saving}>
+                {saving ? "Saving…" : "Save Note"}
               </button>
             </div>
           </>
@@ -156,7 +157,9 @@ function QuickNotesSheet({ onClose, students }) {
         {/* LIST VIEW */}
         {view === "list" && (
           <>
-            {notes.length === 0 ? (
+            {loading ? (
+              <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)", textAlign: "center", padding: "24px 0" }}>Loading notes…</p>
+            ) : notes.length === 0 ? (
               <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)", textAlign: "center", padding: "24px 0", lineHeight: 1.7 }}>
                 No notes yet. Tap + Add to capture something.
               </p>
@@ -165,10 +168,10 @@ function QuickNotesSheet({ onClose, students }) {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                   <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                     <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 20, padding: "2px 7px" }}>{n.subject}</span>
-                    {n.child !== "All" && <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--gold)", background: "var(--gold-bg)", border: "1px solid #E0CBA8", borderRadius: 20, padding: "2px 7px" }}>{n.child}</span>}
+                    {n.child_name !== "All" && <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--gold)", background: "var(--gold-bg)", border: "1px solid #E0CBA8", borderRadius: 20, padding: "2px 7px" }}>{n.child_name}</span>}
                   </div>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, color: "var(--ink-faint)" }}>{n.date} · {n.time}</p>
+                    <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, color: "var(--ink-faint)" }}>{formatDate(n.created_at)}</p>
                     <button onClick={() => deleteNote(n.id)}
                       style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", padding: 0 }}>✕</button>
                   </div>
@@ -193,7 +196,8 @@ const SCREENS = {
   students:  StudentsScreen,
   menu:      MenuScreen,
   settings:  SettingsScreen,
-  naturestudy: NatureStudyScreen,
+  naturestudy:  NatureStudyScreen,
+  teachinglog:  TeachingLogScreen,
 };
 
 const STORAGE_KEY = 'tend_user';
@@ -442,7 +446,7 @@ export default function App() {
       </button>
 
       {showNav && <BottomNav active={screen} onNavigate={id => setScreen(id)} />}
-      {showNotes && <QuickNotesSheet onClose={() => setShowNotes(false)} students={userData?.children || []} />}
+      {showNotes && <QuickNotesSheet onClose={() => setShowNotes(false)} students={userData?.children || []} userId={session?.user?.id} />}
     </div>
   );
 }
