@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { supabase } from "../lib/supabase";
 import { STUDENTS } from "../data/seed";
 
 const FREE_ENTRY_LIMIT = 3;
@@ -19,8 +20,9 @@ const LAYER_ONE_CRUMBS = ["Where are you? Describe it in plain, honest words.", 
 const LAYER_TWO_CRUMBS = ["What is the one thing from today you keep returning to?", "When did something make you stop — even for a breath?", "Zoom in. What specific detail made it real?", "Was there a word someone said that should be written down exactly as they said it?"];
 const LAYER_THREE_CRUMBS = ["What question does this moment open in you? You don't have to answer it.", "Does this connect to anything you've been reading? A line from Scripture?", "Where do you see grace in this moment?", "What do you want to say thank you for?"];
 
-const buildOwners = () => {
-  const mother = { id: "mother", name: "Kim", color: "#8A9E89", initial: "K" };
+const buildOwners = (settings) => {
+  const motherName = settings?.name || "Kim";
+  const mother = { id: "mother", name: motherName, color: "#8A9E89", initial: motherName.charAt(0).toUpperCase() };
   const students = STUDENTS.map(s => ({ id: `student-${s.id}`, name: s.name, color: s.color, initial: s.initial }));
   return [mother, ...students];
 };
@@ -53,7 +55,13 @@ function LiliesPaywallBanner() {
 
 function SketchBox({ image, onUpload, subject }) {
   const fileRef = useRef();
-  const handleFile = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => onUpload(ev.target.result); reader.readAsDataURL(file); };
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => onUpload(ev.target.result);
+    reader.readAsDataURL(file);
+  };
   const chatGptUrl = `https://chatgpt.com/?q=${encodeURIComponent(subject ? `How do I sketch and watercolor ${subject}? Simple step-by-step for a beginner nature journaler.` : "How do I sketch and watercolor a nature observation for a beginner?")}`;
   return (
     <div style={{ marginTop: 24, marginBottom: 8 }}>
@@ -71,8 +79,9 @@ function SketchBox({ image, onUpload, subject }) {
         </div>
       )}
       <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFile} />
-      <a href={chatGptUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--ink-faint)", textDecoration: "none" }}>
-        <Icon.ExternalLink /> Get sketching & watercolor guidance in ChatGPT
+      <a href={chatGptUrl} target="_blank" rel="noopener noreferrer"
+        style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--ink-faint)", textDecoration: "none", fontWeight: 600 }}>
+        <Icon.ExternalLink /> Get sketching & watercolor guidance →
       </a>
     </div>
   );
@@ -80,19 +89,27 @@ function SketchBox({ image, onUpload, subject }) {
 
 function printEntry(entry, ownerName) {
   const win = window.open("", "_blank");
-  const layerHtml = entry.type === "daily" ? `<div class="layer"><h3>Layer One</h3><p>${(entry.layer1||"").replace(/\n/g,"<br/>")}</p></div><div class="layer"><h3>Layer Two</h3><p>${(entry.layer2||"").replace(/\n/g,"<br/>")}</p></div><div class="layer"><h3>Layer Three</h3><p>${(entry.layer3||"").replace(/\n/g,"<br/>")}</p></div>` : `<div class="quote-block"><p class="quote">"${entry.quote||""}"</p><p class="source">— ${entry.source||""}</p></div><div class="layer"><h3>Response</h3><p>${(entry.response||"").replace(/\n/g,"<br/>")}</p></div>`;
+  const layerHtml = entry.type === "daily"
+    ? `<div class="layer"><h3>Layer One</h3><p>${(entry.layer1||"").replace(/\n/g,"<br/>")}</p></div><div class="layer"><h3>Layer Two</h3><p>${(entry.layer2||"").replace(/\n/g,"<br/>")}</p></div><div class="layer"><h3>Layer Three</h3><p>${(entry.layer3||"").replace(/\n/g,"<br/>")}</p></div>`
+    : `<div class="quote-block"><p class="quote">"${entry.quote||""}"</p><p class="source">— ${entry.source||""}</p></div><div class="layer"><h3>Response</h3><p>${(entry.response||"").replace(/\n/g,"<br/>")}</p></div>`;
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Consider the Lilies</title><style>body{font-family:Georgia,serif;max-width:580px;margin:60px auto;color:#2C2A27;padding:0 24px;}h1{font-size:28px;font-weight:400;}p{font-size:17px;line-height:1.85;color:#6B6760;font-style:italic;}.quote{font-size:20px;}.source{font-size:13px;color:#A8A49E;font-style:normal;}hr{border:none;border-top:1px solid #DDD8CF;margin:40px 0;}</style></head><body><p style="font-size:12px;color:#A8A49E;letter-spacing:.1em;text-transform:uppercase;">Consider the Lilies · ${ownerName} · ${entry.date}</p><h1>${entry.type==="daily"?"Daily Entry":"Commonplace"}</h1><hr/>${layerHtml}<hr/><p style="font-size:11px;color:#A8A49E;text-align:center;font-style:normal;">Delight & Savor · Consider the Lilies</p></body></html>`);
-  win.document.close(); win.print();
+  win.document.close();
+  win.print();
 }
 
-function NewDailyEntry({ onSave, onClose }) {
-  const [layer1, setLayer1] = useState(""); const [layer2, setLayer2] = useState(""); const [layer3, setLayer3] = useState("");
-  const [subject, setSubject] = useState(""); const [image, setImage] = useState(null);
+function NewDailyEntry({ onSave, onClose, saving }) {
+  const [layer1, setLayer1] = useState("");
+  const [layer2, setLayer2] = useState("");
+  const [layer3, setLayer3] = useState("");
+  const [subject, setSubject] = useState("");
+  const [image, setImage] = useState(null);
+
   const save = () => {
     if (!layer1.trim() && !layer2.trim() && !layer3.trim()) return;
     const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    onSave({ id: Date.now(), type: "daily", date: today, layer1, layer2, layer3, subject, image, preview: layer1 || layer2 || layer3 });
+    onSave({ type: "daily", date: today, layer1, layer2, layer3, subject, image, preview: layer1 || layer2 || layer3 });
   };
+
   return (
     <div className="screen">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
@@ -118,20 +135,26 @@ function NewDailyEntry({ onSave, onClose }) {
       </div>
       <SketchBox image={image} onUpload={setImage} subject={subject} />
       <div style={{ marginTop: 28, display: "flex", gap: 12 }}>
-        <button className="btn-sage" style={{ flex: 1 }} onClick={save}>Keep This Entry</button>
+        <button className="btn-sage" style={{ flex: 1, opacity: saving ? 0.6 : 1 }} onClick={save} disabled={saving}>
+          {saving ? "Saving…" : "Keep This Entry"}
+        </button>
         <button className="btn-ghost" onClick={onClose}>Cancel</button>
       </div>
     </div>
   );
 }
 
-function NewCommonplaceEntry({ onSave, onClose }) {
-  const [quote, setQuote] = useState(""); const [source, setSource] = useState(""); const [response, setResponse] = useState("");
+function NewCommonplaceEntry({ onSave, onClose, saving }) {
+  const [quote, setQuote] = useState("");
+  const [source, setSource] = useState("");
+  const [response, setResponse] = useState("");
+
   const save = () => {
     if (!quote.trim()) return;
     const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    onSave({ id: Date.now(), type: "commonplace", date: today, quote, source, response, preview: quote });
+    onSave({ type: "commonplace", date: today, quote, source, response, preview: quote });
   };
+
   return (
     <div className="screen">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
@@ -147,14 +170,16 @@ function NewCommonplaceEntry({ onSave, onClose }) {
       ))}
       <textarea className="textarea" style={{ marginTop: 12 }} placeholder="Write what comes…" value={response} onChange={e => setResponse(e.target.value)} rows={5} />
       <div style={{ marginTop: 28, display: "flex", gap: 12 }}>
-        <button className="btn-sage" style={{ flex: 1 }} onClick={save}>Keep This Entry</button>
+        <button className="btn-sage" style={{ flex: 1, opacity: saving ? 0.6 : 1 }} onClick={save} disabled={saving}>
+          {saving ? "Saving…" : "Keep This Entry"}
+        </button>
         <button className="btn-ghost" onClick={onClose}>Cancel</button>
       </div>
     </div>
   );
 }
 
-function EntryDetail({ entry, ownerName, onBack }) {
+function EntryDetail({ entry, ownerName, onBack, onDelete }) {
   return (
     <div className="screen">
       <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--sage)", fontSize: 13, letterSpacing: ".08em", textTransform: "uppercase", fontFamily: "'Lato', sans-serif", marginBottom: 24, display: "flex", alignItems: "center", gap: 6 }}>← Journal</button>
@@ -165,7 +190,7 @@ function EntryDetail({ entry, ownerName, onBack }) {
           {entry.layer1 && <div style={{ marginBottom: 28 }}><div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}><Icon.Leaf /><p className="eyebrow" style={{ marginBottom: 0, color: "var(--sage)" }}>Layer One · The Place</p></div><p className="corm italic" style={{ fontSize: 17, color: "var(--ink-lt)", lineHeight: 1.85 }}>{entry.layer1}</p></div>}
           {entry.layer2 && <div style={{ marginBottom: 28 }}><p className="eyebrow" style={{ marginBottom: 10, color: "var(--sage)" }}>Layer Two · The Moment</p><p className="corm italic" style={{ fontSize: 17, color: "var(--ink-lt)", lineHeight: 1.85 }}>{entry.layer2}</p></div>}
           {entry.layer3 && <div style={{ marginBottom: 28 }}><p className="eyebrow" style={{ marginBottom: 10, color: "var(--sage)" }}>Layer Three · The Thought or Wonder</p><p className="corm italic" style={{ fontSize: 17, color: "var(--ink-lt)", lineHeight: 1.85 }}>{entry.layer3}</p></div>}
-          {entry.image && <div style={{ marginBottom: 28 }}><p className="eyebrow" style={{ marginBottom: 10 }}>Sketch</p><img src={entry.image} alt="sketch" style={{ width: "100%", borderRadius: 3, border: "1px solid var(--rule)" }} /></div>}
+          {entry.image_url && <div style={{ marginBottom: 28 }}><p className="eyebrow" style={{ marginBottom: 10 }}>Sketch</p><img src={entry.image_url} alt="sketch" style={{ width: "100%", borderRadius: 3, border: "1px solid var(--rule)" }} /></div>}
         </>
       ) : (
         <>
@@ -175,42 +200,112 @@ function EntryDetail({ entry, ownerName, onBack }) {
         </>
       )}
       <div style={{ height: 1, background: "var(--rule)", margin: "8px 0 20px" }} />
-      <button onClick={() => printEntry(entry, ownerName)} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "10px 18px", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
-        <Icon.Print /> Print this entry
-      </button>
+      <div style={{ display: "flex", gap: 10 }}>
+        <button onClick={() => printEntry(entry, ownerName)} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "10px 18px", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
+          <Icon.Print /> Print
+        </button>
+        <button onClick={() => onDelete(entry.id)} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "1px solid #e0c4c4", borderRadius: 2, padding: "10px 18px", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "#c0796e" }}>
+          Delete
+        </button>
+      </div>
     </div>
   );
 }
 
-const SEED_ENTRIES = {
-  mother: [
-    { id: 1, type: "daily", date: "March 14, 2026", layer1: "On the back porch, just after 7am. The light is coming in low and gold from the east, catching the horses' backs. Cold enough to need a jacket.", layer2: "Marcos came out barefoot and stood beside me without saying anything. We watched a red-tailed hawk cross the pasture. He put his hand in mine.", layer3: "I keep thinking about how these mornings are numbered. Not in a sad way — in a holy way.", subject: "red-tailed hawk", image: null, preview: "On the back porch, just after 7am." },
-    { id: 2, type: "commonplace", date: "March 10, 2026", quote: "The imagination needs food above all things.", source: "Charlotte Mason, Vol. 2", response: "I keep coming back to this when I feel the pull to over-schedule.", preview: "The imagination needs food above all things." },
-  ],
-  "student-1": [{ id: 3, type: "commonplace", date: "March 13, 2026", quote: "To be wholly devoted to some intellectual exercise is to have succeeded in life.", source: "Robert Louis Stevenson", response: "I want this to be true of me.", preview: "To be wholly devoted to some intellectual exercise..." }],
-  "student-2": [],
-  "student-3": [],
-};
-
 export default function LiliesScreen({ settings, onNavigate }) {
   const isPaid = settings?.isPaid || false;
-  const owners = buildOwners();
+  const userId = settings?.userId || null;
+  const owners = buildOwners(settings);
+
   const [activeOwner, setActiveOwner] = useState(owners[0]);
-  const [entries, setEntries] = useState(SEED_ENTRIES);
+  const [entries, setEntries] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [view, setView] = useState("journal");
   const [activeEntry, setActiveEntry] = useState(null);
+
+  // ── Load entries from Supabase ──────────────────────────────────────────
+  useEffect(() => {
+    if (!userId) { setLoading(false); return; }
+    supabase
+      .from("journal_entries")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) { console.error("Journal load error:", error); setLoading(false); return; }
+        // Group entries by owner_id
+        const grouped = {};
+        (data || []).forEach(e => {
+          const key = e.owner_id || "mother";
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(e);
+        });
+        setEntries(grouped);
+        setLoading(false);
+      });
+  }, [userId]);
 
   const ownerEntries = entries[activeOwner.id] || [];
   const isAtLimit = !isPaid && ownerEntries.length >= FREE_ENTRY_LIMIT;
 
-  const addEntry = (entry) => {
-    setEntries(prev => ({ ...prev, [activeOwner.id]: [entry, ...(prev[activeOwner.id] || [])] }));
+  // ── Save entry to Supabase ──────────────────────────────────────────────
+  const addEntry = async (entry) => {
+    if (!userId) return;
+    setSaving(true);
+    const { data, error } = await supabase
+      .from("journal_entries")
+      .insert({
+        user_id:    userId,
+        owner_id:   activeOwner.id,
+        owner_name: activeOwner.name,
+        type:       entry.type,
+        date:       entry.date,
+        layer1:     entry.layer1  || null,
+        layer2:     entry.layer2  || null,
+        layer3:     entry.layer3  || null,
+        quote:      entry.quote   || null,
+        source:     entry.source  || null,
+        response:   entry.response|| null,
+        subject:    entry.subject || null,
+        image_url:  entry.image   || null,
+        preview:    entry.preview?.slice(0, 120) || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Journal save error:", error);
+    } else {
+      setEntries(prev => ({
+        ...prev,
+        [activeOwner.id]: [data, ...(prev[activeOwner.id] || [])],
+      }));
+      setView("journal");
+    }
+    setSaving(false);
+  };
+
+  // ── Delete entry from Supabase ──────────────────────────────────────────
+  const deleteEntry = async (id) => {
+    await supabase.from("journal_entries").delete().eq("id", id);
+    setEntries(prev => ({
+      ...prev,
+      [activeOwner.id]: (prev[activeOwner.id] || []).filter(e => e.id !== id),
+    }));
     setView("journal");
   };
 
-  if (view === "detail" && activeEntry) return <EntryDetail entry={activeEntry} ownerName={activeOwner.name} onBack={() => setView("journal")} />;
-  if (view === "new-daily") return <NewDailyEntry onSave={addEntry} onClose={() => setView("journal")} />;
-  if (view === "new-commonplace") return <NewCommonplaceEntry onSave={addEntry} onClose={() => setView("journal")} />;
+  if (view === "detail" && activeEntry) return (
+    <EntryDetail
+      entry={activeEntry}
+      ownerName={activeOwner.name}
+      onBack={() => setView("journal")}
+      onDelete={deleteEntry}
+    />
+  );
+  if (view === "new-daily") return <NewDailyEntry onSave={addEntry} onClose={() => setView("journal")} saving={saving} />;
+  if (view === "new-commonplace") return <NewCommonplaceEntry onSave={addEntry} onClose={() => setView("journal")} saving={saving} />;
 
   return (
     <div className="screen">
@@ -223,6 +318,7 @@ export default function LiliesScreen({ settings, onNavigate }) {
       <h1 className="display serif" style={{ marginBottom: 4 }}>Consider the<br />Lilies</h1>
       <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", marginBottom: 24, lineHeight: 1.7 }}>"Consider the lilies of the field, how they grow."</p>
 
+      {/* Owner tabs */}
       <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24 }}>
         {owners.map(o => (
           <button key={o.id} onClick={() => setActiveOwner(o)}
@@ -235,6 +331,7 @@ export default function LiliesScreen({ settings, onNavigate }) {
         ))}
       </div>
 
+      {/* New entry buttons */}
       <div style={{ display: "flex", gap: 10, marginBottom: isAtLimit ? 12 : 24 }}>
         <button onClick={() => isAtLimit ? null : setView("new-daily")} disabled={isAtLimit}
           style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: isAtLimit ? "rgba(0,0,0,.03)" : "var(--sage-bg)", border: `1px solid ${isAtLimit ? "var(--rule)" : "var(--sage-md)"}`, borderRadius: 2, padding: "11px 0", cursor: isAtLimit ? "default" : "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: isAtLimit ? "var(--ink-faint)" : "var(--sage)", opacity: isAtLimit ? 0.6 : 1 }}>
@@ -254,7 +351,11 @@ export default function LiliesScreen({ settings, onNavigate }) {
 
       <div style={{ height: 1, background: "var(--rule)", marginBottom: 4 }} />
 
-      {ownerEntries.length === 0 ? (
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "48px 0" }}>
+          <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)" }}>Loading entries…</p>
+        </div>
+      ) : ownerEntries.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 0" }}>
           <p className="ornament" style={{ fontSize: 36, marginBottom: 16 }}>✦</p>
           <p className="corm italic" style={{ fontSize: 17, color: "var(--ink-faint)", lineHeight: 1.8 }}>No entries yet for {activeOwner.name}.<br />Begin with what is in front of you.</p>
