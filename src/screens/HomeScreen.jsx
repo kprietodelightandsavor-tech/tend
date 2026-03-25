@@ -657,7 +657,42 @@ export default function HomeScreen({ onNavigate, settings }) {
   const dayOfYear  = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
   const cmQuote    = CM_QUOTES[dayOfYear % CM_QUOTES.length];
   const isWeekend  = today === "Saturday" || today === "Sunday";
+  // === TEMPORARY SUPABASE TEST - REMOVE LATER ===
+  useEffect(() => {
+    const runTest = async () => {
+      console.log("🚀 Starting Supabase connection test...");
 
+      // Test reading
+      const { data: blocks, error: readError } = await supabase
+        .from('schedule_blocks')
+        .select('*')
+        .limit(3);
+
+      if (readError) console.error("❌ Read error:", readError);
+      else console.log(`✅ Read OK — ${blocks?.length || 0} rows`, blocks);
+
+      // Test insert (minimal)
+      const testRow = {
+        user_id: "00000000-0000-0000-0000-000000000000",
+        owner_id: "Kim",
+        day: "Wednesday",
+        start_time: "07:30",
+        end_time: "08:00",
+        activity: "TEST BLOCK - can be deleted",
+        type: "routine"
+      };
+
+      const { error: insertError } = await supabase
+        .from('schedule_blocks')
+        .insert([testRow]);
+
+      if (insertError) console.error("❌ Insert error:", insertError);
+      else console.log("✅ Insert successful!");
+    };
+
+    runTest();
+  }, []);
+  
   return (
     <div className="screen">
       <p className="eyebrow" style={{ marginBottom: 6 }}>
