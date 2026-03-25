@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, BEAUTY_LOOP, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
+import { supabase } from "../lib/supabase";
 
 const HABIT_ICONS = {
   attention: () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>),
@@ -342,8 +343,38 @@ function WeekendRhythmHome({ today, week }) {
 // ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
 const SCHEDULE_KEY = "tend_schedule_state";
 
-function TodaySchedule({ today, blocks, onNavigate }) {
-  const dateKey = new Date().toISOString().slice(0, 10); // "2026-03-24"
+const SKIP_SUBJECTS = ["Rise & Shine", "Lunch", "Outdoor Break", "Afternoon Pursuits", "House Reset & Animal Chores", "Tuesday Rhythm", "Tennis"];
+
+function TodaySchedule({ today, blocks, onNavigate, settings }) {
+  const dateKey = new Date().toISOString().slice(0, 10);
+  const userId  = settings?.userId;
+
+  const getSchoolYear = () => {
+    const y = new Date().getFullYear(), m = new Date().getMonth();
+    return m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
+  };
+
+  const logToTeachingRecord = async (block, status) => {
+    if (!userId) return;
+    if (SKIP_SUBJECTS.some(s => block.subject.includes(s))) return;
+    if (block.free) return;
+    // Upsert — if already logged today for this subject, update status
+    const { data: existing } = await supabase.from("teaching_log")
+      .select("id").eq("user_id", userId).eq("date", dateKey).eq("subject", block.subject).maybeSingle();
+    if (existing) {
+      await supabase.from("teaching_log").update({ status }).eq("id", existing.id);
+    } else {
+      await supabase.from("teaching_log").insert({
+        user_id:     userId,
+        date:        dateKey,
+        subject:     block.subject,
+        time_block:  block.time || null,
+        note:        block.note || null,
+        status,
+        school_year: getSchoolYear(),
+      });
+    }
+  };
 
   const [items, setItems] = useState(() => {
     try {
@@ -373,9 +404,13 @@ function TodaySchedule({ today, blocks, onNavigate }) {
       if (t.status === "skipped" || t.status === "done") {
         next = prev.map(b => b.id === id ? { ...b, status: "pending" } : b)
           .sort((a, b) => blocks.findIndex(x => x.id === a.id) - blocks.findIndex(x => x.id === b.id));
+        // Remove from teaching log when un-completing
+        if (userId) supabase.from("teaching_log").delete()
+          .eq("user_id", userId).eq("date", dateKey).eq("subject", t.subject);
       } else {
         const u = prev.map(b => b.id === id ? { ...b, status: "done" } : b);
         next = [...u.filter(b => b.status === "pending"), ...u.filter(b => b.status !== "pending")];
+        logToTeachingRecord(t, "completed");
       }
       persist(next);
       return next;
@@ -384,9 +419,11 @@ function TodaySchedule({ today, blocks, onNavigate }) {
 
   const markSkipped = (id) => {
     setItems(prev => {
+      const t = prev.find(b => b.id === id);
       const u = prev.map(b => b.id === id ? { ...b, status: "skipped" } : b);
       const next = [...u.filter(b => b.status === "pending"), ...u.filter(b => b.status !== "pending")];
       persist(next);
+      if (t) logToTeachingRecord(t, "skipped");
       return next;
     });
   };
@@ -645,7 +682,7 @@ export default function HomeScreen({ onNavigate, settings }) {
         <WeekendRhythmHome today={today} week={settings?.week || 1} />
       ) : (
         <>
-          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} />
+          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} />
           <BeautyLoopHome today={today} />
           <MotherCulture />
           <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
