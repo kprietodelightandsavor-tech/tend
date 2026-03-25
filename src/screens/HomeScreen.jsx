@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, BEAUTY_LOOP, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { supabase } from "../lib/supabase";
 
@@ -645,56 +645,8 @@ export default function HomeScreen({ onNavigate, settings }) {
   const cmQuote = CM_QUOTES[dayOfYear % CM_QUOTES.length];
   const isWeekend = today === "Saturday" || today === "Sunday";
 
-  // === TEMPORARY SUPABASE TEST - REMOVE LATER ===
-useEffect(() => {
-  const runTest = async () => {
-    console.log("🚀 Starting Supabase connection test...");
 
-    // Test 1: Read
-    const { data: blocks, error: readError } = await supabase
-      .from('schedule_blocks')
-      .select('*')
-      .limit(5);
 
-    if (readError) {
-      console.error("❌ Read error:", readError);
-    } else {
-      console.log(`✅ Read successful — ${blocks?.length || 0} rows`, blocks);
-    }
-
-    // Test 2: Insert with correct column names
-    const testRow = {
-      user_id: "00000000-0000-0000-0000-000000000000",
-      day: "Wednesday",
-      time: "07:30",
-      subject: "TEST: Rise & Shine Block",
-      note: "Supabase insert test",
-      sort_order: 0,
-      rise_shine: false,
-      free: false,
-    };
-
-    const { data: inserted, error: insertError } = await supabase
-      .from('schedule_blocks')
-      .insert([testRow])
-      .select();
-
-    if (insertError) {
-      console.error("❌ Insert error:", insertError);
-    } else {
-      console.log("✅ Insert successful!", inserted);
-
-      // Clean up test row so it doesn't accumulate
-      await supabase
-        .from('schedule_blocks')
-        .delete()
-        .eq('subject', 'TEST: Rise & Shine Block')
-        .eq('user_id', '00000000-0000-0000-0000-000000000000');
-    }
-  };
-
-  runTest();
-}, []);
   return (
     <div className="screen">
       <p className="eyebrow" style={{ marginBottom: 6 }}>
