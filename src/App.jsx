@@ -38,20 +38,14 @@ function QuickNotesSheet({ onClose, students, userId }) {
   const hasVoice = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
   const voiceOk  = hasVoice && !isSafari;
 
-  const callNotes = async (body) => {
-    const res = await fetch("/.netlify/functions/notes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    return res.json();
-  };
 
   // Load notes on open
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
-    callNotes({ method: "list", userId })
-      .then(({ notes }) => { setNotes(notes || []); setLoading(false); })
+    supabase.from("notes").select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => { setNotes(data || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, [userId]);
 
@@ -65,23 +59,27 @@ function QuickNotesSheet({ onClose, students, userId }) {
   };
   const stopListening = () => { recogRef.current?.stop(); setListening(false); };
 
-  const save = async () => {
+  cconst save = async () => {
     if (!text.trim() || !userId) return;
     setSaving(true);
-    const { note, error } = await callNotes({ method: "insert", userId, text: text.trim(), subject, childName: child });
-    if (note) {
-      setNotes(prev => [note, ...prev]);
+    const { data, error } = await supabase.from("notes").insert({
+      user_id: userId,
+      text: text.trim(),
+      subject,
+      child_name: child,
+    }).select().single();
+    if (data) {
+      setNotes(prev => [data, ...prev]);
       setText("");
       setView("list");
     }
     if (error) console.error("Note save error:", error);
     setSaving(false);
   };
-
   const deleteNote = async (id) => {
-    await callNotes({ method: "delete", userId, noteId: id });
+    await supabase.from("notes").delete().eq("id", id).eq("user_id", userId);
     setNotes(prev => prev.filter(n => n.id !== id));
-  };
+  };;
 
   const formatDate = (ts) => {
     const d = new Date(ts);
