@@ -645,9 +645,6 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
 };
 
 // ─── HOME SCREEN ──────────────────────────────────────────────────────────────
-import { useEffect } from "react";
-import { supabase } from "../lib/supabase";
-
 export default function HomeScreen({ onNavigate, settings }) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
@@ -678,7 +675,7 @@ export default function HomeScreen({ onNavigate, settings }) {
         console.log(`✅ Read successful — ${blocks?.length || 0} rows`, blocks);
       }
 
-      // Test 2: Insert 
+      // Test 2: Insert
       const testRow = {
         user_id: "00000000-0000-0000-0000-000000000000",
         owner_id: "Kim",
@@ -703,6 +700,42 @@ export default function HomeScreen({ onNavigate, settings }) {
     runTest();
   }, []);
 
+  return (
+    <div className="screen">
+      <p className="eyebrow" style={{ marginBottom: 6 }}>
+        {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+      </p>
+      <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
+      <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
+        <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
+      </div>
+
+      <NatureOutdoorCard
+        onNavigate={onNavigate}
+        initialMinutes={settings?.outdoorMinutes || 0}
+        saveToMeta={settings?.saveToMeta}
+        today={today}
+        isPaid={settings?.isPaid || false}
+      />
+
+      <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
+
+      {isRestWeek ? (
+        <RestWeekHome />
+      ) : isWeekend ? (
+        <WeekendRhythmHome today={today} week={settings?.week || 1} />
+      ) : (
+        <>
+          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} />
+          <BeautyLoopHome today={today} />
+          <MotherCulture />
+          <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
+        </>
+      )}
+    </div>
+  );
+}
   return (
     <div className="screen">
       <p className="eyebrow" style={{ marginBottom: 6 }}>
