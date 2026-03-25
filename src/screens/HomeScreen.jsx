@@ -20,53 +20,7 @@ const Icon = {
   X:       () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
 };
 
-// === TEMPORARY SUPABASE TEST (safe) ===
-useEffect(() => {
-  const runTest = async () => {
-    console.log("🚀 Starting Supabase connection test...");
 
-    try {
-      // Test 1: Read from schedule_blocks
-      const { data: blocks, error: readError } = await supabase
-        .from('schedule_blocks')
-        .select('*')
-        .limit(3);
-
-      if (readError) {
-        console.error("❌ Read error (schedule_blocks):", readError);
-      } else {
-        console.log(`✅ Read successful — found ${blocks?.length || 0} schedule blocks`, blocks);
-      }
-
-      // Test 2: Try a minimal insert (we'll delete it later if needed)
-      const testInsert = {
-        user_id: "00000000-0000-0000-0000-000000000000",   // temporary placeholder
-        owner_id: "Kim",
-        day: "Wednesday",
-        start_time: "07:30",
-        end_time: "08:00",
-        activity: "TEST: Rise & Shine Block",
-        type: "routine"
-      };
-
-      const { data: insertData, error: insertError } = await supabase
-        .from('schedule_blocks')
-        .insert([testInsert])
-        .select();
-
-      if (insertError) {
-        console.error("❌ Insert error:", insertError);
-      } else {
-        console.log("✅ Insert successful!", insertData);
-      }
-
-    } catch (err) {
-      console.error("❌ Unexpected error in test:", err);
-    }
-  };
-
-  runTest();
-}, []);   // runs once when component mounts
 
 const getBlockColor = (subject) => {
   const s = subject.toLowerCase();
