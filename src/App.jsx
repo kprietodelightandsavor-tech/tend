@@ -56,7 +56,11 @@ function QuickNotesSheet({ onClose, students, userId }) {
   const stopListening = () => { recogRef.current?.stop(); setListening(false); };
 
   const save = async () => {
-    if (!text.trim() || !userId) return;
+    if (!text.trim()) return;
+    if (!userId) {
+      console.error("Tend: no userId available for note save");
+      return;
+    }
     setSaving(true);
     const { data, error } = await supabase.from("notes").insert({
       user_id:    userId,
@@ -64,6 +68,9 @@ function QuickNotesSheet({ onClose, students, userId }) {
       subject,
       child_name: child,
     }).select().single();
+    if (error) {
+      console.error("Tend: note save error", error);
+    }
     if (!error && data) {
       setNotes(prev => [data, ...prev]);
       setText("");
