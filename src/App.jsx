@@ -59,7 +59,7 @@ function QuickNotesSheet({ onClose, students, userId }) {
   };
   const stopListening = () => { recogRef.current?.stop(); setListening(false); };
 
-  cconst save = async () => {
+  const save = async () => {
     if (!text.trim() || !userId) return;
     setSaving(true);
     const { data, error } = await supabase.from("notes").insert({
