@@ -645,25 +645,23 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
 };
 
 // ─── HOME SCREEN ──────────────────────────────────────────────────────────────
-export default function HomeScreen({ onNavigate, settings };
-  const hour       = new Date().getHours();
-  const greeting   = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
-  const todayIdx   = new Date().getDay();
-  const today      = todayIdx === 0 ? "Sunday" : todayIdx === 6 ? "Saturday" : DAYS[todayIdx - 1];
-  const todayBlocks = DAY_SCHEDULE[today] || [];
-  const name       = settings?.name || "Friend";
-  const activeHabit = settings?.activeHabit || "attention";
-  const isRestWeek  = settings?.isRestWeek || false;
-  const dayOfYear  = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-  const cmQuote    = CM_QUOTES[dayOfYear % CM_QUOTES.length];
-  const isWeekend  = today === "Saturday" || today === "Sunday";
-  
-  // === TEMPORARY SUPABASE TEST - REMOVE LATER ===
-  useEffect(() => {
-    const runTest = async () => {
-      console.log("🚀 Starting Supabase connection test...");
+import { useEffect } from "react";
+import { supabase } from "../lib/supabase";
 
-       // === TEMPORARY SUPABASE TEST - REMOVE LATER ===
+export default function HomeScreen({ onNavigate, settings }) {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+  const todayIdx = new Date().getDay();
+  const today = todayIdx === 0 ? "Sunday" : todayIdx === 6 ? "Saturday" : DAYS[todayIdx - 1];
+  const todayBlocks = DAY_SCHEDULE[today] || [];
+  const name = settings?.name || "Friend";
+  const activeHabit = settings?.activeHabit || "attention";
+  const isRestWeek = settings?.isRestWeek || false;
+  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  const cmQuote = CM_QUOTES[dayOfYear % CM_QUOTES.length];
+  const isWeekend = today === "Saturday" || today === "Sunday";
+
+  // === TEMPORARY SUPABASE TEST - REMOVE LATER ===
   useEffect(() => {
     const runTest = async () => {
       console.log("🚀 Starting Supabase connection test...");
@@ -678,16 +676,16 @@ export default function HomeScreen({ onNavigate, settings };
         console.error("❌ Read error:", readError);
       } else {
         console.log(`✅ Read successful — ${blocks?.length || 0} rows`, blocks);
-      };
+      }
 
-      // Test 2: Insert using safer column names
+      // Test 2: Insert 
       const testRow = {
         user_id: "00000000-0000-0000-0000-000000000000",
         owner_id: "Kim",
         day: "Wednesday",
         start_time: "07:30",
         end_time: "08:00",
-        activity: "TEST: Rise & Shine Block",     // keep it for now
+        activity: "TEST: Rise & Shine Block",
         type: "routine"
       };
 
@@ -704,7 +702,7 @@ export default function HomeScreen({ onNavigate, settings };
 
     runTest();
   }, []);
-  
+
   return (
     <div className="screen">
       <p className="eyebrow" style={{ marginBottom: 6 }}>
@@ -740,4 +738,4 @@ export default function HomeScreen({ onNavigate, settings };
       )}
     </div>
   );
-};
+}
