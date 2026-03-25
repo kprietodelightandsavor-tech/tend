@@ -662,23 +662,31 @@ export default function HomeScreen({ onNavigate, settings }) {
     const runTest = async () => {
       console.log("🚀 Starting Supabase connection test...");
 
-      // Test reading
+       // === TEMPORARY SUPABASE TEST - REMOVE LATER ===
+  useEffect(() => {
+    const runTest = async () => {
+      console.log("🚀 Starting Supabase connection test...");
+
+      // Test 1: Read
       const { data: blocks, error: readError } = await supabase
         .from('schedule_blocks')
         .select('*')
-        .limit(3);
+        .limit(5);
 
-      if (readError) console.error("❌ Read error:", readError);
-      else console.log(`✅ Read OK — ${blocks?.length || 0} rows`, blocks);
+      if (readError) {
+        console.error("❌ Read error:", readError);
+      } else {
+        console.log(`✅ Read successful — ${blocks?.length || 0} rows`, blocks);
+      }
 
-      // Test insert (minimal)
+      // Test 2: Insert using safer column names
       const testRow = {
         user_id: "00000000-0000-0000-0000-000000000000",
         owner_id: "Kim",
         day: "Wednesday",
         start_time: "07:30",
         end_time: "08:00",
-        activity: "TEST BLOCK - can be deleted",
+        activity: "TEST: Rise & Shine Block",     // keep it for now
         type: "routine"
       };
 
@@ -686,8 +694,11 @@ export default function HomeScreen({ onNavigate, settings }) {
         .from('schedule_blocks')
         .insert([testRow]);
 
-      if (insertError) console.error("❌ Insert error:", insertError);
-      else console.log("✅ Insert successful!");
+      if (insertError) {
+        console.error("❌ Insert error:", insertError);
+      } else {
+        console.log("✅ Insert successful!");
+      }
     };
 
     runTest();
