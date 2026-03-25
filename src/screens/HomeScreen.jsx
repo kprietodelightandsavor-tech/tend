@@ -164,7 +164,7 @@ function getSeason() {
   if ((month === 5 && day >= 21) || month === 6 || month === 7 || (month === 8 && day < 22)) return "summer";
   if ((month === 8 && day >= 22) || month === 9 || month === 10 || (month === 11 && day < 21)) return "autumn";
   return "winter";
-}
+};
 
 const NATURE_DAYS = {
   Monday:    { step: "Read",    label: "Nature Lore Reading",        getInstruction: (t) => `Read aloud from your nature lore book. This week: ${t.title}. ${t.subtitle}.` },
@@ -271,7 +271,7 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPa
       </div>
     </div>
   );
-}
+};
 
 
 // ─── REST WEEK HOME ───────────────────────────────────────────────────────────
@@ -311,7 +311,7 @@ function RestWeekHome() {
       </div>
     </div>
   );
-}
+};
 
 // ─── WEEKEND RHYTHM HOME ──────────────────────────────────────────────────────
 function WeekendRhythmHome({ today, week }) {
@@ -341,7 +341,7 @@ function WeekendRhythmHome({ today, week }) {
       <p className="caption italic" style={{ marginTop: 16, textAlign: "center" }}>Not a schedule — just a gentle shape for the day.</p>
     </div>
   );
-}
+};
 
 // ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
 const SCHEDULE_KEY = "tend_schedule_state";
@@ -510,7 +510,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings }) {
       <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap to complete · Tap again to undo · Hold to skip</p>
     </div>
   );
-}
+};
 
 // ─── BEAUTY LOOP HOME ─────────────────────────────────────────────────────────
 const BEAUTY_KEY = "tend_beauty_state";
@@ -556,7 +556,7 @@ function BeautyLoopHome({ today }) {
       })}
     </div>
   );
-}
+};
 
 // ─── MOTHER CULTURE ───────────────────────────────────────────────────────────
 const MOTHER_KEY = "tend_mother_state";
@@ -591,7 +591,7 @@ function MotherCulture() {
       <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8, textDecoration: done ? "line-through" : "none", textDecorationColor: "#B8935A" }}>{MOTHER_CULTURE_DAILY[new Date().getDay()]}</p>
     </div>
   );
-}
+};
 
 // ─── HABIT FOCUS CARD ─────────────────────────────────────────────────────────
 const HABIT_STATE_KEY = "tend_habit_state";
@@ -642,10 +642,10 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
       </button>
     </div>
   );
-}
+};
 
 // ─── HOME SCREEN ──────────────────────────────────────────────────────────────
-export default function HomeScreen({ onNavigate, settings }) {
+export default function HomeScreen({ onNavigate, settings };
   const hour       = new Date().getHours();
   const greeting   = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
   const todayIdx   = new Date().getDay();
@@ -657,6 +657,7 @@ export default function HomeScreen({ onNavigate, settings }) {
   const dayOfYear  = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
   const cmQuote    = CM_QUOTES[dayOfYear % CM_QUOTES.length];
   const isWeekend  = today === "Saturday" || today === "Sunday";
+  
   // === TEMPORARY SUPABASE TEST - REMOVE LATER ===
   useEffect(() => {
     const runTest = async () => {
@@ -677,7 +678,7 @@ export default function HomeScreen({ onNavigate, settings }) {
         console.error("❌ Read error:", readError);
       } else {
         console.log(`✅ Read successful — ${blocks?.length || 0} rows`, blocks);
-      }
+      };
 
       // Test 2: Insert using safer column names
       const testRow = {
@@ -739,4 +740,4 @@ export default function HomeScreen({ onNavigate, settings }) {
       )}
     </div>
   );
-}
+};
