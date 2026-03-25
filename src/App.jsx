@@ -38,11 +38,21 @@ function QuickNotesSheet({ onClose, students, userId }) {
   const hasVoice = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
   const voiceOk  = hasVoice && !isSafari;
 
-  // Load notes from Supabase on open
+  const callNotes = async (body) => {
+    const res = await fetch("/.netlify/functions/notes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return res.json();
+  };
+
+  // Load notes on open
   useEffect(() => {
-    if (!userId) return;
-    supabase.from("notes").select("*").eq("user_id", userId).order("created_at", { ascending: false })
-      .then(({ data }) => { setNotes(data || []); setLoading(false); });
+    if (!userId) { setLoading(false); return; }
+    callNotes({ method: "list", userId })
+      .then(({ notes }) => { setNotes(notes || []); setLoading(false); })
+      .catch(() => setLoading(false));
   }, [userId]);
 
   const startListening = () => {
@@ -56,31 +66,20 @@ function QuickNotesSheet({ onClose, students, userId }) {
   const stopListening = () => { recogRef.current?.stop(); setListening(false); };
 
   const save = async () => {
-    if (!text.trim()) return;
-    if (!userId) {
-      console.error("Tend: no userId available for note save");
-      return;
-    }
+    if (!text.trim() || !userId) return;
     setSaving(true);
-    const { data, error } = await supabase.from("notes").insert({
-      user_id:    userId,
-      text:       text.trim(),
-      subject,
-      child_name: child,
-    }).select().single();
-    if (error) {
-      console.error("Tend: note save error", error);
-    }
-    if (!error && data) {
-      setNotes(prev => [data, ...prev]);
+    const { note, error } = await callNotes({ method: "insert", userId, text: text.trim(), subject, childName: child });
+    if (note) {
+      setNotes(prev => [note, ...prev]);
       setText("");
       setView("list");
     }
+    if (error) console.error("Note save error:", error);
     setSaving(false);
   };
 
   const deleteNote = async (id) => {
-    await supabase.from("notes").delete().eq("id", id);
+    await callNotes({ method: "delete", userId, noteId: id });
     setNotes(prev => prev.filter(n => n.id !== id));
   };
 
