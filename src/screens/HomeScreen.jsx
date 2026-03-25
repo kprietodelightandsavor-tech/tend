@@ -646,45 +646,55 @@ export default function HomeScreen({ onNavigate, settings }) {
   const isWeekend = today === "Saturday" || today === "Sunday";
 
   // === TEMPORARY SUPABASE TEST - REMOVE LATER ===
-  useEffect(() => {
-    const runTest = async () => {
-      console.log("🚀 Starting Supabase connection test...");
+useEffect(() => {
+  const runTest = async () => {
+    console.log("🚀 Starting Supabase connection test...");
 
-      const { data: blocks, error: readError } = await supabase
-        .from('schedule_blocks')
-        .select('*')
-        .limit(5);
+    // Test 1: Read
+    const { data: blocks, error: readError } = await supabase
+      .from('schedule_blocks')
+      .select('*')
+      .limit(5);
 
-      if (readError) {
-        console.error("❌ Read error:", readError);
-      } else {
-        console.log(`✅ Read successful — ${blocks?.length || 0} rows`, blocks);
-      }
+    if (readError) {
+      console.error("❌ Read error:", readError);
+    } else {
+      console.log(`✅ Read successful — ${blocks?.length || 0} rows`, blocks);
+    }
 
-      const testRow = {
-        user_id: "00000000-0000-0000-0000-000000000000",
-        owner_id: "Kim",
-        day: "Wednesday",
-        start_time: "07:30",
-        end_time: "08:00",
-        activity: "TEST: Rise & Shine Block",
-        type: "routine"
-      };
-
-      const { error: insertError } = await supabase
-        .from('schedule_blocks')
-        .insert([testRow]);
-
-      if (insertError) {
-        console.error("❌ Insert error:", insertError);
-      } else {
-        console.log("✅ Insert successful!");
-      }
+    // Test 2: Insert with correct column names
+    const testRow = {
+      user_id: "00000000-0000-0000-0000-000000000000",
+      day: "Wednesday",
+      time: "07:30",
+      subject: "TEST: Rise & Shine Block",
+      note: "Supabase insert test",
+      sort_order: 0,
+      rise_shine: false,
+      free: false,
     };
 
-    runTest();
-  }, []);
+    const { data: inserted, error: insertError } = await supabase
+      .from('schedule_blocks')
+      .insert([testRow])
+      .select();
 
+    if (insertError) {
+      console.error("❌ Insert error:", insertError);
+    } else {
+      console.log("✅ Insert successful!", inserted);
+
+      // Clean up test row so it doesn't accumulate
+      await supabase
+        .from('schedule_blocks')
+        .delete()
+        .eq('subject', 'TEST: Rise & Shine Block')
+        .eq('user_id', '00000000-0000-0000-0000-000000000000');
+    }
+  };
+
+  runTest();
+}, []);
   return (
     <div className="screen">
       <p className="eyebrow" style={{ marginBottom: 6 }}>
