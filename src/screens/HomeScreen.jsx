@@ -20,8 +20,6 @@ const Icon = {
   X:       () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
 };
 
-
-
 const getBlockColor = (subject) => {
   const s = subject.toLowerCase();
   if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("living literature") || s.includes("hymn")) return "var(--block-morning)";
@@ -157,14 +155,13 @@ export function PremiumModal({ onClose }) {
 // ─── OUTDOOR TRACKER ──────────────────────────────────────────────────────────
 const OUTDOOR_GOAL_HOURS = 15;
 
-// Season by astronomical dates
 function getSeason() {
   const now = new Date(), month = now.getMonth(), day = now.getDate();
   if ((month === 2 && day >= 20) || month === 3 || month === 4 || (month === 5 && day < 21)) return "spring";
   if ((month === 5 && day >= 21) || month === 6 || month === 7 || (month === 8 && day < 22)) return "summer";
   if ((month === 8 && day >= 22) || month === 9 || month === 10 || (month === 11 && day < 21)) return "autumn";
   return "winter";
-};
+}
 
 const NATURE_DAYS = {
   Monday:    { step: "Read",    label: "Nature Lore Reading",        getInstruction: (t) => `Read aloud from your nature lore book. This week: ${t.title}. ${t.subtitle}.` },
@@ -201,7 +198,6 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPa
 
   return (
     <div className="card" style={{ marginBottom: 20 }}>
-      {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Icon.Leaf />
@@ -215,15 +211,11 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPa
           All topics <Icon.Arrow />
         </button>
       </div>
-
-      {/* Current topic */}
       <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid var(--rule)" }}>
         <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 3 }}>This week</p>
         <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 2 }}>{current.subject}</p>
         <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".06em", color: "var(--sage)", opacity: 0.8 }}>📖 {current.read}</p>
       </div>
-
-      {/* Today's step */}
       {natureDay && (
         <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid var(--rule)" }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
@@ -235,8 +227,6 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPa
           </p>
         </div>
       )}
-
-      {/* Outdoor time tracker */}
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <div style={{ position: "relative", width: 56, height: 56, flexShrink: 0 }}>
           <svg width="56" height="56" style={{ transform: "rotate(-90deg)" }}>
@@ -271,8 +261,7 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPa
       </div>
     </div>
   );
-};
-
+}
 
 // ─── REST WEEK HOME ───────────────────────────────────────────────────────────
 function RestWeekHome() {
@@ -311,7 +300,7 @@ function RestWeekHome() {
       </div>
     </div>
   );
-};
+}
 
 // ─── WEEKEND RHYTHM HOME ──────────────────────────────────────────────────────
 function WeekendRhythmHome({ today, week }) {
@@ -341,7 +330,7 @@ function WeekendRhythmHome({ today, week }) {
       <p className="caption italic" style={{ marginTop: 16, textAlign: "center" }}>Not a schedule — just a gentle shape for the day.</p>
     </div>
   );
-};
+}
 
 // ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
 const SCHEDULE_KEY = "tend_schedule_state";
@@ -361,7 +350,6 @@ function TodaySchedule({ today, blocks, onNavigate, settings }) {
     if (!userId) return;
     if (SKIP_SUBJECTS.some(s => block.subject.includes(s))) return;
     if (block.free) return;
-    // Upsert — if already logged today for this subject, update status
     const { data: existing } = await supabase.from("teaching_log")
       .select("id").eq("user_id", userId).eq("date", dateKey).eq("subject", block.subject).maybeSingle();
     if (existing) {
@@ -407,7 +395,6 @@ function TodaySchedule({ today, blocks, onNavigate, settings }) {
       if (t.status === "skipped" || t.status === "done") {
         next = prev.map(b => b.id === id ? { ...b, status: "pending" } : b)
           .sort((a, b) => blocks.findIndex(x => x.id === a.id) - blocks.findIndex(x => x.id === b.id));
-        // Remove from teaching log when un-completing
         if (userId) supabase.from("teaching_log").delete()
           .eq("user_id", userId).eq("date", dateKey).eq("subject", t.subject);
       } else {
@@ -510,7 +497,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings }) {
       <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap to complete · Tap again to undo · Hold to skip</p>
     </div>
   );
-};
+}
 
 // ─── BEAUTY LOOP HOME ─────────────────────────────────────────────────────────
 const BEAUTY_KEY = "tend_beauty_state";
@@ -556,7 +543,7 @@ function BeautyLoopHome({ today }) {
       })}
     </div>
   );
-};
+}
 
 // ─── MOTHER CULTURE ───────────────────────────────────────────────────────────
 const MOTHER_KEY = "tend_mother_state";
@@ -591,7 +578,7 @@ function MotherCulture() {
       <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8, textDecoration: done ? "line-through" : "none", textDecorationColor: "#B8935A" }}>{MOTHER_CULTURE_DAILY[new Date().getDay()]}</p>
     </div>
   );
-};
+}
 
 // ─── HABIT FOCUS CARD ─────────────────────────────────────────────────────────
 const HABIT_STATE_KEY = "tend_habit_state";
@@ -642,7 +629,7 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
       </button>
     </div>
   );
-};
+}
 
 // ─── HOME SCREEN ──────────────────────────────────────────────────────────────
 export default function HomeScreen({ onNavigate, settings }) {
@@ -663,7 +650,6 @@ export default function HomeScreen({ onNavigate, settings }) {
     const runTest = async () => {
       console.log("🚀 Starting Supabase connection test...");
 
-      // Test 1: Read
       const { data: blocks, error: readError } = await supabase
         .from('schedule_blocks')
         .select('*')
@@ -675,7 +661,6 @@ export default function HomeScreen({ onNavigate, settings }) {
         console.log(`✅ Read successful — ${blocks?.length || 0} rows`, blocks);
       }
 
-      // Test 2: Insert
       const testRow = {
         user_id: "00000000-0000-0000-0000-000000000000",
         owner_id: "Kim",
@@ -700,116 +685,6 @@ export default function HomeScreen({ onNavigate, settings }) {
     runTest();
   }, []);
 
-  return (
-    <div className="screen">
-      <p className="eyebrow" style={{ marginBottom: 6 }}>
-        {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-      </p>
-      <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
-      <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
-        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
-        <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
-      </div>
-
-      <NatureOutdoorCard
-        onNavigate={onNavigate}
-        initialMinutes={settings?.outdoorMinutes || 0}
-        saveToMeta={settings?.saveToMeta}
-        today={today}
-        isPaid={settings?.isPaid || false}
-      />
-
-      <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
-
-      {isRestWeek ? (
-        <RestWeekHome />
-      ) : isWeekend ? (
-        <WeekendRhythmHome today={today} week={settings?.week || 1} />
-      ) : (
-        <>
-          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} />
-          <BeautyLoopHome today={today} />
-          <MotherCulture />
-          <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
-        </>
-      )}
-    </div>
-  );
-}
-
-  return (
-    <div className="screen">
-      <p className="eyebrow" style={{ marginBottom: 6 }}>
-        {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-      </p>
-      <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
-      <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
-        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
-        <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
-      </div>
-
-      <NatureOutdoorCard
-        onNavigate={onNavigate}
-        initialMinutes={settings?.outdoorMinutes || 0}
-        saveToMeta={settings?.saveToMeta}
-        today={today}
-        isPaid={settings?.isPaid || false}
-      />
-
-      <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
-
-      {isRestWeek ? (
-        <RestWeekHome />
-      ) : isWeekend ? (
-        <WeekendRhythmHome today={today} week={settings?.week || 1} />
-      ) : (
-        <>
-          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} />
-          <BeautyLoopHome today={today} />
-          <MotherCulture />
-          <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
-        </>
-      )}
-    </div>
-  );
-}
-
-  return (
-    <div className="screen">
-      <p className="eyebrow" style={{ marginBottom: 6 }}>
-        {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-      </p>
-      <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
-      <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
-        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
-        <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
-      </div>
-
-      <NatureOutdoorCard
-        onNavigate={onNavigate}
-        initialMinutes={settings?.outdoorMinutes || 0}
-        saveToMeta={settings?.saveToMeta}
-        today={today}
-        isPaid={settings?.isPaid || false}
-      />
-
-      <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
-
-      {isRestWeek ? (
-        <RestWeekHome />
-      ) : isWeekend ? (
-        <WeekendRhythmHome today={today} week={settings?.week || 1} />
-      ) : (
-        <>
-          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} />
-          <BeautyLoopHome today={today} />
-          <MotherCulture />
-          <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
-        </>
-      )}
-    </div>
-  );
-}
   return (
     <div className="screen">
       <p className="eyebrow" style={{ marginBottom: 6 }}>
