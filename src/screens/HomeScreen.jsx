@@ -271,47 +271,6 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPa
   );
 }
 
-// === TEMPORARY TEST - REMOVE LATER ===
-useEffect(() => {
-  const testSupabase = async () => {
-    console.log("🚀 Starting Supabase test...");
-
-    // Test 1: Try to read from schedule_blocks
-    const { data: blocks, error: blockError } = await supabase
-      .from('schedule_blocks')
-      .select('*')
-      .limit(5);
-
-    if (blockError) {
-      console.error("❌ Error reading schedule_blocks:", blockError);
-    } else {
-      console.log("✅ schedule_blocks read successful:", blocks || "empty");
-    }
-
-    // Test 2: Try to insert a test row (safe - we can delete later)
-    const testRow = {
-      user_id: "test-user-123",        // change this later to real user id if needed
-      owner_id: "Kim",                 // or whatever your owner field expects
-      start_time: "07:30",
-      end_time: "08:00",
-      activity: "Test Rise & Shine Block",
-      day: "Wednesday"
-    };
-
-    const { data: insertData, error: insertError } = await supabase
-      .from('schedule_blocks')
-      .insert([testRow])
-      .select();
-
-    if (insertError) {
-      console.error("❌ Error inserting into schedule_blocks:", insertError);
-    } else {
-      console.log("✅ Insert successful! New row:", insertData);
-    }
-  };
-
-  testSupabase();
-}, []);
 
 // ─── REST WEEK HOME ───────────────────────────────────────────────────────────
 function RestWeekHome() {
