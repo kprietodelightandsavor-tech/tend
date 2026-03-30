@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
+import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, BEAUTY_LOOP, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { supabase } from "../lib/supabase";
 
 const HABIT_ICONS = {
@@ -410,6 +410,23 @@ function getDayBeautyItems(today, week) {
   return result;
 }
 
+// ─── WOVEN BEAUTY CARD ────────────────────────────────────────────────────────
+function WovenBeautyCard({ item, checked, onToggle }) {
+  return (
+    <div onClick={onToggle}
+      style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0 8px 14px", margin: "4px 0", background: checked ? "rgba(169,183,134,.08)" : "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, cursor: "pointer", opacity: checked ? 0.5 : 1, transition: "all .2s" }}>
+      <div style={{ width: 16, height: 16, borderRadius: "50%", border: "1.5px solid var(--sage-md)", background: checked ? "var(--sage)" : "none", flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s" }}>
+        {checked && <svg width="8" height="8" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
+      </div>
+      <div>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 1 }}>Beauty Loop</p>
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", textDecoration: checked ? "line-through" : "none", textDecorationColor: "var(--sage-md)" }}>{item.label}</p>
+        {item.note && !checked && <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", lineHeight: 1.5, marginTop: 1 }}>{item.note}</p>}
+      </div>
+    </div>
+  );
+}
+
 // ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
 const SCHEDULE_KEY = "tend_schedule_state";
 
@@ -418,7 +435,6 @@ const SKIP_SUBJECTS = ["Rise & Shine", "Lunch", "Outdoor Break", "Afternoon Purs
 function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week }) {
   const dateKey = new Date().toISOString().slice(0, 10);
   const userId  = settings?.userId;
-  const beautyItems = BEAUTY_LOOP[today] || [];
   const [beautyDone, setBeautyDone] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(BEAUTY_KEY) || "null");
@@ -545,22 +561,13 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
         return (
           <div key={b.id}>
             {/* Beauty mini card — woven before anchor subject */}
-            {wovenItem && (() => {
-              const checked = !!beautyDone[wovenItem.id];
-              return (
-                <div onClick={() => toggleBeauty(wovenItem.id)}
-                  style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0 8px 14px", margin: "4px 0", background: checked ? "rgba(169,183,134,.08)" : "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, cursor: "pointer", opacity: checked ? 0.5 : 1, transition: "all .2s" }}>
-                  <div style={{ width: 16, height: 16, borderRadius: "50%", border: `1.5px solid ${checked ? "var(--sage)" : "var(--sage-md)"}`, background: checked ? "var(--sage)" : "none", flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s" }}>
-                    {checked && <svg width="8" height="8" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
-                  </div>
-                  <div>
-                    <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 1 }}>Beauty Loop</p>
-                    <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", textDecoration: checked ? "line-through" : "none", textDecorationColor: "var(--sage-md)" }}>{wovenItem.label}</p>
-                    {wovenItem.note && !checked && <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", lineHeight: 1.5, marginTop: 1 }}>{wovenItem.note}</p>}
-                  </div>
-                </div>
-              );
-            })()}
+            {wovenItem && (
+              <WovenBeautyCard
+                item={wovenItem}
+                checked={!!beautyDone[wovenItem.id]}
+                onToggle={() => toggleBeauty(wovenItem.id)}
+              />
+            )}
             <div style={{ borderBottom: "1px solid var(--rule)" }}>
             <div onClick={() => toggleDone(b.id)}
               onTouchStart={() => { if (b.status === "pending") startLP(b.id); }} onTouchEnd={cancelLP}
