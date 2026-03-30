@@ -149,7 +149,7 @@ export default function AnnualReportScreen({ onNavigate, settings }) {
       <div className="screen">
         <button onClick={() => onNavigate("menu")}
           style={{ background: "none", border: "none", cursor: "pointer", color: "var(--sage)", fontSize: 13, letterSpacing: ".08em", textTransform: "uppercase", fontFamily: "'Lato', sans-serif", marginBottom: 20, display: "flex", alignItems: "center", gap: 6 }}>
-          <- Menu
+          ← Menu
         </button>
         <p className="eyebrow" style={{ marginBottom: 6 }}>Premium Feature</p>
         <h1 className="display serif" style={{ marginBottom: 16 }}>Annual Report</h1>
@@ -171,7 +171,7 @@ export default function AnnualReportScreen({ onNavigate, settings }) {
     <div className="screen">
       <button onClick={() => onNavigate("menu")}
         style={{ background: "none", border: "none", cursor: "pointer", color: "var(--sage)", fontSize: 13, letterSpacing: ".08em", textTransform: "uppercase", fontFamily: "'Lato', sans-serif", marginBottom: 20, display: "flex", alignItems: "center", gap: 6 }}>
-        <- Menu
+        ← Menu
       </button>
 
       <p className="eyebrow" style={{ marginBottom: 6 }}>End of Year</p>
