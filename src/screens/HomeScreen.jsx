@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, BEAUTY_LOOP, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
+import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { supabase } from "../lib/supabase";
 
 const HABIT_ICONS = {
@@ -340,30 +340,74 @@ function WeekendRhythmHome({ today, week }) {
   );
 }
 
-// ─── BEAUTY LOOP ANCHORS ──────────────────────────────────────────────────────
-// Maps subject keywords to beauty loop items for woven display
-const BEAUTY_ANCHORS = {
-  Monday: [
-    { anchors: ["science", "artist", "beauty"], items: ["bl-m-1", "bl-m-2"] },
-  ],
-  Wednesday: [
-    { anchors: ["math", "biography", "citizenship"], items: ["bl-w-1"] },
-    { anchors: ["history", "folk", "recitation"], items: ["bl-w-2"] },
-  ],
-  Friday: [
-    { anchors: ["geography", "composer", "hymn"], items: ["bl-f-1", "bl-f-2"] },
-  ],
+// ─── BEAUTY LOOP ANCHORS & ROTATION ──────────────────────────────────────────
+// Each anchor maps a subject keyword to a slot (morning/afternoon) and day.
+// Items rotate odd/even based on term week number.
+
+const BEAUTY_ROTATION = {
+  Monday: {
+    morning: {
+      anchors: ["language", "using language", "math"],
+      items: [
+        { id: "bl-m-bio",  label: "Biography Study",   note: "A life worth knowing. Read a chapter and narrate — what made this person who they were?" },
+        { id: "bl-m-cit",  label: "Citizenship Study", note: "Stories of virtue and civic life. What does it mean to be a good neighbor, citizen, steward?" },
+      ],
+    },
+    afternoon: {
+      anchors: ["science", "artist", "beauty"],
+      items: [
+        { id: "bl-m-art",  label: "Artist Study",          note: "Picture study — observe quietly, narrate, then sketch from memory." },
+        { id: "bl-m-poet", label: "Poet & Poetry Study",   note: "Read the poem aloud twice. What image stayed with you?" },
+      ],
+    },
+  },
+  Wednesday: {
+    afternoon: {
+      anchors: ["history", "biography", "folk"],
+      items: [
+        { id: "bl-w-folk",   label: "Folk Song & Recitation", note: "Sing the folk song together. Practice the current recitation piece." },
+        { id: "bl-w-poetry", label: "Poetry Study",           note: "Read the poem aloud twice. Let the words settle before any narration." },
+      ],
+    },
+  },
+  Friday: {
+    afternoon: {
+      anchors: ["geography", "composer", "hymn"],
+      items: [
+        { id: "bl-f-comp", label: "Composer Study", note: "Listen to one piece all the way through without doing anything else." },
+        { id: "bl-f-hymn", label: "Hymn Study",     note: "This term's hymn — sing it slowly. Let the words land." },
+      ],
+    },
+  },
 };
 
-function getBeautyItemsForBlock(subject, today, beautyItems) {
-  const anchors = BEAUTY_ANCHORS[today] || [];
+function getBeautyForBlock(subject, today, week) {
+  const dayRotations = BEAUTY_ROTATION[today];
+  if (!dayRotations) return null;
   const s = subject.toLowerCase();
-  for (const group of anchors) {
-    if (group.anchors.some(a => s.includes(a))) {
-      return group.items.map(id => beautyItems.find(l => l.id === id)).filter(Boolean);
+  for (const slot of Object.values(dayRotations)) {
+    if (slot.anchors.some(a => s.includes(a))) {
+      const items = slot.items;
+      if (!items.length) return null;
+      if (items.length === 1) return items[0];
+      return items[week % 2 === 1 ? 0 : 1];
     }
   }
-  return [];
+  return null;
+}
+
+// Legacy BEAUTY_LOOP flat format for separate card mode
+// Maps to the current week's item per day
+function getDayBeautyItems(today, week) {
+  const dayRotations = BEAUTY_ROTATION[today];
+  if (!dayRotations) return [];
+  const result = [];
+  for (const slot of Object.values(dayRotations)) {
+    if (!slot.items.length) continue;
+    const item = slot.items.length === 1 ? slot.items[0] : slot.items[week % 2 === 1 ? 0 : 1];
+    result.push(item);
+  }
+  return result;
 }
 
 // ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
@@ -371,7 +415,7 @@ const SCHEDULE_KEY = "tend_schedule_state";
 
 const SKIP_SUBJECTS = ["Rise & Shine", "Lunch", "Outdoor Break", "Afternoon Pursuits", "House Reset & Animal Chores", "Tuesday Rhythm", "Tennis"];
 
-function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty }) {
+function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week }) {
   const dateKey = new Date().toISOString().slice(0, 10);
   const userId  = settings?.userId;
   const beautyItems = BEAUTY_LOOP[today] || [];
@@ -497,26 +541,26 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty }) {
         const showMother = isFreeBlock(b.subject) && !isSkipped;
         const blockColor = getBlockColor(b.subject);
         const isRise = b.riseShine === true;
-        const wovenItems = wovenBeauty ? getBeautyItemsForBlock(b.subject, today, beautyItems) : [];
+        const wovenItem = wovenBeauty ? getBeautyForBlock(b.subject, today, week || 1) : null;
         return (
           <div key={b.id}>
-            {/* Beauty mini cards — woven before the anchor subject */}
-            {wovenItems.map(l => {
-              const checked = !!beautyDone[l.id];
+            {/* Beauty mini card — woven before anchor subject */}
+            {wovenItem && (() => {
+              const checked = !!beautyDone[wovenItem.id];
               return (
-                <div key={l.id} onClick={() => toggleBeauty(l.id)}
+                <div onClick={() => toggleBeauty(wovenItem.id)}
                   style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0 8px 14px", margin: "4px 0", background: checked ? "rgba(169,183,134,.08)" : "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, cursor: "pointer", opacity: checked ? 0.5 : 1, transition: "all .2s" }}>
                   <div style={{ width: 16, height: 16, borderRadius: "50%", border: `1.5px solid ${checked ? "var(--sage)" : "var(--sage-md)"}`, background: checked ? "var(--sage)" : "none", flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s" }}>
                     {checked && <svg width="8" height="8" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
                   </div>
                   <div>
                     <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 1 }}>Beauty Loop</p>
-                    <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", textDecoration: checked ? "line-through" : "none", textDecorationColor: "var(--sage-md)" }}>{l.label}</p>
-                    {l.note && !checked && <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", lineHeight: 1.5, marginTop: 1 }}>{l.note}</p>}
+                    <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", textDecoration: checked ? "line-through" : "none", textDecorationColor: "var(--sage-md)" }}>{wovenItem.label}</p>
+                    {wovenItem.note && !checked && <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", lineHeight: 1.5, marginTop: 1 }}>{wovenItem.note}</p>}
                   </div>
                 </div>
               );
-            })}
+            })()}
             <div style={{ borderBottom: "1px solid var(--rule)" }}>
             <div onClick={() => toggleDone(b.id)}
               onTouchStart={() => { if (b.status === "pending") startLP(b.id); }} onTouchEnd={cancelLP}
@@ -572,8 +616,8 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty }) {
 // ─── BEAUTY LOOP HOME ─────────────────────────────────────────────────────────
 const BEAUTY_KEY = "tend_beauty_state";
 
-function BeautyLoopHome({ today }) {
-  const loops = BEAUTY_LOOP[today] || [];
+function BeautyLoopHome({ today, week }) {
+  const items = getDayBeautyItems(today, week || 1);
   const dateKey = new Date().toISOString().slice(0, 10);
   const [done, setDone] = useState(() => {
     try {
@@ -582,8 +626,8 @@ function BeautyLoopHome({ today }) {
     } catch {}
     return {};
   });
-  if (loops.length === 0) return null;
-  const allDone = loops.every((l) => done[l.id]);
+  if (items.length === 0) return null;
+  const allDone = items.every(l => done[l.id]);
 
   const toggle = (id) => {
     const next = { ...done, [id]: !done[id] };
@@ -596,11 +640,11 @@ function BeautyLoopHome({ today }) {
         <Icon.Leaf />
         <p className="eyebrow" style={{ marginBottom: 0, textDecoration: allDone ? "line-through" : "none", color: allDone ? "var(--ink-faint)" : undefined }}>Beauty Loop · {today}</p>
       </div>
-      {loops.map((l, i) => {
+      {items.map((l, i) => {
         const checked = !!done[l.id];
         return (
           <div key={l.id} onClick={() => toggle(l.id)}
-            style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 0", borderBottom: i < loops.length - 1 ? "1px solid rgba(169,183,134,.25)" : "none", cursor: "pointer", opacity: checked ? 0.45 : 1, transition: "opacity .25s" }}>
+            style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 0", borderBottom: i < items.length - 1 ? "1px solid rgba(169,183,134,.25)" : "none", cursor: "pointer", opacity: checked ? 0.45 : 1, transition: "opacity .25s" }}>
             <div style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${checked ? "var(--sage)" : "var(--sage-md)"}`, background: checked ? "var(--sage)" : "none", flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s" }}>
               {checked && <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
             </div>
@@ -753,8 +797,8 @@ export default function HomeScreen({ onNavigate, settings }) {
         <WeekendRhythmHome today={today} week={settings?.week || 1} />
       ) : (
         <>
-          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} wovenBeauty={wovenBeauty} />
-          {!wovenBeauty && <BeautyLoopHome today={today} />}
+          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} wovenBeauty={wovenBeauty} week={settings?.week || 1} />
+          {!wovenBeauty && <BeautyLoopHome today={today} week={settings?.week || 1} />}
           <MotherCulture />
           <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
         </>
