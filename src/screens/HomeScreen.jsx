@@ -427,6 +427,29 @@ function WovenBeautyCard({ item, checked, onToggle }) {
   );
 }
 
+// ─── DAILY STATE SYNC ─────────────────────────────────────────────────────────
+async function loadDailyState(userId, date) {
+  try {
+    const res = await fetch("/.netlify/functions/daily-state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ method: "get", userId, date }),
+    });
+    const data = await res.json();
+    return data.state || null;
+  } catch { return null; }
+}
+
+async function saveDailyState(userId, date, state) {
+  try {
+    await fetch("/.netlify/functions/daily-state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ method: "set", userId, date, state }),
+    });
+  } catch {}
+}
+
 // ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
 const SCHEDULE_KEY = "tend_schedule_state";
 
@@ -435,6 +458,9 @@ const SKIP_SUBJECTS = ["Rise & Shine", "Lunch", "Outdoor Break", "Afternoon Purs
 function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week }) {
   const dateKey = new Date().toISOString().slice(0, 10);
   const userId  = settings?.userId;
+
+  const [synced, setSynced] = useState(false);
+
   const [beautyDone, setBeautyDone] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(BEAUTY_KEY) || "null");
@@ -447,6 +473,10 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
     const next = { ...beautyDone, [id]: !beautyDone[id] };
     setBeautyDone(next);
     try { localStorage.setItem(BEAUTY_KEY, JSON.stringify({ date: dateKey, day: today, done: next })); } catch {}
+    // Sync to Supabase with current items
+    if (userId) {
+      saveDailyState(userId, dateKey, { day: today, items, beautyDone: next });
+    }
   };
 
   const getSchoolYear = () => {
@@ -458,7 +488,6 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
     if (!userId) return;
     if (SKIP_SUBJECTS.some(s => block.subject.includes(s))) return;
     if (block.free) return;
-    // Upsert — if already logged today for this subject, update status
     const { data: existing } = await supabase.from("teaching_log")
       .select("id").eq("user_id", userId).eq("date", dateKey).eq("subject", block.subject).maybeSingle();
     if (existing) {
@@ -476,24 +505,42 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
     }
   };
 
+  const defaultItems = () => blocks.map(b => ({ ...b, status: "pending", motherNote: "", subChecked: {} }));
+
   const [items, setItems] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(SCHEDULE_KEY) || "null");
-      if (saved && saved.date === dateKey && saved.day === today) {
-        return saved.items;
-      }
+      if (saved && saved.date === dateKey && saved.day === today) return saved.items;
     } catch {}
-    return blocks.map(b => ({ ...b, status: "pending", motherNote: "", subChecked: {} }));
+    return defaultItems();
   });
 
-  const [editingNote, setEditingNote] = useState(null);
-  const lpt = useRef(null);
-  const riseShineItems = RISE_SHINE_ITEMS[today] || [];
+  // Load from Supabase on mount — overwrites localStorage if Supabase is newer
+  useEffect(() => {
+    if (!userId || synced) return;
+    loadDailyState(userId, dateKey).then(remote => {
+      if (remote?.items && remote?.day === today) {
+        setItems(remote.items);
+        if (remote.beautyDone) setBeautyDone(remote.beautyDone);
+        // Also update localStorage
+        try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify({ date: dateKey, day: today, items: remote.items })); } catch {}
+        try { localStorage.setItem(BEAUTY_KEY, JSON.stringify({ date: dateKey, day: today, done: remote.beautyDone || {} })); } catch {}
+      }
+      setSynced(true);
+    });
+  }, [userId]);
 
-  const persist = (newItems) => {
-    try {
-      localStorage.setItem(SCHEDULE_KEY, JSON.stringify({ date: dateKey, day: today, items: newItems }));
-    } catch {}
+  const persist = (newItems, newBeauty) => {
+    // Save to localStorage immediately
+    try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify({ date: dateKey, day: today, items: newItems })); } catch {}
+    // Save to Supabase for cross-device sync
+    if (userId) {
+      saveDailyState(userId, dateKey, {
+        day: today,
+        items: newItems,
+        beautyDone: newBeauty !== undefined ? newBeauty : beautyDone,
+      });
+    }
   };
 
   const toggleDone = (id) => {
@@ -535,6 +582,10 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
       return next;
     });
   };
+
+  const [editingNote, setEditingNote] = useState(null);
+  const lpt = useRef(null);
+  const riseShineItems = RISE_SHINE_ITEMS[today] || [];
 
   const saveNote = (id, note) => { setItems(prev => prev.map(b => b.id === id ? { ...b, motherNote: note } : b)); setEditingNote(null); };
   const startLP  = (id) => { lpt.current = setTimeout(() => { clearTimeout(lpt.current); markSkipped(id); }, 600); };
