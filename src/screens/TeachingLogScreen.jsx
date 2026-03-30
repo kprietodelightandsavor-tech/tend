@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase";
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+const callLog = async (body) => {
+  const res = await fetch("/.netlify/functions/teaching-log", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+};
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function getSchoolYear() {
@@ -110,15 +119,13 @@ export default function TeachingLogScreen({ onNavigate, settings }) {
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
-    supabase.from("teaching_log")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("school_year", schoolYear)
-      .gte("date", start.toISOString().slice(0, 10))
-      .lte("date", end.toISOString().slice(0, 10))
-      .order("date", { ascending: true })
-      .order("time_block", { ascending: true })
-      .then(({ data }) => { setRecords(data || []); setLoading(false); });
+    callLog({
+      method:     "list",
+      userId,
+      schoolYear,
+      startDate:  start.toISOString().slice(0, 10),
+      endDate:    end.toISOString().slice(0, 10),
+    }).then(({ records }) => { setRecords(records || []); setLoading(false); });
   }, [userId, weekOffset]);
 
   const filtered = records.filter(r => {
@@ -134,13 +141,13 @@ export default function TeachingLogScreen({ onNavigate, settings }) {
   });
 
   const saveNote = async (id) => {
-    await supabase.from("teaching_log").update({ note: editNote }).eq("id", id);
+    await callLog({ method: "update-note", userId, recordId: id, note: editNote });
     setRecords(prev => prev.map(r => r.id === id ? { ...r, note: editNote } : r));
     setEditingId(null);
   };
 
   const deleteRecord = async (id) => {
-    await supabase.from("teaching_log").delete().eq("id", id);
+    await callLog({ method: "delete-record", userId, recordId: id });
     setRecords(prev => prev.filter(r => r.id !== id));
   };
 
