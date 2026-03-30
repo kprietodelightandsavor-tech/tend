@@ -488,21 +488,22 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
     if (!userId) return;
     if (SKIP_SUBJECTS.some(s => block.subject.includes(s))) return;
     if (block.free) return;
-    const { data: existing } = await supabase.from("teaching_log")
-      .select("id").eq("user_id", userId).eq("date", dateKey).eq("subject", block.subject).maybeSingle();
-    if (existing) {
-      await supabase.from("teaching_log").update({ status }).eq("id", existing.id);
-    } else {
-      await supabase.from("teaching_log").insert({
-        user_id:     userId,
-        date:        dateKey,
-        subject:     block.subject,
-        time_block:  block.time || null,
-        note:        block.note || null,
+    const y = new Date().getFullYear(), m = new Date().getMonth();
+    const schoolYear = m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
+    fetch("/.netlify/functions/teaching-log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        method:     "upsert",
+        userId,
+        date:       dateKey,
+        subject:    block.subject,
+        timeBlock:  block.time || null,
+        note:       block.note || null,
         status,
-        school_year: getSchoolYear(),
-      });
-    }
+        schoolYear,
+      }),
+    }).catch(() => {});
   };
 
   const defaultItems = () => blocks.map(b => ({ ...b, status: "pending", motherNote: "", subChecked: {} }));
@@ -552,8 +553,13 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
         next = prev.map(b => b.id === id ? { ...b, status: "pending" } : b)
           .sort((a, b) => blocks.findIndex(x => x.id === a.id) - blocks.findIndex(x => x.id === b.id));
         // Remove from teaching log when un-completing
-        if (userId) supabase.from("teaching_log").delete()
-          .eq("user_id", userId).eq("date", dateKey).eq("subject", t.subject);
+        if (userId) {
+          fetch("/.netlify/functions/teaching-log", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ method: "delete", userId, date: dateKey, subject: t.subject }),
+          }).catch(() => {});
+        }
       } else {
         const u = prev.map(b => b.id === id ? { ...b, status: "done" } : b);
         next = [...u.filter(b => b.status === "pending"), ...u.filter(b => b.status !== "pending")];
