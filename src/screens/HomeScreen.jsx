@@ -846,10 +846,10 @@ export default function HomeScreen({ onNavigate, settings }) {
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
         <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
+<BibleReadingScreen compact={true} />
 
-      <NatureOutdoorCard
-        onNavigate={onNavigate}
-        
+      <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 20px" }} />
+
       <NatureOutdoorCard
         onNavigate={onNavigate}
         initialMinutes={settings?.outdoorMinutes || 0}
