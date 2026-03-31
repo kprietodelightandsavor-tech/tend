@@ -344,6 +344,11 @@ function WeekendRhythmHome({ today, week }) {
 // Each anchor maps a subject keyword to a slot (morning/afternoon) and day.
 // Items rotate odd/even based on term week number.
 
+import BibleReadingScreen from "./BibleReadingScreen";
+
+// Inside your home screen JSX:
+<BibleReadingScreen compact={true} />
+
 const BEAUTY_ROTATION = {
   Monday: {
     morning: {
