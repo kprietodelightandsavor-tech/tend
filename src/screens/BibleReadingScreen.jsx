@@ -234,6 +234,7 @@ export default function BibleReadingScreen({ compact = false }) {
 
   // ── Compact widget ──────────────────────────────────────────────────────────
   if (compact) {
+    const activeIdx = state[`${active}_week`] ?? 0;
     return (
       <div style={{ borderLeft: `3px solid ${style.accent}`, paddingLeft: "12px", margin: "6px 0", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
         {/* Track tabs */}
@@ -248,7 +249,7 @@ export default function BibleReadingScreen({ compact = false }) {
                 fontSize: "10px", fontFamily: "system-ui", fontWeight: 700, cursor: "pointer",
                 display: "flex", alignItems: "center", gap: "3px", opacity: isActive ? 1 : 0.65,
               }}>
-                {s.icon} {s.short}
+                <span>{s.icon}</span><span>{s.short}</span>
                 {track === suggested && !isActive && <span style={{ fontSize: "6px" }}>\u25cf</span>}
               </button>
             );
@@ -257,7 +258,7 @@ export default function BibleReadingScreen({ compact = false }) {
         {/* Reference row */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <p style={{ margin: 0, fontSize: "17px", fontWeight: 600, color: "#2D3748", lineHeight: 1.3 }}>
-            {reading || <span style={{ color: "#9CA3AF", fontStyle: "italic", fontSize: "14px" }}>No reading this week</span>}
+            {reading ? reading : <span style={{ color: "#9CA3AF", fontStyle: "italic", fontSize: "14px" }}>No reading this week</span>}
           </p>
           {reading && (
             <button onClick={markDone} style={{
@@ -268,7 +269,7 @@ export default function BibleReadingScreen({ compact = false }) {
           )}
         </div>
         <p style={{ margin: "3px 0 0", fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>
-          {getCycleLabel(state[`${active}_week`] || 0)}
+          {getCycleLabel(activeIdx)}
         </p>
       </div>
     );
