@@ -177,7 +177,10 @@ async function fetchChapter(bibleId, bookId, chapter) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function BibleReadingScreen({ compact = false }) {
   const [state, setState]           = useState(loadState);
-  const [activeSlot, setActiveSlot] = useState(null);
+  const [activeSlot, setActiveSlot] = useState(() => {
+    const s = loadState();
+    return ROTATION[(s.rotationIndex || 0) % 4];
+  });
   const [text, setText]             = useState("");
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState("");
@@ -185,16 +188,12 @@ export default function BibleReadingScreen({ compact = false }) {
 
   const suggestedSlot = ROTATION[state.rotationIndex % 4];
 
-  useEffect(() => {
-    if (state.onboarded && !activeSlot) setActiveSlot(suggestedSlot);
-  }, [state.onboarded]);
-
-  const reading    = activeSlot ? getSlotReading(state, activeSlot) : null;
-  const slotStyle  = activeSlot ? SLOT_STYLES[activeSlot] : SLOT_STYLES.OT;
-  const sensitive  = reading ? isSensitive(reading.book.id, reading.chapter) : false;
+  const reading    = getSlotReading(state, activeSlot);
+  const slotStyle  = SLOT_STYLES[activeSlot];
+  const sensitive  = isSensitive(reading.book.id, reading.chapter);
 
   const fetchText = useCallback(async () => {
-    if (!activeSlot || !API_KEY) return;
+    if (!API_KEY) return;
     const r = getSlotReading(state, activeSlot);
     setLoading(true);
     setError("");
@@ -260,25 +259,21 @@ export default function BibleReadingScreen({ compact = false }) {
             );
           })}
         </div>
-        {reading && (
-          <>
-            <div style={{ fontSize: "20px", fontWeight: 600, color: "#2D3748", lineHeight: 1.2 }}>
-              {reading.book.name} {reading.chapter}
-            </div>
-            {sensitive && (
-              <div style={{ fontSize: "11px", color: "#9B7B3F", marginTop: "4px", fontStyle: "italic" }}>
-                \u26a0 Contains mature themes \u2014 preview before reading aloud
-              </div>
-            )}
-            <button onClick={handleMarkDone} style={{
-              marginTop: "10px", background: slotStyle.accent, color: "white",
-              border: "none", borderRadius: "6px", padding: "6px 14px",
-              fontSize: "12px", fontFamily: "system-ui", fontWeight: 600, cursor: "pointer",
-            }}>
-              Mark Read \u2192
-            </button>
-          </>
+        <div style={{ fontSize: "20px", fontWeight: 600, color: "#2D3748", lineHeight: 1.2 }}>
+          {reading.book.name} {reading.chapter}
+        </div>
+        {sensitive && (
+          <div style={{ fontSize: "11px", color: "#9B7B3F", marginTop: "4px", fontStyle: "italic" }}>
+            \u26a0 Contains mature themes \u2014 preview before reading aloud
+          </div>
         )}
+        <button onClick={handleMarkDone} style={{
+          marginTop: "10px", background: slotStyle.accent, color: "white",
+          border: "none", borderRadius: "6px", padding: "6px 14px",
+          fontSize: "12px", fontFamily: "system-ui", fontWeight: 600, cursor: "pointer",
+        }}>
+          Mark Read \u2192
+        </button>
       </div>
     );
   }
@@ -312,7 +307,7 @@ export default function BibleReadingScreen({ compact = false }) {
               Daily Scripture
             </p>
             <h1 style={{ margin: "2px 0 0", fontSize: "22px", fontWeight: 700, color: "#2D3748" }}>
-              {reading ? `${reading.book.name} ${reading.chapter}` : "\u2014"}
+              {reading.book.name} {reading.chapter}
             </h1>
           </div>
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -458,7 +453,7 @@ export default function BibleReadingScreen({ compact = false }) {
           </div>
         )}
 
-        {!API_KEY && reading && (
+        {!API_KEY && (
           <div style={{ marginTop: "16px", background: "white", borderRadius: "14px", padding: "32px 28px", border: "1px solid #E8E4DC", textAlign: "center" }}>
             <p style={{ fontStyle: "italic", color: "#C4B89A", fontSize: "22px", margin: 0 }}>
               {reading.book.name} {reading.chapter}
