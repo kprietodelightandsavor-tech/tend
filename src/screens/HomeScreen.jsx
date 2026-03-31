@@ -346,9 +346,6 @@ function WeekendRhythmHome({ today, week }) {
 
 import BibleReadingScreen from "./BibleReadingScreen";
 
-// Inside your home screen JSX:
-<BibleReadingScreen compact={true} />
-
 const BEAUTY_ROTATION = {
   Monday: {
     morning: {
@@ -850,6 +847,9 @@ export default function HomeScreen({ onNavigate, settings }) {
         <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
 
+      <NatureOutdoorCard
+        onNavigate={onNavigate}
+        
       <NatureOutdoorCard
         onNavigate={onNavigate}
         initialMinutes={settings?.outdoorMinutes || 0}
