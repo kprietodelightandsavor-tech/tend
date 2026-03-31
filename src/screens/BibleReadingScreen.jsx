@@ -181,6 +181,7 @@ export default function BibleReadingScreen({ compact = false }) {
   const [text, setText]             = useState("");
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState("");
+  const [showSettings, setShowSettings] = useState(false);
 
   const suggestedSlot = ROTATION[state.rotationIndex % 4];
 
@@ -228,21 +229,7 @@ export default function BibleReadingScreen({ compact = false }) {
     saveState(next);
   };
 
-  // ── Onboarding ──────────────────────────────────────────────────────────────
-  if (!state.onboarded) {
-    return (
-      <OnboardingFlow
-        onComplete={(setup) => {
-          const next = { ...FRESH_STATE, ...setup, onboarded: true };
-          setState(next);
-          saveState(next);
-          setActiveSlot(ROTATION[next.rotationIndex % 4]);
-        }}
-      />
-    );
-  }
-
-  // ── Compact (Morning Basket widget) ────────────────────────────────────────
+  // ── Compact (Home Screen widget) — always renders, no onboarding gate ──────
   if (compact) {
     return (
       <div style={{
@@ -296,6 +283,20 @@ export default function BibleReadingScreen({ compact = false }) {
     );
   }
 
+  // ── Onboarding (full screen only) ───────────────────────────────────────────
+  if (!state.onboarded) {
+    return (
+      <OnboardingFlow
+        onComplete={(setup) => {
+          const next = { ...FRESH_STATE, ...setup, onboarded: true };
+          setState(next);
+          saveState(next);
+          setActiveSlot(ROTATION[next.rotationIndex % 4]);
+        }}
+      />
+    );
+  }
+
   // ── Full screen ─────────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: "100vh", background: "#FAFAF7", fontFamily: "'Cormorant Garamond', Georgia, serif", paddingBottom: "80px" }}>
@@ -323,8 +324,8 @@ export default function BibleReadingScreen({ compact = false }) {
               {state.translation}
             </button>
             <button
-              onClick={() => { const n = { ...state, onboarded: false }; setState(n); saveState(n); }}
-              title="Adjust starting positions"
+              onClick={() => setShowSettings(true)}
+              title="Adjust reading positions"
               style={{ background: "none", border: "none", fontSize: "17px", cursor: "pointer", color: "#C4B89A" }}
             >
               \u2699
@@ -483,6 +484,122 @@ export default function BibleReadingScreen({ compact = false }) {
           We read it \u2014 move on \u2192
         </button>
       </div>
+
+      {/* Settings sheet */}
+      {showSettings && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 50,
+          background: "rgba(0,0,0,0.35)",
+          display: "flex", alignItems: "flex-end",
+        }}
+          onClick={() => setShowSettings(false)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: "100%", background: "white",
+              borderRadius: "20px 20px 0 0",
+              padding: "24px 24px 40px",
+              maxHeight: "80vh", overflowY: "auto",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h2 style={{ margin: 0, fontSize: "22px", fontWeight: 700, color: "#2D3748", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+                Adjust Your Position
+              </h2>
+              <button onClick={() => setShowSettings(false)} style={{
+                background: "#F3F0E8", border: "none", borderRadius: "50%",
+                width: "32px", height: "32px", fontSize: "16px", cursor: "pointer", color: "#6B7280",
+              }}>
+                \u00d7
+              </button>
+            </div>
+
+            {/* Translation */}
+            <div style={{ marginBottom: "24px" }}>
+              <p style={{ margin: "0 0 10px", fontFamily: "system-ui", fontSize: "11px", fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                Translation
+              </p>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {["NIrV", "ESV"].map(t => (
+                  <button key={t} onClick={() => {
+                    const n = { ...state, translation: t };
+                    setState(n); saveState(n);
+                  }} style={{
+                    padding: "8px 18px", borderRadius: "20px",
+                    border: `2px solid ${state.translation === t ? "#A9B786" : "#E8E4DC"}`,
+                    background: state.translation === t ? "#EFF4EA" : "white",
+                    fontFamily: "system-ui", fontSize: "13px", fontWeight: 700,
+                    color: state.translation === t ? "#4A5568" : "#9CA3AF",
+                    cursor: "pointer",
+                  }}>
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Per-track position editors */}
+            {[
+              { slot: "OT",    label: "Old Testament",    books: OT_BOOKS,     stateKey: "ot"     },
+              { slot: "PSALM", label: "Psalms",           books: null,         stateKey: "psalm"  },
+              { slot: "NT",    label: "New Testament",    books: NT_BOOKS,     stateKey: "nt"     },
+              { slot: "WISDOM",label: "Proverbs & Wisdom",books: WISDOM_BOOKS, stateKey: "wisdom" },
+            ].map(({ slot, label, books, stateKey }) => {
+              const s = SLOT_STYLES[slot];
+              const val = state[stateKey];
+              const currentBook = books ? books[val.bookIndex % books.length] : { id: "PSA", name: "Psalms", chapters: 150 };
+              return (
+                <div key={slot} style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "1px solid #F0EBE0" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
+                    <span style={{ color: s.accent, fontSize: "14px" }}>{s.icon}</span>
+                    <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "12px", fontWeight: 700, color: "#6B7280", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                      {label}
+                    </p>
+                  </div>
+
+                  {books && books.length > 1 && (
+                    <select
+                      value={val.bookIndex}
+                      onChange={e => {
+                        const n = { ...state, [stateKey]: { bookIndex: parseInt(e.target.value), chapter: 1 } };
+                        setState(n); saveState(n);
+                      }}
+                      style={{
+                        width: "100%", padding: "9px 12px", border: "1.5px solid #E8E4DC",
+                        borderRadius: "8px", fontFamily: "'Cormorant Garamond', Georgia, serif",
+                        fontSize: "16px", color: "#2D3748", background: "white",
+                        appearance: "none", marginBottom: "10px", cursor: "pointer",
+                      }}
+                    >
+                      {books.map((book, i) => (
+                        <option key={book.id} value={i}>{book.name}</option>
+                      ))}
+                    </select>
+                  )}
+
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <span style={{ fontFamily: "system-ui", fontSize: "12px", color: "#9CA3AF" }}>Chapter</span>
+                    <StepInput
+                      value={val.chapter}
+                      min={1}
+                      max={currentBook.chapters}
+                      accent={s.accent}
+                      onChange={v => {
+                        const n = { ...state, [stateKey]: { ...val, chapter: v } };
+                        setState(n); saveState(n);
+                      }}
+                    />
+                    <span style={{ fontFamily: "system-ui", fontSize: "12px", color: "#C4B89A" }}>
+                      of {currentBook.chapters}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
