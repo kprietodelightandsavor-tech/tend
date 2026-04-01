@@ -300,7 +300,12 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
   if (compact) {
     const activeIdx = state[`${active}_week`] ?? 0;
     return (
-      <div style={{ borderLeft: `3px solid ${track.color}`, paddingLeft: "12px", margin: "6px 0", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+      <div
+        style={{ borderLeft: `3px solid ${track.color}`, paddingLeft: "12px", margin: "6px 0", fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+        onClick={e => e.stopPropagation()}
+        onMouseDown={e => e.stopPropagation()}
+        onTouchStart={e => e.stopPropagation()}
+      >
         {/* Track tabs + gear */}
         <div style={{ display: "flex", gap: "5px", marginBottom: "8px", flexWrap: "wrap", alignItems: "center" }}>
           {TRACKS.map(t => {
@@ -556,7 +561,12 @@ function StartPicker({ compact, onComplete }) {
     : { minHeight: "100vh", background: "#FAFAF7", fontFamily: "'Cormorant Garamond', Georgia, serif", paddingBottom: "80px" };
 
   return (
-    <div style={containerStyle}>
+    <div
+      style={containerStyle}
+      onClick={e => e.stopPropagation()}
+      onMouseDown={e => e.stopPropagation()}
+      onTouchStart={e => e.stopPropagation()}
+    >
       {/* Progress bar */}
       {step > 0 && (
         <div style={{ height: "3px", background: "#E8E4DC", marginBottom: "24px", borderRadius: "2px" }}>
