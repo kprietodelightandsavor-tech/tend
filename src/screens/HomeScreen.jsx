@@ -616,9 +616,9 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
         const blockColor = getBlockColor(b.subject);
         const isRise = b.riseShine === true;
         const wovenItem = wovenBeauty ? getBeautyForBlock(b.subject, today, week || 1) : null;
+        const isBibleBlock = b.subject.toLowerCase().includes("bible") || b.subject.toLowerCase().includes("memory");
         return (
           <div key={b.id}>
-            {/* Beauty mini card — woven before anchor subject */}
             {wovenItem && (
               <WovenBeautyCard
                 item={wovenItem}
@@ -626,6 +626,58 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
                 onToggle={() => toggleBeauty(wovenItem.id)}
               />
             )}
+            <div style={{ borderBottom: "1px solid var(--rule)" }}>
+              <div onClick={() => toggleDone(b.id)}
+                onTouchStart={() => { if (b.status === "pending") startLP(b.id); }} onTouchEnd={cancelLP}
+                onMouseDown={() => { if (b.status === "pending") startLP(b.id); }} onMouseUp={cancelLP} onMouseLeave={cancelLP}
+                style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px", cursor: b.status !== "skipped" ? "pointer" : "default", opacity: isDone ? 0.35 : isSkipped ? 0.45 : 1, transition: "opacity .4s ease" }}>
+                <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: isDone || isSkipped ? "var(--rule)" : blockColor, marginRight: 12, flexShrink: 0, transition: "background .3s ease", minHeight: 36 }} />
+                <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{b.time}</span>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 16, color: isDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease" }}>{b.subject}</p>
+                  {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped · tap to restore</p>}
+                  {b.note && !isSkipped && !isDone && <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
+                  {isDone && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
+                  {!isDone && !isSkipped && isBibleBlock && (
+                    <div style={{ marginTop: 8 }} onClick={e => e.stopPropagation()}>
+                      <BibleReadingScreen compact={true} />
+                    </div>
+                  )}
+                </div>
+              </div>
+              {isRise && !isDone && !isSkipped && riseShineItems.length > 0 && (
+                <div style={{ paddingLeft: 53, paddingBottom: 10 }} onClick={e => e.stopPropagation()}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {riseShineItems.map((item, idx) => {
+                      const checked = b.subChecked?.[idx];
+                      return (
+                        <button key={idx} onClick={() => toggleSub(b.id, idx)}
+                          style={{ background: checked ? "var(--sage-bg)" : "none", border: `1px solid ${checked ? "var(--sage)" : "var(--rule)"}`, borderRadius: 20, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: checked ? "var(--sage)" : "var(--ink-faint)", transition: "all .2s", textDecoration: checked ? "line-through" : "none" }}>
+                          {item}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {showMother && (
+                <div style={{ paddingLeft: 53, paddingBottom: 8 }} onClick={e => e.stopPropagation()}>
+                  {editingNote === b.id ? (
+                    <input autoFocus defaultValue={b.motherNote} placeholder="What will you tend during this time?"
+                      onBlur={e => saveNote(b.id, e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveNote(b.id, e.target.value); }}
+                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--rule)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)", outline: "none", padding: "4px 0" }} />
+                  ) : (
+                    <button onClick={() => setEditingNote(b.id)}
+                      style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", padding: 0, textAlign: "left", opacity: b.motherNote ? 1 : 0.5 }}>
+                      {b.motherNote ? `✦ ${b.motherNote}` : "your time · what will you tend?"}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
             <div style={{ borderBottom: "1px solid var(--rule)" }}>
             <div onClick={() => toggleDone(b.id)}
               onTouchStart={() => { if (b.status === "pending") startLP(b.id); }} onTouchEnd={cancelLP}
