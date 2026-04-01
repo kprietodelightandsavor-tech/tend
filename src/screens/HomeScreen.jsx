@@ -633,11 +633,18 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
 
               {showMother && (
                 <div style={{ paddingLeft: 53, paddingBottom: 8 }} onClick={e => e.stopPropagation()}>
-                  {editingNote === b.id ? (
-                    <input autoFocus defaultValue={b.motherNote} placeholder="What will you tend during this time?"
-                      onBlur={e => saveNote(b.id, e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter") saveNote(b.id, e.target.value); }}
-                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--rule)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)", outline: "none", padding: "4px 0" }} />
+                 {editingNote === b.id ? (
+  <input autoFocus defaultValue={b.motherNote} placeholder="What will you tend during this time?"
+    onBlur={e => saveNote(b.id, e.target.value)}
+    onKeyDown={e => { if (e.key === "Enter") saveNote(b.id, e.target.value); }}
+    onMouseDown={e => e.stopPropagation()}
+    onTouchStart={e => e.stopPropagation()}
+    style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--rule)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)", outline: "none", padding: "4px 0" }} />
+) : (
+  <button onClick={() => setEditingNote(b.id)}
+    onMouseDown={e => e.stopPropagation()}
+    onTouchStart={e => e.stopPropagation()}
+    style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", padding: 0, textAlign: "left", opacity: b.motherNote ? 1 : 0.5 }}>
                   ) : (
                     <button onClick={() => setEditingNote(b.id)}
                       style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", padding: 0, textAlign: "left", opacity: b.motherNote ? 1 : 0.5 }}>
