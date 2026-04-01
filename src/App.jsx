@@ -398,6 +398,7 @@ export default function App() {
     };
     await persistData(newData);
   };
+  outdoorWeekStart: userData?.outdoor_week_start || null
 
   // ── Save to meta (used by HomeScreen for outdoor minutes) ─────────────────
   const saveToMeta = async (updates) => {
