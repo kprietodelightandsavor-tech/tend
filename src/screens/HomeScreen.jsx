@@ -1,855 +1,677 @@
-import { useState, useRef, useEffect } from "react";
-import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, BEAUTY_LOOP, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
+import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
-import BibleReadingScreen from "./BibleReadingScreen";
 
-const HABIT_ICONS = {
-  attention: () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>),
-  narration: () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>),
-  outdoor:   () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 17l4-8 4 5 3-3 4 6H3z"/><circle cx="18" cy="6" r="2"/></svg>),
-  stillness: () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>),
-  orderly:   () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>),
-};
+// ── Flame icon ────────────────────────────────────────────────────────────────
+export function FlameIcon({ size = 20, color = "#C29B61" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M12 2C12 2 7 7 7 13a5 5 0 0010 0c0-3-2-5-2-5s-.5 2.5-2 3.5C12 12 11 10 12 7c0 0-2 2-2 5a3 3 0 006 0c0-4-4-10-4-10z" fill={color} opacity="0.9"/>
+      <path d="M12 14c0 0-1.5-.5-1.5-2 0 0 .5 1 1.5 1s1.5-1 1.5-1c0 1.5-1.5 2-1.5 2z" fill="white" opacity="0.6"/>
+    </svg>
+  );
+}
 
-const Icon = {
-  Leaf:    () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>),
-  Feather: () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5l6.74-6.76z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>),
-  Sun:     () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>),
-  Arrow:   () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>),
-  Sprout:  () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 20h10"/><path d="M12 20V10"/><path d="M12 10C12 10 8 9 7 5c3 0 5 2 5 5z"/><path d="M12 10C12 10 16 9 17 5c-3 0-5 2-5 5z"/></svg>),
-  Moon:    () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#B8935A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>),
-  X:       () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
-};
+// ── Complete 108-week schedule ────────────────────────────────────────────────
+const SCHEDULE = [
+  // YEAR 1 — "In the Beginning"
+  // Term 1: Genesis (Weeks 1–12)
+  { week:1,  year:1, term:1, wisdom:"Proverbs 1:1-19",      nt:"Matthew 1",                 ot:"Genesis 1",                          psalm:"Psalm 1"    },
+  { week:2,  year:1, term:1, wisdom:"Proverbs 1:20-33",     nt:"Matthew 2",                 ot:"Genesis 2",                          psalm:"Psalm 2"    },
+  { week:3,  year:1, term:1, wisdom:"Proverbs 2",           nt:"Matthew 3-4",               ot:"Genesis 3",                          psalm:"Psalm 3"    },
+  { week:4,  year:1, term:1, wisdom:"Proverbs 3:1-18",      nt:"Matthew 5:1-48",            ot:"Genesis 6:1-22, 7:1-24",             psalm:"Psalm 4"    },
+  { week:5,  year:1, term:1, wisdom:"Proverbs 3:19-35",     nt:"Matthew 6",                 ot:"Genesis 8:1-22, 9:1-17",             psalm:"Psalm 5"    },
+  { week:6,  year:1, term:1, wisdom:"Proverbs 4:1-19",      nt:"Matthew 7",                 ot:"Genesis 11:1-9",                     psalm:"Psalm 6"    },
+  { week:7,  year:1, term:1, wisdom:"Proverbs 4:20-27",     nt:"Matthew 8:1-27",            ot:"Genesis 12:1-9, 15",                 psalm:"Psalm 7"    },
+  { week:8,  year:1, term:1, wisdom:"Proverbs 5:1-14",      nt:"Matthew 9:1-34",            ot:"Genesis 17, 18:1-15",                psalm:"Psalm 8"    },
+  { week:9,  year:1, term:1, wisdom:"Proverbs 5:15-23",     nt:"Matthew 13:1-43",           ot:"Genesis 22:1-18",                    psalm:"Psalm 9"    },
+  { week:10, year:1, term:1, wisdom:"Proverbs 6:1-19",      nt:"Matthew 14:13-33",          ot:"Genesis 25:19-34, 27:1-29",          psalm:"Psalm 10"   },
+  { week:11, year:1, term:1, wisdom:"Proverbs 6:20-35",     nt:"Matthew 16:13-28",          ot:"Genesis 37:1-28",                    psalm:"Psalm 11"   },
+  { week:12, year:1, term:1, wisdom:"Proverbs 7:1-27",      nt:"Matthew 17:1-20",           ot:"Genesis 39-41:16",                   psalm:"Psalm 12"   },
+  // Term 2: Genesis cont. + Exodus (Weeks 13–24)
+  { week:13, year:1, term:2, wisdom:"Proverbs 8:1-21",      nt:"Matthew 21:1-22",           ot:"Genesis 41:17-57, 45:1-15",          psalm:"Psalm 13"   },
+  { week:14, year:1, term:2, wisdom:"Proverbs 8:22-36",     nt:"Matthew 26:1-56",           ot:"Genesis 50:15-26",                   psalm:"Psalm 14"   },
+  { week:15, year:1, term:2, wisdom:"Proverbs 9",           nt:"Matthew 27:1-54",           ot:"Exodus 1-2:10",                      psalm:"Psalm 15"   },
+  { week:16, year:1, term:2, wisdom:"Proverbs 10:1-16",     nt:"Matthew 27:55-28:20",       ot:"Exodus 2:11-25, 3:1-22",             psalm:"Psalm 16"   },
+  { week:17, year:1, term:2, wisdom:"Proverbs 10:17-32",    nt:"Mark 1:1-45",               ot:"Exodus 4:1-17, 5:1-23",              psalm:"Psalm 17"   },
+  { week:18, year:1, term:2, wisdom:"Proverbs 11:1-15",     nt:"Mark 2:1-28",               ot:"Exodus 7-8 (plagues begin)",         psalm:"Psalm 18"   },
+  { week:19, year:1, term:2, wisdom:"Proverbs 11:16-31",    nt:"Mark 4:1-41",               ot:"Exodus 9-10 (plagues continue)",     psalm:"Psalm 19"   },
+  { week:20, year:1, term:2, wisdom:"Proverbs 12:1-14",     nt:"Mark 6:30-52",              ot:"Exodus 12:1-32 (Passover)",          psalm:"Psalm 20"   },
+  { week:21, year:1, term:2, wisdom:"Proverbs 12:15-28",    nt:"Mark 8:27-38, 9:2-29",      ot:"Exodus 14 (crossing the Red Sea)",   psalm:"Psalm 21"   },
+  { week:22, year:1, term:2, wisdom:"Proverbs 13:1-12",     nt:"Mark 10:13-52",             ot:"Exodus 16, 17:1-7",                  psalm:"Psalm 22"   },
+  { week:23, year:1, term:2, wisdom:"Proverbs 13:13-25",    nt:"Mark 14:1-52",              ot:"Exodus 19-20 (Sinai, the Law)",      psalm:"Psalm 23"   },
+  { week:24, year:1, term:2, wisdom:"Proverbs 14:1-18",     nt:"Mark 15-16",                ot:"Exodus 24 (covenant sealed)",        psalm:"Psalm 24"   },
+  // Term 3: Exodus cont. + Leviticus + Numbers (Weeks 25–36)
+  { week:25, year:1, term:3, wisdom:"Proverbs 14:19-35",    nt:"Luke 1:26-56, 2:1-20",      ot:"Exodus 25:1-22, 31:1-11",            psalm:"Psalm 25"   },
+  { week:26, year:1, term:3, wisdom:"Proverbs 15:1-17",     nt:"Luke 4:1-30",               ot:"Exodus 32 (golden calf)",            psalm:"Psalm 26"   },
+  { week:27, year:1, term:3, wisdom:"Proverbs 15:18-33",    nt:"Luke 6:17-49",              ot:"Exodus 33-34:10 (Moses and glory)",  psalm:"Psalm 27"   },
+  { week:28, year:1, term:3, wisdom:"Proverbs 16:1-16",     nt:"Luke 10:25-42",             ot:"Leviticus 16 (Day of Atonement)",    psalm:"Psalm 28"   },
+  { week:29, year:1, term:3, wisdom:"Proverbs 16:17-33",    nt:"Luke 15",                   ot:"Leviticus 19 (the Holiness Code)",   psalm:"Psalm 29"   },
+  { week:30, year:1, term:3, wisdom:"Proverbs 17:1-14",     nt:"Luke 19:1-48",              ot:"Numbers 9:15-23, 10:11-36",          psalm:"Psalm 30"   },
+  { week:31, year:1, term:3, wisdom:"Proverbs 17:15-28",    nt:"Luke 22:1-46",              ot:"Numbers 13-14 (the spies)",          psalm:"Psalm 31"   },
+  { week:32, year:1, term:3, wisdom:"Proverbs 18:1-12",     nt:"Luke 23",                   ot:"Numbers 20:1-13, 21:4-9",            psalm:"Psalm 32"   },
+  { week:33, year:1, term:3, wisdom:"Proverbs 18:13-24",    nt:"Luke 24",                   ot:"Numbers 22:1-38 (Balaam)",           psalm:"Psalm 33"   },
+  { week:34, year:1, term:3, wisdom:"Proverbs 19:1-15",     nt:"John 1:1-18",               ot:"Numbers 27:12-23",                   psalm:"Psalm 34"   },
+  { week:35, year:1, term:3, wisdom:"Proverbs 19:16-29",    nt:"John 3:1-21",               ot:"Deuteronomy 6 (the Shema)",          psalm:"Psalm 35"   },
+  { week:36, year:1, term:3, wisdom:"Proverbs 20:1-15",     nt:"John 6:25-59",              ot:"Deuteronomy 34 (Moses' death)",      psalm:"Psalm 36"   },
 
-const getBlockColor = (subject) => {
-  const s = subject.toLowerCase();
-  if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("living literature") || s.includes("hymn")) return "var(--block-morning)";
-  if (s.includes("math") || s.includes("language") || s.includes("writing") || s.includes("copywork") || s.includes("history") || s.includes("science") || s.includes("geography") || s.includes("spanish") || s.includes("reading") || s.includes("commonplace")) return "var(--block-academic)";
-  if (s.includes("nature") || s.includes("outdoor") || s.includes("artist") || s.includes("composer") || s.includes("beauty") || s.includes("poet") || s.includes("biography")) return "var(--block-nature)";
-  if (s.includes("co-op") || s.includes("bach") || s.includes("chispa") || s.includes("tennis")) return "var(--block-coop)";
-  if (s.includes("lunch") || s.includes("free") || s.includes("rest") || s.includes("afternoon") || s.includes("break") || s.includes("pursuits") || s.includes("reset")) return "var(--block-free)";
-  return "var(--rule)";
-};
+  // YEAR 2 — "Into the Land"
+  // Term 1: John + Joshua + Judges (Weeks 37–48)
+  { week:37, year:2, term:1, wisdom:"Proverbs 20:16-30",    nt:"John 10:1-30",              ot:"Joshua 1-2 (Rahab)",                 psalm:"Psalm 37"   },
+  { week:38, year:2, term:1, wisdom:"Proverbs 21:1-15",     nt:"John 11:1-44",              ot:"Joshua 3-4, 6 (Jericho)",            psalm:"Psalm 38"   },
+  { week:39, year:2, term:1, wisdom:"Proverbs 21:16-31",    nt:"John 14-15",                ot:"Joshua 23-24 (covenant renewal)",    psalm:"Psalm 39"   },
+  { week:40, year:2, term:1, wisdom:"Proverbs 22:1-16",     nt:"John 17",                   ot:"Judges 2:6-23 (the cycle)",          psalm:"Psalm 40"   },
+  { week:41, year:2, term:1, wisdom:"Proverbs 22:17-29",    nt:"John 20-21",                ot:"Judges 4-5 (Deborah)",               psalm:"Psalm 41"   },
+  { week:42, year:2, term:1, wisdom:"Proverbs 23:1-18",     nt:"Acts 1-2:41",               ot:"Judges 6:1-40 (Gideon called)",      psalm:"Psalm 42"   },
+  { week:43, year:2, term:1, wisdom:"Proverbs 23:19-35",    nt:"Acts 2:42-4:31",            ot:"Judges 7 (Gideon's victory)",        psalm:"Psalm 43"   },
+  { week:44, year:2, term:1, wisdom:"Proverbs 24:1-22",     nt:"Acts 6-7 (Stephen)",        ot:"Judges 11:1-11, 29-40 (Jephthah)",  psalm:"Psalm 44"   },
+  { week:45, year:2, term:1, wisdom:"Proverbs 24:23-34",    nt:"Acts 8-9:31",               ot:"Judges 13, 16:4-30 (Samson)",       psalm:"Psalm 45"   },
+  { week:46, year:2, term:1, wisdom:"Proverbs 25:1-15",     nt:"Acts 10-11",                ot:"Ruth 1-2",                           psalm:"Psalm 46"   },
+  { week:47, year:2, term:1, wisdom:"Proverbs 25:16-28",    nt:"Acts 12-13:12",             ot:"Ruth 3-4",                           psalm:"Psalm 47"   },
+  { week:48, year:2, term:1, wisdom:"Proverbs 26:1-16",     nt:"Acts 13:13-52",             ot:"1 Samuel 1-3 (Hannah, Samuel)",      psalm:"Psalm 48"   },
+  // Term 2: Acts + Samuel (Weeks 49–60)
+  { week:49, year:2, term:2, wisdom:"Proverbs 26:17-28",    nt:"Acts 14-15",                ot:"1 Samuel 8-10 (Saul becomes king)",  psalm:"Psalm 49"   },
+  { week:50, year:2, term:2, wisdom:"Proverbs 27:1-14",     nt:"Acts 16:1-40",              ot:"1 Samuel 16-17 (David, Goliath)",    psalm:"Psalm 50"   },
+  { week:51, year:2, term:2, wisdom:"Proverbs 27:15-27",    nt:"Acts 17",                   ot:"1 Samuel 18:1-16, 20:1-42",          psalm:"Psalm 51"   },
+  { week:52, year:2, term:2, wisdom:"Proverbs 28:1-14",     nt:"Acts 18-19:20",             ot:"1 Samuel 24 (David spares Saul)",    psalm:"Psalm 52"   },
+  { week:53, year:2, term:2, wisdom:"Proverbs 28:15-28",    nt:"Acts 19:21-20:38",          ot:"2 Samuel 5:1-12, 7:1-17",            psalm:"Psalm 53"   },
+  { week:54, year:2, term:2, wisdom:"Proverbs 29:1-14",     nt:"Acts 21-22",                ot:"2 Samuel 9 (Mephibosheth)",          psalm:"Psalm 54"   },
+  { week:55, year:2, term:2, wisdom:"Proverbs 29:15-27",    nt:"Acts 23-24",                ot:"2 Samuel 11-12:15 \u26a0\ufe0f mature themes \u2014 alt: 2 Samuel 9", psalm:"Psalm 55" },
+  { week:56, year:2, term:2, wisdom:"Proverbs 30:1-14",     nt:"Acts 25-26",                ot:"2 Samuel 22:1-51 (David's song)",    psalm:"Psalm 56"   },
+  { week:57, year:2, term:2, wisdom:"Proverbs 30:15-33",    nt:"Acts 27-28",                ot:"1 Kings 3 (Solomon's wisdom)",       psalm:"Psalm 57"   },
+  { week:58, year:2, term:2, wisdom:"Proverbs 31",          nt:"Romans 1:1-17, 3:21-31",    ot:"1 Kings 8:22-53 (temple prayer)",    psalm:"Psalm 58"   },
+  { week:59, year:2, term:2, wisdom:"Ecclesiastes 1",       nt:"Romans 5-6",                ot:"1 Kings 11:1-13 (Solomon's fall)",   psalm:"Psalm 59"   },
+  { week:60, year:2, term:2, wisdom:"Ecclesiastes 2:1-16",  nt:"Romans 8",                  ot:"1 Kings 12:1-24 (kingdom splits)",   psalm:"Psalm 60"   },
+  // Term 3: Romans + Kings + Elijah (Weeks 61–72)
+  { week:61, year:2, term:3, wisdom:"Ecclesiastes 2:17-26", nt:"Romans 12",                 ot:"1 Kings 17 (Elijah begins)",         psalm:"Psalm 61"   },
+  { week:62, year:2, term:3, wisdom:"Ecclesiastes 3:1-14",  nt:"Romans 15:1-13",            ot:"1 Kings 18 (Mount Carmel)",          psalm:"Psalm 62"   },
+  { week:63, year:2, term:3, wisdom:"Ecclesiastes 3:15-22", nt:"1 Corinthians 1-2",         ot:"1 Kings 19 (still small voice)",     psalm:"Psalm 63"   },
+  { week:64, year:2, term:3, wisdom:"Ecclesiastes 4",       nt:"1 Corinthians 13",          ot:"2 Kings 2:1-18 (Elijah taken)",      psalm:"Psalm 64"   },
+  { week:65, year:2, term:3, wisdom:"Ecclesiastes 5:1-7",   nt:"1 Corinthians 15:1-28",     ot:"2 Kings 5 (Naaman)",                 psalm:"Psalm 65"   },
+  { week:66, year:2, term:3, wisdom:"Ecclesiastes 5:8-20",  nt:"2 Corinthians 4-5",         ot:"2 Kings 17:1-23 (fall of Israel)",   psalm:"Psalm 66"   },
+  { week:67, year:2, term:3, wisdom:"Ecclesiastes 6",       nt:"2 Corinthians 12:1-10",     ot:"2 Kings 22-23:3 (Josiah)",           psalm:"Psalm 67"   },
+  { week:68, year:2, term:3, wisdom:"Ecclesiastes 7:1-14",  nt:"Galatians 2:15-21, 5:1-25", ot:"2 Kings 24-25:12 (exile begins)",    psalm:"Psalm 68"   },
+  { week:69, year:2, term:3, wisdom:"Ecclesiastes 7:15-29", nt:"Ephesians 1-2:10",          ot:"1 Chronicles 28-29 (temple prep)",   psalm:"Psalm 69"   },
+  { week:70, year:2, term:3, wisdom:"Ecclesiastes 8",       nt:"Ephesians 6:10-20",         ot:"2 Chronicles 20:1-30 (Jehoshaphat)", psalm:"Psalm 70"   },
+  { week:71, year:2, term:3, wisdom:"Ecclesiastes 9",       nt:"Philippians 1-2:18",        ot:"2 Chronicles 34-35:19 (Josiah)",     psalm:"Psalm 71"   },
+  { week:72, year:2, term:3, wisdom:"Ecclesiastes 10",      nt:"Philippians 4",             ot:"Isaiah 40 (Comfort my people)",      psalm:"Psalm 72"   },
 
-const MOTHER_CULTURE_DAILY = [
-  "Rest fully today. The week ahead needs a rested you.",
-  "Step outside alone for 10 minutes before the day begins. Let the morning be yours first.",
-  "Make yourself something warm to drink and sit with it before opening any screens.",
-  "Take a short walk, even just around the property. Move your body gently.",
-  "Rest your eyes from screens for 20 minutes today. Look at something far away.",
-  "Go outside and look up. Sky, clouds, light \u2014 let it reset something in you.",
-  "Linger over breakfast. Let the morning be unhurried.",
+  // YEAR 3 — "Exile, Return & New Creation"
+  // Term 1: Prophets (Weeks 73–84)
+  { week:73,  year:3, term:1, wisdom:"Ecclesiastes 11",      nt:"Colossians 1-2",            ot:"Isaiah 53 (suffering servant)",      psalm:"Psalm 73"   },
+  { week:74,  year:3, term:1, wisdom:"Ecclesiastes 12",      nt:"Colossians 3:1-17",         ot:"Isaiah 55 (come, all who thirst)",   psalm:"Psalm 74"   },
+  { week:75,  year:3, term:1, wisdom:"Proverbs 1:1-19",      nt:"1 Thessalonians 4-5",       ot:"Jeremiah 1 (the call)",              psalm:"Psalm 75"   },
+  { week:76,  year:3, term:1, wisdom:"Proverbs 2",           nt:"2 Thessalonians 2-3",       ot:"Jeremiah 31:27-34 (new covenant)",   psalm:"Psalm 76"   },
+  { week:77,  year:3, term:1, wisdom:"Proverbs 3:1-18",      nt:"1 Timothy 6",               ot:"Lamentations 3:1-33",                psalm:"Psalm 77"   },
+  { week:78,  year:3, term:1, wisdom:"Proverbs 4:1-19",      nt:"2 Timothy 3-4",             ot:"Ezekiel 37 (valley of dry bones)",   psalm:"Psalm 78"   },
+  { week:79,  year:3, term:1, wisdom:"Proverbs 5:1-14",      nt:"Titus 2-3",                 ot:"Amos 5:1-24 (let justice roll)",     psalm:"Psalm 79"   },
+  { week:80,  year:3, term:1, wisdom:"Proverbs 6:1-19",      nt:"Hebrews 1-2",               ot:"Micah 6 (what does the Lord require)", psalm:"Psalm 80" },
+  { week:81,  year:3, term:1, wisdom:"Proverbs 7",           nt:"Hebrews 4-5",               ot:"Habakkuk 3 (though the fig tree)",   psalm:"Psalm 81"   },
+  { week:82,  year:3, term:1, wisdom:"Proverbs 8:1-21",      nt:"Hebrews 11",                ot:"Zephaniah 3:14-20",                  psalm:"Psalm 82"   },
+  { week:83,  year:3, term:1, wisdom:"Proverbs 8:22-36",     nt:"Hebrews 12:1-13",           ot:"Malachi 3:1-4:6",                    psalm:"Psalm 83"   },
+  { week:84,  year:3, term:1, wisdom:"Proverbs 9",           nt:"Hebrews 13",                ot:"Jonah 1-4 (complete)",               psalm:"Psalm 84"   },
+  // Term 2: Daniel + Esther + Ezra/Nehemiah (Weeks 85–96)
+  { week:85,  year:3, term:2, wisdom:"Proverbs 10:1-16",     nt:"James 1-2",                 ot:"Daniel 1 (purpose of heart)",        psalm:"Psalm 85"   },
+  { week:86,  year:3, term:2, wisdom:"Proverbs 10:17-32",    nt:"James 3-5",                 ot:"Daniel 3 (fiery furnace)",           psalm:"Psalm 86"   },
+  { week:87,  year:3, term:2, wisdom:"Proverbs 11:1-15",     nt:"1 Peter 1-2",               ot:"Daniel 6 (lions' den)",              psalm:"Psalm 87"   },
+  { week:88,  year:3, term:2, wisdom:"Proverbs 11:16-31",    nt:"1 Peter 3-5",               ot:"Daniel 9:1-19 (Daniel's prayer)",    psalm:"Psalm 88"   },
+  { week:89,  year:3, term:2, wisdom:"Proverbs 12:1-14",     nt:"2 Peter 1-3",               ot:"Esther 1-2 (Esther chosen)",         psalm:"Psalm 89"   },
+  { week:90,  year:3, term:2, wisdom:"Proverbs 12:15-28",    nt:"1 John 1-2",                ot:"Esther 3-5 (Haman's plot)",          psalm:"Psalm 90"   },
+  { week:91,  year:3, term:2, wisdom:"Proverbs 13:1-12",     nt:"1 John 3-4",                ot:"Esther 7-9:17 (rescue)",             psalm:"Psalm 91"   },
+  { week:92,  year:3, term:2, wisdom:"Proverbs 13:13-25",    nt:"1 John 5, 2 John, 3 John",  ot:"Ezra 1, 3 (return, altar rebuilt)",  psalm:"Psalm 92"   },
+  { week:93,  year:3, term:2, wisdom:"Proverbs 14:1-18",     nt:"Jude",                      ot:"Ezra 7-8:23 (Ezra's journey)",       psalm:"Psalm 93"   },
+  { week:94,  year:3, term:2, wisdom:"Proverbs 14:19-35",    nt:"Revelation 1",              ot:"Nehemiah 1-2 (prayer, journey)",     psalm:"Psalm 94"   },
+  { week:95,  year:3, term:2, wisdom:"Proverbs 15:1-17",     nt:"Revelation 4-5",            ot:"Nehemiah 4, 6:15-16 (the wall)",     psalm:"Psalm 95"   },
+  { week:96,  year:3, term:2, wisdom:"Proverbs 15:18-33",    nt:"Revelation 12-13",          ot:"Nehemiah 8 (Ezra reads the Law)",    psalm:"Psalm 96"   },
+  // Term 3: Job + Revelation + Closing (Weeks 97–108)
+  { week:97,  year:3, term:3, wisdom:"Proverbs 16:1-16",     nt:"Revelation 17-18",          ot:"Job 1-2 (the testing)",              psalm:"Psalm 97"   },
+  { week:98,  year:3, term:3, wisdom:"Proverbs 16:17-33",    nt:"Revelation 19-20",          ot:"Job 3 (Job's lament)",               psalm:"Psalm 98"   },
+  { week:99,  year:3, term:3, wisdom:"Proverbs 17:1-14",     nt:"Revelation 21",             ot:"Job 38-39 (God's answer)",           psalm:"Psalm 99"   },
+  { week:100, year:3, term:3, wisdom:"Proverbs 17:15-28",    nt:"Revelation 22",             ot:"Job 40:1-9, 42:1-17 (restoration)",  psalm:"Psalm 100"  },
+  { week:101, year:3, term:3, wisdom:"Proverbs 18:1-12",     nt:"Romans 1:1-17",             ot:"Isaiah 6 (the call of Isaiah)",      psalm:"Psalm 101"  },
+  { week:102, year:3, term:3, wisdom:"Proverbs 18:13-24",    nt:"Romans 8",                  ot:"Isaiah 61 (the Spirit of the Lord)", psalm:"Psalm 102"  },
+  { week:103, year:3, term:3, wisdom:"Proverbs 19:1-15",     nt:"Romans 12",                 ot:"Ezekiel 36:22-36 (new heart)",       psalm:"Psalm 103"  },
+  { week:104, year:3, term:3, wisdom:"Proverbs 19:16-29",    nt:"Ephesians 1-2:10",          ot:"Zechariah 8:1-17",                   psalm:"Psalm 104"  },
+  { week:105, year:3, term:3, wisdom:"Proverbs 20:1-16",     nt:"Ephesians 3-4",             ot:"Zechariah 9:9-10, 12:10, 14:1-9",   psalm:"Psalm 105"  },
+  { week:106, year:3, term:3, wisdom:"Proverbs 20:17-30",    nt:"Philippians 1-2",           ot:"Nehemiah 9:1-38 (great confession)", psalm:"Psalm 106"  },
+  { week:107, year:3, term:3, wisdom:"Proverbs 21:1-16",     nt:"Colossians 3:1-17",         ot:"Isaiah 65:17-25 (new creation)",     psalm:"Psalm 107"  },
+  { week:108, year:3, term:3, wisdom:"Proverbs 21:17-31",    nt:"1 John 4:7-21",             ot:"Revelation 22:1-5 (river of life)",  psalm:"Psalm 108"  },
 ];
 
-const REST_WEEK_RHYTHM = [
-  [{ label: "Morning Quiet", note: "Sleep in. Linger over breakfast. No agenda." }, { label: "Church or Worship", note: "Let Sunday be what it is meant to be." }, { label: "Afternoon Rest", note: "Nap, read, sit outside. Simply be." }],
-  [{ label: "Morning Outside", note: "Begin the rest week outdoors \u2014 longer than usual, no nature journal required." }, { label: "Creative Morning", note: "Art, music, handicraft. Let the children follow their own curiosity." }, { label: "Read Aloud", note: "A longer session than usual. Let the story breathe." }, { label: "Free Afternoon", note: "No assignments. No checklist." }],
-  [{ label: "Morning Slow Start", note: "Breakfast together, no rush to begin anything." }, { label: "Outing or Errand", note: "Library, farm stand, nature trail, or simply a drive somewhere new." }, { label: "Quiet Afternoon", note: "Independent reading, drawing, rest." }],
-  [{ label: "Morning Chores Together", note: "Tend the home slowly. Order as an act of love." }, { label: "Cook Something Together", note: "Let the kitchen be today\u2019s classroom." }, { label: "Outside Time", note: "Unstructured. Let them wander." }, { label: "Evening Rest", note: "A good book, early bedtime." }],
-  [{ label: "Morning Quiet Time", note: "Bible, journaling, tea. Begin the day gently." }, { label: "Creative Project", note: "Something with hands \u2014 building, painting, sewing, baking." }, { label: "Nature Walk", note: "No sketching required today. Just walk and notice." }],
-  [{ label: "Morning Outside", note: "End the rest week where you began \u2014 in the open air." }, { label: "Read Aloud", note: "Revisit a favourite, or begin something new for next term." }, { label: "Prepare for the Week", note: "Light tidying, gather books, set the table for Monday." }, { label: "Celebrate the Rest", note: "Name one good thing from this week away." }],
-  [{ label: "Family Day", note: "No school, no agenda. Just be together." }, { label: "Outdoor Adventure", note: "A longer outing \u2014 park, trail, town, or simply the back pasture." }, { label: "Evening Gathering", note: "Good food, good conversation, early rest." }],
+// ── Track config ──────────────────────────────────────────────────────────────
+const TRACKS = [
+  {
+    key: "wisdom",
+    day: "Day 1",
+    dayName: "Monday",
+    label: "Proverbs & Wisdom",
+    short: "Wisdom",
+    icon: "\u25c8",
+    color: "#7A6A55",
+    light: "#F7F4EF",
+    prompt: "Which piece of wisdom caught your attention most? What would it look like to actually live that out this week?",
+    note: "For Ecclesiastes: What is the Preacher saying about life — and does it match what you see in the world around you?",
+  },
+  {
+    key: "nt",
+    day: "Day 2",
+    dayName: "Tuesday",
+    label: "New Testament",
+    short: "NT",
+    icon: "\u271d",
+    color: "#4A7C7E",
+    light: "#EAF2F2",
+    prompt: "Tell back what happened or what was said, in your own words. What stands out most to you?",
+    note: "If narration is thin, gently ask: What do you think Jesus meant by this? Or \u2014 why do you think this was included here?",
+  },
+  {
+    key: "ot",
+    day: "Day 3",
+    dayName: "Wednesday\u2013Thursday",
+    label: "Old Testament",
+    short: "OT",
+    icon: "\u2726",
+    color: "#A9B786",
+    light: "#EFF4EA",
+    prompt: "Tell the story back \u2014 what happened, who was involved, and what changed by the end?",
+    note: "For law or lists: What does this reveal about what God cares about? What does it show us about his character?",
+  },
+  {
+    key: "psalm",
+    day: "Day 4",
+    dayName: "Friday",
+    label: "Psalm",
+    short: "Psalm",
+    icon: "\u266a",
+    color: "#C29B61",
+    light: "#FAF3E8",
+    prompt: "Read it slowly \u2014 perhaps twice. Let it settle. No narration required today. Simply receive it.",
+    note: "On hard mornings, let the Psalm do the work. It holds what words sometimes cannot.",
+  },
 ];
 
-const FREE_KEYWORDS = ["rise", "chores", "piano", "free", "rest", "independent", "lunch", "outdoor", "nature", "afternoon", "pursuits", "break", "reset"];
-const isFreeBlock = (subject) => FREE_KEYWORDS.some(k => subject.toLowerCase().includes(k));
-
-// ─── PREMIUM MODAL ────────────────────────────────────────────────────────────
-export function PremiumModal({ onClose }) {
-  const FREE_FEATURES = [
-    "Daily schedule \u2014 one repeating template",
-    "Outdoor time tracker toward your weekly goal",
-    "Consider the Lilies \u2014 up to 3 journal entries",
-    "One habit focus (Attention) with today\u2019s ideas",
-    "5 free narration sessions",
-    "One student profile",
-    "Daily Mother Culture prompt",
-    "CM quote of the day",
-  ];
-  const PREMIUM_FEATURES = [
-    "Full weekly planner \u2014 different schedule per day, editable blocks",
-    "Week grid view \u2014 see your whole week at a glance",
-    "Beauty Loop anchored to your daily subjects",
-    "Term counter with rest week gentle rhythm",
-    "All five Charlotte Mason habits with 12-week reflection",
-    "Unlimited Consider the Lilies entries for every family member",
-    "Unlimited narration sessions with AI coaching",
-    "Unlimited student profiles with narration history",
-    "Full rotating Mother Culture prompt bank",
-  ];
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
-      <div style={{ width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 52px", maxHeight: "92dvh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
-        <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
-          <div>
-            <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 4 }}>Delight & Savor</p>
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 400, color: "var(--ink)" }}>Tend Premium</h2>
-          </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)", marginTop: 4 }}><Icon.X /></button>
-        </div>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontStyle: "italic", color: "var(--ink-lt)", marginBottom: 24, lineHeight: 1.8 }}>Beauty. Meaning. Connection.</p>
-        <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, padding: "16px 18px", marginBottom: 24 }}>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.9 }}>
-            Tend Premium is for the family that wants to go deeper \u2014 a full weekly planner that breathes with your rhythm, a living nature and commonplace journal, all five habits tended over twelve weeks, and the tools to make Charlotte Mason homeschooling feel as beautiful as it actually is.
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: 10, marginBottom: 28 }}>
-          <div style={{ flex: 1, border: "2px solid var(--sage)", borderRadius: 3, padding: "16px", textAlign: "center", position: "relative" }}>
-            <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: "var(--sage)", borderRadius: 20, padding: "2px 10px" }}>
-              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "white" }}>Best value</p>
-            </div>
-            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 6 }}>Annual</p>
-            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, color: "var(--ink)", marginBottom: 2, lineHeight: 1 }}>$47</p>
-            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--ink-faint)", letterSpacing: ".06em" }}>per year</p>
-          </div>
-          <div style={{ flex: 1, border: "1px solid var(--rule)", borderRadius: 3, padding: "16px", textAlign: "center" }}>
-            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 6, marginTop: 6 }}>Monthly</p>
-            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, color: "var(--ink)", marginBottom: 2, lineHeight: 1 }}>$4.99</p>
-            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--ink-faint)", letterSpacing: ".06em" }}>per month</p>
-          </div>
-        </div>
-        <div style={{ marginBottom: 20 }}>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 12 }}>Free \u2014 always</p>
-          {FREE_FEATURES.map((f, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
-              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>\u2713</span>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.5 }}>{f}</p>
-            </div>
-          ))}
-        </div>
-        <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, padding: "18px", marginBottom: 28 }}>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 14 }}>Premium \u2014 everything above, plus</p>
-          {PREMIUM_FEATURES.map((f, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
-              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>\u2726</span>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.5 }}>{f}</p>
-            </div>
-          ))}
-        </div>
-        <a href="https://delightnsavor.gumroad.com/l/qrxxi" target="_blank" rel="noopener noreferrer"
-          style={{ display: "block", background: "var(--sage)", borderRadius: 2, padding: "14px 0", width: "100%", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "white", textAlign: "center", textDecoration: "none", marginBottom: 12 }}>
-          Join Tend Premium \u2192
-        </a>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, fontStyle: "italic", color: "var(--ink-faint)", textAlign: "center", marginBottom: 20, lineHeight: 1.6 }}>
-          $47/year or $4.99/month \u00b7 cancel anytime
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", marginBottom: 20, borderTop: "1px solid var(--rule)", borderBottom: "1px solid var(--rule)" }}>
-          <a href="https://www.delightandsavor.com" target="_blank" rel="noopener noreferrer"
-            style={{ display: "block", textAlign: "center", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", textDecoration: "none", padding: "12px 0", borderBottom: "1px solid var(--rule)" }}>
-            Explore curriculum & the blog at Delight & Savor \u2192
-          </a>
-          <a href="https://substack.com/@delightandsavor" target="_blank" rel="noopener noreferrer"
-            style={{ display: "block", textAlign: "center", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", textDecoration: "none", padding: "12px 0" }}>
-            Follow along on Substack \u2192
-          </a>
-        </div>
-        <button onClick={onClose}
-          style={{ width: "100%", background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
-          Maybe later
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── OUTDOOR TRACKER ──────────────────────────────────────────────────────────
-const OUTDOOR_GOAL_HOURS = 15;
-
-function getSeason() {
-  const now = new Date(), month = now.getMonth(), day = now.getDate();
-  if ((month === 2 && day >= 20) || month === 3 || month === 4 || (month === 5 && day < 21)) return "spring";
-  if ((month === 5 && day >= 21) || month === 6 || month === 7 || (month === 8 && day < 22)) return "summer";
-  if ((month === 8 && day >= 22) || month === 9 || month === 10 || (month === 11 && day < 21)) return "autumn";
-  return "winter";
-}
-
-const NATURE_DAYS = {
-  Monday:    { step: "Read",    label: "Nature Lore Reading",       getInstruction: (t) => t ? `Read aloud from ${t.read}. This week: ${t.subject}.` : "Read aloud from The Year Round by C.J. Hylander." },
-  Tuesday:   { step: "Observe", label: "Nature Walk",              getInstruction: (t) => t?.observe || "Go outside and observe nature with fresh eyes." },
-  Wednesday: { step: "Record",  label: "Consider the Lilies Entry", getInstruction: ()  => "Words or sentences, a sketch, and watercolor. Let the page be a living record of what you noticed." },
-  Thursday:  { step: "Finish",  label: "Continue Reading",         getInstruction: (t) => t ? `Finish any remaining reading on ${t.subject}, or revisit Tuesday\u2019s walk through narration.` : "Finish this week\u2019s nature lore reading." },
-  Friday:    { step: "Watch",   label: "Nature Clip",              getInstruction: (t) => t ? `Find a short video about ${t.subject.toLowerCase()}. Let the children see it moving.` : "Find a short nature video to watch together." },
+// ── State helpers ─────────────────────────────────────────────────────────────
+const DEFAULT_STATE = {
+  wisdom_week: 0,
+  nt_week:     0,
+  ot_week:     0,
+  psalm_week:  0,
+  onboarded:   false, // false = show the start picker on first launch
 };
 
-function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPaid }) {
-  const [minutes, setMinutes] = useState(initialMinutes || 0);
-  const [current] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("tend_nature_current") || "null");
-      if (saved?.subject) return saved;
-    } catch {}
-    return { subject: "The Story of the Tadpole", read: "The Year Round by C.J. Hylander \u00b7 Spring section", observe: "Go outside and look near ponds or puddles for frogs or tadpoles. Just notice.", action: "Sit quietly near water for 5 minutes." };
-  });
-
-  useEffect(() => { setMinutes(initialMinutes || 0); }, [initialMinutes]);
-
-  const adjust = async (n) => {
-    const next = Math.max(0, minutes + n);
-    setMinutes(next);
-    if (saveToMeta) await saveToMeta({ outdoor_minutes: next });
-  };
-
-  const hours = Math.floor(minutes / 60);
-  const mins  = minutes % 60;
-  const pct   = Math.min(minutes / (OUTDOOR_GOAL_HOURS * 60), 1);
-  const r = 28, circ = 2 * Math.PI * r, dash = circ * pct;
-  const season    = getSeason();
-  const natureDay = NATURE_DAYS[today];
-
-  return (
-    <div className="card" style={{ marginBottom: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Icon.Leaf />
-          <p className="eyebrow" style={{ marginBottom: 0 }}>Nature & Outdoors</p>
-          <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#9B8EC4", background: "#F3F0F9", border: "1px solid #D8D0EE", borderRadius: 20, padding: "2px 8px" }}>
-            {season.charAt(0).toUpperCase() + season.slice(1)}
-          </span>
-        </div>
-        <button onClick={() => onNavigate("naturestudy")}
-          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "var(--sage)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase" }}>
-          All topics <Icon.Arrow />
-        </button>
-      </div>
-      <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid var(--rule)" }}>
-        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 3 }}>This week</p>
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 2 }}>{current.subject}</p>
-        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".06em", color: "var(--sage)", opacity: 0.8 }}>\ud83d\udcd6 {current.read}</p>
-      </div>
-      {natureDay && (
-        <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid var(--rule)" }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
-            <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)" }}>{natureDay.step}</span>
-            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)" }}>{natureDay.label}</p>
-          </div>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", lineHeight: 1.6 }}>
-            {natureDay.getInstruction(current)}
-          </p>
-        </div>
-      )}
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ position: "relative", width: 56, height: 56, flexShrink: 0 }}>
-          <svg width="56" height="56" style={{ transform: "rotate(-90deg)" }}>
-            <circle cx="28" cy="28" r={r} fill="none" stroke="var(--rule)" strokeWidth="3.5"/>
-            <circle cx="28" cy="28" r={r} fill="none" stroke="var(--sage)" strokeWidth="3.5"
-              strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" style={{ transition: "stroke-dasharray .5s ease" }}/>
-          </svg>
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <span className="serif" style={{ fontSize: 12, color: "var(--sage)", lineHeight: 1 }}>
-              {hours}<span style={{ fontSize: 8 }}>h</span>
-              {mins > 0 && <span>{mins}<span style={{ fontSize: 8 }}>m</span></span>}
-            </span>
-          </div>
-        </div>
-        <div style={{ flex: 1 }}>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 3 }}>
-            {hours >= OUTDOOR_GOAL_HOURS ? "Goal reached \u2726" : `${OUTDOOR_GOAL_HOURS - hours}h to go \u00b7 goal ${OUTDOOR_GOAL_HOURS}h`}
-          </p>
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-            {[15, 30, 45, 60].map(n => (
-              <button key={n} onClick={() => adjust(n)}
-                style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 2, padding: "3px 5px", fontSize: 9, fontFamily: "'Lato', sans-serif", color: "var(--sage)", cursor: "pointer" }}>
-                +{n}m
-              </button>
-            ))}
-            <button onClick={() => adjust(-15)}
-              style={{ background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "3px 5px", fontSize: 9, fontFamily: "'Lato', sans-serif", color: "var(--ink-faint)", cursor: "pointer" }}>
-              -15m
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── REST WEEK HOME ───────────────────────────────────────────────────────────
-function RestWeekHome() {
-  const day = new Date().getDay();
-  return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, padding: "12px 16px", background: "var(--gold-bg)", borderRadius: 3, border: "1px solid #E0CBA8" }}>
-        <Icon.Moon />
-        <div>
-          <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 2 }}>Rest Week</p>
-          <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-lt)", lineHeight: 1.6 }}>The rhythm rests so it can return stronger.</p>
-        </div>
-      </div>
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-          <Icon.Sun />
-          <p className="eyebrow" style={{ marginBottom: 0 }}>A Gentle Rhythm for Today</p>
-        </div>
-        <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>Not a schedule \u2014 just a shape for the day.</p>
-        {REST_WEEK_RHYTHM[day].map((r, i) => (
-          <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "12px 0", borderBottom: "1px solid var(--rule)" }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", opacity: .5, marginTop: 8, flexShrink: 0 }} />
-            <div>
-              <p style={{ fontSize: 16, color: "var(--ink)", fontFamily: "'Playfair Display', serif", marginBottom: 3 }}>{r.label}</p>
-              <p className="caption italic" style={{ lineHeight: 1.6 }}>{r.note}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          <Icon.Feather />
-          <p className="eyebrow" style={{ marginBottom: 0 }}>Mother Culture</p>
-        </div>
-        <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8 }}>{MOTHER_CULTURE_DAILY[new Date().getDay()]}</p>
-      </div>
-    </div>
-  );
-}
-
-// ─── WEEKEND RHYTHM HOME ──────────────────────────────────────────────────────
-function WeekendRhythmHome({ today, week }) {
-  const rhythm = today === "Saturday" ? getSaturdayRhythm(week) : getSundayRhythm(week);
-  const isSunday = today === "Sunday";
-  return (
-    <div style={{ marginBottom: 28 }}>
-      <div style={{ padding: "14px 16px", background: isSunday ? "var(--gold-bg)" : "var(--sage-bg)", borderRadius: 3, border: `1px solid ${isSunday ? "#E0CBA8" : "var(--sage-md)"}`, marginBottom: 20 }}>
-        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: isSunday ? "var(--gold)" : "var(--sage)", marginBottom: 3 }}>
-          {today} \u00b7 {rhythm.theme}
-        </p>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.7 }}>"{rhythm.quote}"</p>
-      </div>
-      <p className="eyebrow" style={{ marginBottom: 16 }}>A Gentle Shape for the Day</p>
-      {rhythm.items.map((item, i) => (
-        <div key={i} style={{ display: "flex", gap: 14, padding: "14px 0", borderBottom: i < rhythm.items.length - 1 ? "1px solid var(--rule)" : "none" }}>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", background: isSunday ? "var(--gold)" : "var(--sage)", opacity: .6, marginTop: 8, flexShrink: 0 }} />
-          <div>
-            <div style={{ display: "flex", gap: 10, marginBottom: 3 }}>
-              <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--ink-faint)" }}>{item.time}</span>
-              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)" }}>{item.label}</span>
-            </div>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.65 }}>{item.note}</p>
-          </div>
-        </div>
-      ))}
-      <p className="caption italic" style={{ marginTop: 16, textAlign: "center" }}>Not a schedule \u2014 just a gentle shape for the day.</p>
-    </div>
-  );
-}
-
-// ─── BEAUTY LOOP ──────────────────────────────────────────────────────────────
-const BEAUTY_ROTATION = {
-  Monday: {
-    morning: {
-      anchors: ["language", "using language", "math"],
-      items: [
-        { id: "bl-m-bio",  label: "Biography Study",   note: "A life worth knowing. Read a chapter and narrate \u2014 what made this person who they were?" },
-        { id: "bl-m-cit",  label: "Citizenship Study", note: "Stories of virtue and civic life. What does it mean to be a good neighbor, citizen, steward?" },
-      ],
-    },
-    afternoon: {
-      anchors: ["science", "artist", "beauty"],
-      items: [
-        { id: "bl-m-art",  label: "Artist Study",        note: "Picture study \u2014 observe quietly, narrate, then sketch from memory." },
-        { id: "bl-m-poet", label: "Poet & Poetry Study", note: "Read the poem aloud twice. What image stayed with you?" },
-      ],
-    },
-  },
-  Wednesday: {
-    afternoon: {
-      anchors: ["history", "biography", "folk"],
-      items: [
-        { id: "bl-w-folk",   label: "Folk Song & Recitation", note: "Sing the folk song together. Practice the current recitation piece." },
-        { id: "bl-w-poetry", label: "Poetry Study",           note: "Read the poem aloud twice. Let the words settle before any narration." },
-      ],
-    },
-  },
-  Friday: {
-    afternoon: {
-      anchors: ["geography", "composer", "hymn"],
-      items: [
-        { id: "bl-f-comp", label: "Composer Study", note: "Listen to one piece all the way through without doing anything else." },
-        { id: "bl-f-hymn", label: "Hymn Study",     note: "This term\u2019s hymn \u2014 sing it slowly. Let the words land." },
-      ],
-    },
-  },
-};
-
-function getBeautyForBlock(subject, today, week) {
-  const dayRotations = BEAUTY_ROTATION[today];
-  if (!dayRotations) return null;
-  const s = subject.toLowerCase();
-  for (const slot of Object.values(dayRotations)) {
-    if (slot.anchors.some(a => s.includes(a))) {
-      const items = slot.items;
-      if (!items.length) return null;
-      if (items.length === 1) return items[0];
-      return items[week % 2 === 1 ? 0 : 1];
-    }
-  }
-  return null;
-}
-
-function getDayBeautyItems(today, week) {
-  const dayRotations = BEAUTY_ROTATION[today];
-  if (!dayRotations) return [];
-  const result = [];
-  for (const slot of Object.values(dayRotations)) {
-    if (!slot.items.length) continue;
-    const item = slot.items.length === 1 ? slot.items[0] : slot.items[week % 2 === 1 ? 0 : 1];
-    result.push(item);
-  }
-  return result;
-}
-
-function WovenBeautyCard({ item, checked, onToggle }) {
-  return (
-    <div onClick={onToggle}
-      style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0 8px 14px", margin: "4px 0", background: checked ? "rgba(169,183,134,.08)" : "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, cursor: "pointer", opacity: checked ? 0.5 : 1, transition: "all .2s" }}>
-      <div style={{ width: 16, height: 16, borderRadius: "50%", border: "1.5px solid var(--sage-md)", background: checked ? "var(--sage)" : "none", flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s" }}>
-        {checked && <svg width="8" height="8" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
-      </div>
-      <div>
-        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 1 }}>Beauty Loop</p>
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", textDecoration: checked ? "line-through" : "none", textDecorationColor: "var(--sage-md)" }}>{item.label}</p>
-        {item.note && !checked && <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", lineHeight: 1.5, marginTop: 1 }}>{item.note}</p>}
-      </div>
-    </div>
-  );
-}
-
-// ─── DAILY STATE SYNC ─────────────────────────────────────────────────────────
-async function loadDailyState(userId, date) {
+function loadLocal() {
   try {
-    const res = await fetch("/.netlify/functions/daily-state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ method: "get", userId, date }),
-    });
-    const data = await res.json();
-    return data.state || null;
-  } catch { return null; }
+    const raw = localStorage.getItem("living_feast_v1");
+    return raw ? { ...DEFAULT_STATE, ...JSON.parse(raw) } : DEFAULT_STATE;
+  } catch { return DEFAULT_STATE; }
 }
 
-async function saveDailyState(userId, date, state) {
-  try {
-    await fetch("/.netlify/functions/daily-state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ method: "set", userId, date, state }),
-    });
-  } catch {}
+function saveLocal(s) {
+  try { localStorage.setItem("living_feast_v1", JSON.stringify(s)); } catch {}
 }
 
-// ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
-const SCHEDULE_KEY = "tend_schedule_state";
-const SKIP_SUBJECTS = ["Rise & Shine", "Lunch", "Outdoor Break", "Afternoon Pursuits", "House Reset & Animal Chores", "Tuesday Rhythm", "Tennis"];
+function getReading(state, track) {
+  const idx = Math.min(state[`${track}_week`] ?? 0, SCHEDULE.length - 1);
+  return SCHEDULE[idx]?.[track] || null;
+}
 
-function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week }) {
-  const dateKey = new Date().toISOString().slice(0, 10);
-  const userId  = settings?.userId;
-  const [synced, setSynced] = useState(false);
+function getWeekMeta(state, track) {
+  const idx = Math.min(state[`${track}_week`] ?? 0, SCHEDULE.length - 1);
+  const w = SCHEDULE[idx];
+  if (!w) return "";
+  return `Year ${w.year} \u00b7 Week ${w.week}`;
+}
 
-  const [beautyDone, setBeautyDone] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(BEAUTY_KEY) || "null");
-      if (saved?.date === dateKey && saved?.day === today) return saved.done;
-    } catch {}
-    return {};
-  });
+function advanceTrack(state, track) {
+  const key = `${track}_week`;
+  const next = Math.min((state[key] ?? 0) + 1, SCHEDULE.length - 1);
+  return { ...state, [key]: next };
+}
 
-  const toggleBeauty = (id) => {
-    const next = { ...beautyDone, [id]: !beautyDone[id] };
-    setBeautyDone(next);
-    try { localStorage.setItem(BEAUTY_KEY, JSON.stringify({ date: dateKey, day: today, done: next })); } catch {}
-    if (userId) saveDailyState(userId, dateKey, { day: today, items, beautyDone: next });
-  };
+function getSuggested(state) {
+  return TRACKS.reduce((behind, t) =>
+    (state[`${t.key}_week`] ?? 0) < (state[`${behind.key}_week`] ?? 0) ? t : behind
+  , TRACKS[0]);
+}
 
-  const logToTeachingRecord = async (block, status) => {
-    if (!userId) return;
-    if (SKIP_SUBJECTS.some(s => block.subject.includes(s))) return;
-    if (block.free) return;
-    const y = new Date().getFullYear(), m = new Date().getMonth();
-    const schoolYear = m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
-    fetch("/.netlify/functions/teaching-log", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ method: "upsert", userId, date: dateKey, subject: block.subject, timeBlock: block.time || null, note: block.note || null, status, schoolYear }),
-    }).catch(() => {});
-  };
+// ── Main component ────────────────────────────────────────────────────────────
+export default function BibleReadingScreen({ compact = false, userId = null }) {
+  const [state, setState]   = useState(loadLocal);
+  const [active, setActive] = useState(() => getSuggested(loadLocal()).key);
+  const [showSettings, setShowSettings] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const defaultItems = () => blocks.map(b => ({ ...b, status: "pending", motherNote: "", subChecked: {} }));
+  const suggested = getSuggested(state);
+  const track     = TRACKS.find(t => t.key === active);
+  const reading   = getReading(state, active);
+  const weekMeta  = getWeekMeta(state, active);
 
-  const [items, setItems] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(SCHEDULE_KEY) || "null");
-      if (saved && saved.date === dateKey && saved.day === today) return saved.items;
-    } catch {}
-    return defaultItems();
-  });
-
+  // Load from Supabase on mount
   useEffect(() => {
-    if (!userId || synced) return;
-    loadDailyState(userId, dateKey).then(remote => {
-      if (remote?.items && remote?.day === today) {
-        setItems(remote.items);
-        if (remote.beautyDone) setBeautyDone(remote.beautyDone);
-        try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify({ date: dateKey, day: today, items: remote.items })); } catch {}
-        try { localStorage.setItem(BEAUTY_KEY, JSON.stringify({ date: dateKey, day: today, done: remote.beautyDone || {} })); } catch {}
-      }
-      setSynced(true);
-    });
+    if (!userId) return;
+    supabase
+      .from("bible_reading_progress")
+      .select("track, week_index")
+      .eq("user_id", userId)
+      .then(({ data }) => {
+        if (!data?.length) return;
+        const merged = { ...DEFAULT_STATE };
+        data.forEach(row => { merged[`${row.track}_week`] = row.week_index; });
+        setState(merged);
+        saveLocal(merged);
+      });
   }, [userId]);
 
-  const persist = (newItems, newBeauty) => {
-    try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify({ date: dateKey, day: today, items: newItems })); } catch {}
-    if (userId) {
-      saveDailyState(userId, dateKey, { day: today, items: newItems, beautyDone: newBeauty !== undefined ? newBeauty : beautyDone });
-    }
+  const persist = async (newState) => {
+    setState(newState);
+    saveLocal(newState);
+    if (!userId) return;
+    setSaving(true);
+    // Upsert each track independently
+    const upserts = TRACKS.map(t => ({
+      user_id: userId,
+      track: t.key,
+      week_index: newState[`${t.key}_week`] ?? 0,
+    }));
+    await supabase
+      .from("bible_reading_progress")
+      .upsert(upserts, { onConflict: "user_id,track" });
+    setSaving(false);
   };
 
-  const toggleDone = (id) => {
-    setItems(prev => {
-      const t = prev.find(b => b.id === id);
-      if (!t) return prev;
-      let next;
-      if (t.status === "skipped" || t.status === "done") {
-        next = prev.map(b => b.id === id ? { ...b, status: "pending" } : b)
-          .sort((a, b) => blocks.findIndex(x => x.id === a.id) - blocks.findIndex(x => x.id === b.id));
-        if (userId) {
-          fetch("/.netlify/functions/teaching-log", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ method: "delete", userId, date: dateKey, subject: t.subject }),
-          }).catch(() => {});
-        }
-      } else {
-        const u = prev.map(b => b.id === id ? { ...b, status: "done" } : b);
-        next = [...u.filter(b => b.status === "pending"), ...u.filter(b => b.status !== "pending")];
-        logToTeachingRecord(t, "completed");
-      }
-      persist(next);
-      return next;
-    });
+  const markDone = async () => {
+    const next = advanceTrack(state, active);
+    await persist(next);
+    setActive(getSuggested(next).key);
   };
 
-  const markSkipped = (id) => {
-    setItems(prev => {
-      const t = prev.find(b => b.id === id);
-      const u = prev.map(b => b.id === id ? { ...b, status: "skipped" } : b);
-      const next = [...u.filter(b => b.status === "pending"), ...u.filter(b => b.status !== "pending")];
-      persist(next);
-      if (t) logToTeachingRecord(t, "skipped");
-      return next;
-    });
-  };
-
-  const toggleSub = (blockId, subIdx) => {
-    setItems(prev => {
-      const next = prev.map(b => b.id === blockId ? { ...b, subChecked: { ...b.subChecked, [subIdx]: !b.subChecked[subIdx] } } : b);
-      persist(next);
-      return next;
-    });
-  };
-
-  const [editingNote, setEditingNote] = useState(null);
-  const lpt = useRef(null);
-  const riseShineItems = RISE_SHINE_ITEMS[today] || [];
-
-  const saveNote = (id, note) => {
-    setItems(prev => prev.map(b => b.id === id ? { ...b, motherNote: note } : b));
-    setEditingNote(null);
-  };
-  const startLP  = (id) => { lpt.current = setTimeout(() => { clearTimeout(lpt.current); markSkipped(id); }, 600); };
-  const cancelLP = () => clearTimeout(lpt.current);
-
-  return (
-    <div style={{ marginBottom: 28 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Icon.Sun />
-          <p className="eyebrow" style={{ marginBottom: 0 }}>Today \u00b7 {today}</p>
+  // ── Start picker (shown once on first open, or via gear) ────────────────────
+  if (!state.onboarded) {
+    return (
+      <StartPicker
+        compact={compact}
+        onComplete={(picks) => {
+          const next = { ...DEFAULT_STATE, ...picks, onboarded: true };
+          persist(next);
+          setActive(getSuggested(next).key);
+        }}
+      />
+    );
+  }
+  if (compact) {
+    const activeIdx = state[`${active}_week`] ?? 0;
+    return (
+      <div style={{ borderLeft: `3px solid ${track.color}`, paddingLeft: "12px", margin: "6px 0", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+        {/* Track tabs + gear */}
+        <div style={{ display: "flex", gap: "5px", marginBottom: "8px", flexWrap: "wrap", alignItems: "center" }}>
+          {TRACKS.map(t => {
+            const isActive = t.key === active;
+            const isSuggested = t.key === suggested.key;
+            return (
+              <button key={t.key} onClick={() => setActive(t.key)} style={{
+                background: isActive ? t.color : "transparent",
+                color: isActive ? "white" : t.color,
+                border: `1.5px solid ${t.color}`,
+                borderRadius: "20px", padding: "2px 9px",
+                fontSize: "10px", fontFamily: "system-ui", fontWeight: 700,
+                cursor: "pointer", display: "flex", alignItems: "center", gap: "3px",
+                opacity: isActive ? 1 : 0.65,
+              }}>
+                <span>{t.icon}</span><span>{t.short}</span>
+                {isSuggested && !isActive && <span style={{ fontSize: "6px" }}>\u25cf</span>}
+              </button>
+            );
+          })}
+          <button onClick={() => setShowSettings(true)} style={{
+            marginLeft: "auto", background: "none", border: "none",
+            cursor: "pointer", color: "#C4B89A", fontSize: "14px", padding: "0 2px",
+          }} title="Adjust reading position">\u2699</button>
         </div>
-        <button onClick={() => onNavigate("planner")}
-          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase" }}>
-          Full week <Icon.Arrow />
+        {/* Reference */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <p style={{ margin: 0, fontSize: "17px", fontWeight: 600, color: "#2D3748", lineHeight: 1.3 }}>
+            {reading ? reading : <span style={{ color: "#9CA3AF", fontStyle: "italic", fontSize: "14px" }}>No reading this week</span>}
+          </p>
+          {reading && (
+            <button onClick={markDone} style={{
+              background: track.color, color: "white", border: "none", borderRadius: "5px",
+              padding: "4px 12px", fontSize: "11px", fontFamily: "system-ui", fontWeight: 600,
+              cursor: "pointer", whiteSpace: "nowrap", marginLeft: "10px", flexShrink: 0,
+            }}>
+              Done \u2192
+            </button>
+          )}
+        </div>
+        <p style={{ margin: "3px 0 0", fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>
+          {getWeekMeta(state, active)} {saving ? "\u00b7 saving\u2026" : ""}
+        </p>
+        {showSettings && <SettingsSheet state={state} persist={persist} onClose={() => setShowSettings(false)} />}
+      </div>
+    );
+  }
+
+  // ── Full screen ─────────────────────────────────────────────────────────────
+  return (
+    <div style={{ minHeight: "100vh", background: "#FAFAF7", fontFamily: "'Cormorant Garamond', Georgia, serif", paddingBottom: "80px" }}>
+
+      {/* Header */}
+      <div style={{ background: "white", borderBottom: "1px solid #E8E4DC", padding: "20px 24px 0", position: "sticky", top: 0, zIndex: 10 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <FlameIcon size={22} color="#C29B61" />
+            <div>
+              <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "9px", color: "#9CA3AF", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                The Living Feast
+              </p>
+              <h1 style={{ margin: 0, fontSize: "20px", fontWeight: 600, color: "#2D3748" }}>
+                {reading || "\u2014"}
+              </h1>
+              <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>
+                {weekMeta}{saving ? " \u00b7 saving\u2026" : ""}
+              </p>
+            </div>
+          </div>
+          <button onClick={() => setShowSettings(true)} style={{ background: "none", border: "none", fontSize: "17px", cursor: "pointer", color: "#C4B89A", marginTop: "4px" }}>\u2699</button>
+        </div>
+
+        {/* Day tabs */}
+        <div style={{ display: "flex", borderTop: "1px solid #F0EBE0" }}>
+          {TRACKS.map(t => {
+            const isActive = t.key === active;
+            const isSuggested = t.key === suggested.key;
+            const ref = getReading(state, t.key);
+            return (
+              <button key={t.key} onClick={() => setActive(t.key)} style={{
+                flex: 1, padding: "10px 4px 12px", background: "none", border: "none",
+                borderBottom: isActive ? `3px solid ${t.color}` : "3px solid transparent",
+                cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
+              }}>
+                <span style={{ fontSize: "13px", color: isActive ? t.color : "#BDB5A8" }}>{t.icon}</span>
+                <span style={{ fontFamily: "system-ui", fontSize: "8px", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: isActive ? t.color : "#BDB5A8" }}>{t.short}</span>
+                <span style={{ fontFamily: "system-ui", fontSize: "8px", color: isActive ? "#4A5568" : "#C4B89A", textAlign: "center", maxWidth: "64px", lineHeight: 1.3 }}>{ref || "\u2014"}</span>
+                {isSuggested && <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: t.color, display: "block", opacity: isActive ? 0 : 0.55, marginTop: "1px" }} />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Off-suggested note */}
+      {active !== suggested.key && (
+        <div style={{ margin: "14px 24px 0", padding: "8px 14px", background: "#F7F5F0", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ color: suggested.color }}>{suggested.icon}</span>
+          <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "11px", color: "#9CA3AF" }}>
+            Suggested today: <span style={{ color: suggested.color, fontWeight: 700 }}>{suggested.label}</span> \u2014 but read what calls to you.
+          </p>
+        </div>
+      )}
+
+      {/* Reading card */}
+      <div style={{ padding: "20px 24px" }}>
+        <div style={{
+          background: "white", borderRadius: "14px", padding: "28px 24px",
+          borderTop: `4px solid ${track.color}`,
+          border: `1px solid ${track.light}`,
+          boxShadow: "0 1px 8px rgba(0,0,0,0.04)", textAlign: "center", marginBottom: "16px",
+        }}>
+          <p style={{ margin: "0 0 4px", fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: track.color }}>{track.label}</p>
+          <p style={{ margin: "0 0 2px", fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>{track.dayName}</p>
+          <p style={{ margin: 0, fontSize: "26px", fontWeight: 600, color: "#2D3748", lineHeight: 1.3 }}>
+            {reading || <span style={{ color: "#9CA3AF", fontStyle: "italic", fontSize: "18px" }}>No reading this week</span>}
+          </p>
+        </div>
+
+        {/* Narration prompt */}
+        <div style={{ background: "white", borderRadius: "12px", padding: "18px 20px", border: "1px solid #E8E4DC", marginBottom: "10px" }}>
+          <p style={{ margin: "0 0 8px", fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            After Reading
+          </p>
+          <p style={{ margin: 0, fontSize: "16px", color: "#4A5568", lineHeight: 1.85, fontStyle: "italic" }}>
+            \u201c{track.prompt}\u201d
+          </p>
+        </div>
+
+        {/* Track note */}
+        <div style={{ background: track.key === "psalm" ? "#FAF3E8" : "#F7F5F0", borderRadius: "10px", padding: "14px 16px", borderLeft: `3px solid ${track.color}`, marginBottom: "16px" }}>
+          <p style={{ margin: 0, fontSize: "14px", color: "#6B7280", lineHeight: 1.75, fontStyle: "italic" }}>
+            {active === "wisdom" && reading?.toLowerCase().includes("ecclesiastes")
+              ? "For Ecclesiastes: What is the Preacher saying about life \u2014 and does it match what you see in the world around you?"
+              : track.note}
+          </p>
+        </div>
+
+        {/* Full week at a glance */}
+        <p style={{ margin: "0 0 10px", fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          This Week\u2019s Full Feast
+        </p>
+        {TRACKS.map(t => {
+          const isActive = t.key === active;
+          const ref = getReading(state, t.key);
+          return (
+            <div key={t.key} onClick={() => setActive(t.key)} style={{
+              display: "flex", alignItems: "center", gap: "12px",
+              padding: "10px 12px", borderRadius: "8px", marginBottom: "6px",
+              background: isActive ? "#F7F5F0" : "white",
+              border: `1px solid ${isActive ? "#E8E4DC" : "#F0EBE0"}`,
+              cursor: "pointer",
+            }}>
+              <span style={{ color: t.color, fontSize: "14px", flexShrink: 0 }}>{t.icon}</span>
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "9px", fontWeight: 700, color: t.color, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                  {t.day} \u00b7 {t.dayName}
+                </p>
+                <p style={{ margin: 0, fontSize: "14px", color: "#2D3748" }}>{ref || "\u2014"}</p>
+              </div>
+              {isActive && <span style={{ color: track.color, fontSize: "10px" }}>\u25cf</span>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Bottom button */}
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "white", borderTop: "1px solid #E8E4DC", padding: "14px 24px" }}>
+        <button onClick={markDone} disabled={!reading} style={{
+          width: "100%", background: reading ? track.color : "#E8E4DC", color: "white",
+          border: "none", borderRadius: "12px", padding: "14px",
+          fontSize: "17px", fontFamily: "'Cormorant Garamond', Georgia, serif",
+          fontWeight: 700, cursor: reading ? "pointer" : "default", letterSpacing: "0.03em",
+        }}>
+          We read it \u2014 move on \u2192
         </button>
       </div>
 
-      {items.map(b => {
-        const isDone    = b.status === "done";
-        const isSkipped = b.status === "skipped";
-        const showMother   = isFreeBlock(b.subject) && !isSkipped;
-        const blockColor   = getBlockColor(b.subject);
-        const isRise       = b.riseShine === true;
-        const wovenItem    = wovenBeauty ? getBeautyForBlock(b.subject, today, week || 1) : null;
-        const isBibleBlock = b.subject.toLowerCase().includes("bible") || b.subject.toLowerCase().includes("memory");
+      {showSettings && <SettingsSheet state={state} persist={persist} onClose={() => setShowSettings(false)} />}
+    </div>
+  );
+}
 
-        return (
-          <div key={b.id}>
-            {wovenItem && (
-              <WovenBeautyCard
-                item={wovenItem}
-                checked={!!beautyDone[wovenItem.id]}
-                onToggle={() => toggleBeauty(wovenItem.id)}
-              />
-            )}
-            <div style={{ borderBottom: "1px solid var(--rule)" }}>
-              <div
-                onClick={() => toggleDone(b.id)}
-                onTouchStart={() => { if (b.status === "pending") startLP(b.id); }}
-                onTouchEnd={cancelLP}
-                onMouseDown={() => { if (b.status === "pending") startLP(b.id); }}
-                onMouseUp={cancelLP}
-                onMouseLeave={cancelLP}
-                style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px", cursor: b.status !== "skipped" ? "pointer" : "default", opacity: isDone ? 0.35 : isSkipped ? 0.45 : 1, transition: "opacity .4s ease" }}
-              >
-                <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: isDone || isSkipped ? "var(--rule)" : blockColor, marginRight: 12, flexShrink: 0, transition: "background .3s ease", minHeight: 36 }} />
-                <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{b.time}</span>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 16, color: isDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease" }}>{b.subject}</p>
-                  {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped \u00b7 tap to restore</p>}
-                  {b.note && !isSkipped && !isDone && <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
-                  {isDone && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
-                  {!isDone && !isSkipped && isBibleBlock && (
-                    <div style={{ marginTop: 8 }} onClick={e => e.stopPropagation()}>
-                      <BibleReadingScreen compact={true} />
-                    </div>
-                  )}
-                </div>
+// ── Settings sheet (shared by compact and full screen) ────────────────────────
+function SettingsSheet({ state, persist, onClose }) {
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "flex-end" }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "100%", background: "white", borderRadius: "20px 20px 0 0", padding: "24px 24px 48px", maxHeight: "80vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+          <h2 style={{ margin: 0, fontSize: "22px", fontWeight: 700, color: "#2D3748", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+            Adjust Your Position
+          </h2>
+          <button onClick={onClose} style={{ background: "#F3F0E8", border: "none", borderRadius: "50%", width: "32px", height: "32px", fontSize: "16px", cursor: "pointer", color: "#6B7280" }}>\u00d7</button>
+        </div>
+        <p style={{ margin: "0 0 20px", fontFamily: "system-ui", fontSize: "12px", color: "#9CA3AF", lineHeight: 1.6 }}>
+          Each track saves independently. Use arrows to move forward or back one week.
+        </p>
+        {TRACKS.map(t => {
+          const key  = `${t.key}_week`;
+          const idx  = state[key] ?? 0;
+          const ref  = getReading(state, t.key);
+          const meta = getWeekMeta(state, t.key);
+          return (
+            <div key={t.key} style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "1px solid #F0EBE0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                <span style={{ color: t.color }}>{t.icon}</span>
+                <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "11px", fontWeight: 700, color: "#6B7280", letterSpacing: "0.06em", textTransform: "uppercase" }}>{t.label}</p>
               </div>
+              <p style={{ margin: "0 0 8px", fontSize: "15px", color: "#2D3748" }}>{ref || "No reading"}</p>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <button onClick={() => persist({ ...state, [key]: Math.max(0, idx - 1) })}
+                  style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>\u2190</button>
+                <span style={{ fontFamily: "system-ui", fontSize: "11px", color: "#9CA3AF", minWidth: "110px", textAlign: "center" }}>{meta}</span>
+                <button onClick={() => persist({ ...state, [key]: Math.min(SCHEDULE.length - 1, idx + 1) })}
+                  style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>\u2192</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
-              {isRise && !isDone && !isSkipped && riseShineItems.length > 0 && (
-                <div style={{ paddingLeft: 53, paddingBottom: 10 }} onClick={e => e.stopPropagation()}>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {riseShineItems.map((item, idx) => {
-                      const checked = b.subChecked?.[idx];
-                      return (
-                        <button key={idx} onClick={() => toggleSub(b.id, idx)}
-                          style={{ background: checked ? "var(--sage-bg)" : "none", border: `1px solid ${checked ? "var(--sage)" : "var(--rule)"}`, borderRadius: 20, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: checked ? "var(--sage)" : "var(--ink-faint)", transition: "all .2s", textDecoration: checked ? "line-through" : "none" }}>
-                          {item}
-                        </button>
-                      );
-                    })}
+// ── Start picker ──────────────────────────────────────────────────────────────
+// Shown on first open. Lets users pick their starting week for each track.
+// Groups SCHEDULE by track into searchable lists.
+
+function StartPicker({ compact, onComplete }) {
+  const [step, setStep] = useState(0); // 0=welcome, 1-4=track pickers
+  const [picks, setPicks] = useState({
+    wisdom_week: 0,
+    nt_week:     0,
+    ot_week:     0,
+    psalm_week:  0,
+  });
+
+  const steps = [
+    { key: "welcome" },
+    ...TRACKS.map(t => ({ key: t.key, track: t })),
+  ];
+
+  const current = steps[step];
+  const isLast  = step === steps.length - 1;
+
+  // Build unique reading list per track for the dropdown
+  const getOptions = (trackKey) =>
+    SCHEDULE.map((w, idx) => ({ idx, ref: w[trackKey], year: w.year, week: w.week }))
+      .filter(o => o.ref);
+
+  const containerStyle = compact
+    ? { background: "white", borderRadius: "12px", padding: "20px", border: "1px solid #E8E4DC", fontFamily: "'Cormorant Garamond', Georgia, serif" }
+    : { minHeight: "100vh", background: "#FAFAF7", fontFamily: "'Cormorant Garamond', Georgia, serif", paddingBottom: "80px" };
+
+  return (
+    <div style={containerStyle}>
+      {/* Progress bar */}
+      {step > 0 && (
+        <div style={{ height: "3px", background: "#E8E4DC", marginBottom: "24px", borderRadius: "2px" }}>
+          <div style={{ height: "100%", background: "#C29B61", borderRadius: "2px", width: `${(step / (steps.length - 1)) * 100}%`, transition: "width 0.3s ease" }} />
+        </div>
+      )}
+
+      <div style={{ padding: compact ? "0" : "32px 24px 100px", maxWidth: "480px", margin: "0 auto" }}>
+
+        {/* Welcome */}
+        {step === 0 && (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+              <FlameIcon size={32} color="#C29B61" />
+              <div>
+                <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                  Delight & Savor
+                </p>
+                <h2 style={{ margin: 0, fontSize: "26px", fontWeight: 600, color: "#2D3748" }}>
+                  The Living Feast
+                </h2>
+              </div>
+            </div>
+            <p style={{ margin: "0 0 16px", fontSize: "17px", color: "#6B7280", lineHeight: 1.7, fontStyle: "italic" }}>
+              A three-year feast through the whole story of Scripture.
+            </p>
+            <div style={{ margin: "16px 0 20px" }}>
+              {TRACKS.map(t => (
+                <div key={t.key} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                  <span style={{ width: "28px", height: "28px", borderRadius: "7px", background: t.light, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: t.color, flexShrink: 0 }}>
+                    {t.icon}
+                  </span>
+                  <div>
+                    <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, color: t.color, letterSpacing: "0.06em", textTransform: "uppercase" }}>{t.dayName}</p>
+                    <p style={{ margin: 0, fontSize: "15px", color: "#4A5568" }}>{t.label}</p>
                   </div>
                 </div>
-              )}
-
-              {showMother && (
-                <div style={{ paddingLeft: 53, paddingBottom: 8 }} onClick={e => e.stopPropagation()}>
-                  {editingNote === b.id ? (
-                    <input autoFocus defaultValue={b.motherNote} placeholder="What will you tend during this time?"
-                      onBlur={e => saveNote(b.id, e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter") saveNote(b.id, e.target.value); }}
-                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--rule)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)", outline: "none", padding: "4px 0" }} />
-                  ) : (
-                    <button onClick={() => setEditingNote(b.id)}
-                      style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", padding: 0, textAlign: "left", opacity: b.motherNote ? 1 : 0.5 }}>
-                      {b.motherNote ? `\u2726 ${b.motherNote}` : "your time \u00b7 what will you tend?"}
-                    </button>
-                  )}
-                </div>
-              )}
+              ))}
             </div>
+            <p style={{ margin: 0, fontSize: "14px", color: "#9CA3AF", fontStyle: "italic", lineHeight: 1.7 }}>
+              Already partway through a reading program? Next you'll choose where each track begins.
+            </p>
           </div>
-        );
-      })}
+        )}
 
-      <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap to complete \u00b7 Tap again to undo \u00b7 Hold to skip</p>
-    </div>
-  );
-}
+        {/* Track picker */}
+        {step > 0 && current.track && (() => {
+          const t = current.track;
+          const options = getOptions(t.key);
+          const currentIdx = picks[`${t.key}_week`];
+          const currentRef = options.find(o => o.idx === currentIdx);
+          return (
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                <span style={{ fontSize: "22px", color: t.color }}>{t.icon}</span>
+                <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 600, color: "#2D3748" }}>{t.label}</h2>
+              </div>
+              <p style={{ margin: "0 0 6px", fontFamily: "system-ui", fontSize: "10px", color: t.color, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                {t.dayName}
+              </p>
+              <p style={{ margin: "0 0 20px", fontSize: "15px", color: "#6B7280", lineHeight: 1.7 }}>
+                Where would you like to begin? Start from the beginning or choose any passage.
+              </p>
 
-// ─── BEAUTY LOOP HOME ─────────────────────────────────────────────────────────
-const BEAUTY_KEY = "tend_beauty_state";
+              {/* Current selection display */}
+              <div style={{ background: t.light, borderRadius: "10px", padding: "14px 16px", marginBottom: "16px", borderLeft: `3px solid ${t.color}` }}>
+                <p style={{ margin: "0 0 2px", fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, color: t.color, letterSpacing: "0.06em", textTransform: "uppercase" }}>Starting at</p>
+                <p style={{ margin: 0, fontSize: "20px", fontWeight: 600, color: "#2D3748" }}>
+                  {currentRef?.ref || options[0]?.ref}
+                </p>
+                <p style={{ margin: "2px 0 0", fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>
+                  Year {currentRef?.year || 1} \u00b7 Week {currentRef?.week || 1}
+                </p>
+              </div>
 
-function BeautyLoopHome({ today, week }) {
-  const items = getDayBeautyItems(today, week || 1);
-  const dateKey = new Date().toISOString().slice(0, 10);
-  const [done, setDone] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(BEAUTY_KEY) || "null");
-      if (saved?.date === dateKey && saved?.day === today) return saved.done;
-    } catch {}
-    return {};
-  });
-  if (items.length === 0) return null;
-  const allDone = items.every(l => done[l.id]);
-
-  const toggle = (id) => {
-    const next = { ...done, [id]: !done[id] };
-    setDone(next);
-    try { localStorage.setItem(BEAUTY_KEY, JSON.stringify({ date: dateKey, day: today, done: next })); } catch {}
-  };
-
-  return (
-    <div style={{ marginBottom: 28, background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 4, padding: "16px 18px", opacity: allDone ? 0.6 : 1, transition: "opacity .3s" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-        <Icon.Leaf />
-        <p className="eyebrow" style={{ marginBottom: 0, textDecoration: allDone ? "line-through" : "none", color: allDone ? "var(--ink-faint)" : undefined }}>Beauty Loop \u00b7 {today}</p>
-      </div>
-      {items.map((l, i) => {
-        const checked = !!done[l.id];
-        return (
-          <div key={l.id} onClick={() => toggle(l.id)}
-            style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 0", borderBottom: i < items.length - 1 ? "1px solid rgba(169,183,134,.25)" : "none", cursor: "pointer", opacity: checked ? 0.45 : 1, transition: "opacity .25s" }}>
-            <div style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${checked ? "var(--sage)" : "var(--sage-md)"}`, background: checked ? "var(--sage)" : "none", flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s" }}>
-              {checked && <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
+              {/* Dropdown selector */}
+              <label style={{ display: "block", fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "8px" }}>
+                Choose a different starting point
+              </label>
+              <select
+                value={currentIdx}
+                onChange={e => setPicks(prev => ({ ...prev, [`${t.key}_week`]: parseInt(e.target.value) }))}
+                style={{ width: "100%", padding: "12px 14px", border: "2px solid #E8E4DC", borderRadius: "10px", fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "16px", color: "#2D3748", background: "white", appearance: "none", cursor: "pointer" }}
+              >
+                {options.map(o => (
+                  <option key={o.idx} value={o.idx}>
+                    Y{o.year} W{o.week} \u2014 {o.ref}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", textDecoration: checked ? "line-through" : "none", textDecorationColor: "var(--sage-md)", marginBottom: l.note ? 4 : 0 }}>{l.label}</p>
-              {l.note && !checked && <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.65 }}>{l.note}</p>}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─── MOTHER CULTURE ───────────────────────────────────────────────────────────
-const MOTHER_KEY = "tend_mother_state";
-
-function MotherCulture() {
-  const dateKey = new Date().toISOString().slice(0, 10);
-  const [done, setDone] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(MOTHER_KEY) || "null");
-      if (saved?.date === dateKey) return saved.done;
-    } catch {}
-    return false;
-  });
-
-  const toggle = () => {
-    const next = !done;
-    setDone(next);
-    try { localStorage.setItem(MOTHER_KEY, JSON.stringify({ date: dateKey, done: next })); } catch {}
-  };
-
-  return (
-    <div onClick={toggle}
-      style={{ marginBottom: 28, background: "var(--gold-bg)", border: "1px solid #E0CBA8", borderRadius: 4, padding: "16px 18px", cursor: "pointer", opacity: done ? 0.5 : 1, transition: "opacity .3s" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Icon.Feather />
-          <p className="eyebrow" style={{ marginBottom: 0, color: "var(--gold)", textDecoration: done ? "line-through" : "none" }}>Mother Culture</p>
-        </div>
-        <div style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${done ? "#B8935A" : "#E0CBA8"}`, background: done ? "#B8935A" : "none", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .2s" }}>
-          {done && <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
-        </div>
+          );
+        })()}
       </div>
-      <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8, textDecoration: done ? "line-through" : "none", textDecorationColor: "#B8935A" }}>{MOTHER_CULTURE_DAILY[new Date().getDay()]}</p>
-    </div>
-  );
-}
 
-// ─── HABIT FOCUS CARD ─────────────────────────────────────────────────────────
-const HABIT_STATE_KEY = "tend_habit_state";
-
-function HabitFocusCard({ activeHabit, onNavigate }) {
-  const habit   = HABIT_PROMPTS[activeHabit];
-  const HIcon   = HABIT_ICONS[activeHabit];
-  const day     = new Date().getDay();
-  const prompts = habit.daily[day].slice(0, 2);
-  const dateKey = new Date().toISOString().slice(0, 10);
-  const [done, setDone] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(HABIT_STATE_KEY) || "null");
-      if (saved?.date === dateKey) return saved.done;
-    } catch {}
-    return false;
-  });
-
-  const toggle = () => {
-    const next = !done;
-    setDone(next);
-    try { localStorage.setItem(HABIT_STATE_KEY, JSON.stringify({ date: dateKey, done: next })); } catch {}
-  };
-
-  return (
-    <div style={{ marginBottom: 32, background: "#f0eff0", border: "1px solid #dddde0", borderRadius: 4, padding: "16px 18px", opacity: done ? 0.5 : 1, transition: "opacity .3s" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Icon.Sprout />
-          <p className="eyebrow" style={{ marginBottom: 0, textDecoration: done ? "line-through" : "none", color: done ? "var(--ink-faint)" : undefined }}>Habit in Focus</p>
-        </div>
-        <button onClick={toggle}
-          style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${done ? "var(--sage)" : "#dddde0"}`, background: done ? "var(--sage)" : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, transition: "all .2s" }}>
-          {done && <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
+      {/* Bottom nav */}
+      <div style={{
+        position: compact ? "relative" : "fixed",
+        bottom: 0, left: 0, right: 0,
+        background: "white", borderTop: compact ? "none" : "1px solid #E8E4DC",
+        padding: compact ? "16px 0 0" : "14px 24px",
+        display: "flex", gap: "10px",
+      }}>
+        {step > 0 && (
+          <button onClick={() => setStep(s => s - 1)} style={{ padding: "12px 18px", background: "#F3F0E8", border: "none", borderRadius: "10px", fontFamily: "system-ui", fontSize: "13px", fontWeight: 600, color: "#6B7280", cursor: "pointer" }}>
+            \u2190 Back
+          </button>
+        )}
+        <button
+          onClick={() => isLast ? onComplete(picks) : setStep(s => s + 1)}
+          style={{ flex: 1, background: "#C29B61", color: "white", border: "none", borderRadius: "10px", padding: "13px", fontSize: "16px", fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, cursor: "pointer", letterSpacing: "0.03em" }}
+        >
+          {isLast ? "Begin The Living Feast \u2192" : "Continue \u2192"}
         </button>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-        <HIcon />
-        <p className="serif" style={{ fontSize: 18, color: "var(--ink)" }}>{habit.name}</p>
-      </div>
-      {prompts.map((p, i) => (
-        <div key={i} style={{ paddingBottom: i < prompts.length - 1 ? 12 : 0, marginBottom: i < prompts.length - 1 ? 12 : 0, borderBottom: i < prompts.length - 1 ? "1px solid rgba(180,180,185,.3)" : "none" }}>
-          <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.8 }}>{p}</p>
-        </div>
-      ))}
-      <button onClick={() => onNavigate("habits")}
-        style={{ background: "none", border: "none", cursor: "pointer", marginTop: 14, fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)" }}>
-        Change habit focus \u2192
-      </button>
-    </div>
-  );
-}
-
-// ─── HOME SCREEN ──────────────────────────────────────────────────────────────
-const WOVEN_KEY = "tend_beauty_woven";
-
-export default function HomeScreen({ onNavigate, settings }) {
-  const hour        = new Date().getHours();
-  const greeting    = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
-  const todayIdx    = new Date().getDay();
-  const today       = todayIdx === 0 ? "Sunday" : todayIdx === 6 ? "Saturday" : DAYS[todayIdx - 1];
-  const todayBlocks = DAY_SCHEDULE[today] || [];
-  const name        = settings?.name || "Friend";
-  const activeHabit = settings?.activeHabit || "attention";
-  const isRestWeek  = settings?.isRestWeek || false;
-  const dayOfYear   = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-  const cmQuote     = CM_QUOTES[dayOfYear % CM_QUOTES.length];
-  const isWeekend   = today === "Saturday" || today === "Sunday";
-
-  const [wovenBeauty, setWovenBeauty] = useState(() => {
-    try { return localStorage.getItem(WOVEN_KEY) === "true"; } catch { return false; }
-  });
-
-  const toggleWoven = () => {
-    const next = !wovenBeauty;
-    setWovenBeauty(next);
-    try { localStorage.setItem(WOVEN_KEY, String(next)); } catch {}
-  };
-
-  return (
-    <div className="screen">
-      <p className="eyebrow" style={{ marginBottom: 6 }}>
-        {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-      </p>
-      <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
-      <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
-        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
-        <p className="caption">\u2014 Charlotte Mason, {cmQuote.source}</p>
-      </div>
-
-      <NatureOutdoorCard
-        onNavigate={onNavigate}
-        initialMinutes={settings?.outdoorMinutes || 0}
-        saveToMeta={settings?.saveToMeta}
-        today={today}
-        isPaid={settings?.isPaid || false}
-      />
-
-      <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
-
-      {isRestWeek ? (
-        <RestWeekHome />
-      ) : isWeekend ? (
-        <WeekendRhythmHome today={today} week={settings?.week || 1} />
-      ) : (
-        <>
-          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} wovenBeauty={wovenBeauty} week={settings?.week || 1} />
-          {!wovenBeauty && <BeautyLoopHome today={today} week={settings?.week || 1} />}
-          <MotherCulture />
-          <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
-        </>
-      )}
     </div>
   );
 }
