@@ -329,7 +329,7 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
           <button onClick={() => setShowSettings(true)} style={{
             marginLeft: "auto", background: "none", border: "none",
             cursor: "pointer", color: "#C4B89A", fontSize: "14px", padding: "0 2px",
-          }} title="Adjust reading position">\u2699</button>
+          }} title="Adjust reading position">⚙</button>
         </div>
         {/* Reference */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -342,7 +342,7 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
               padding: "4px 12px", fontSize: "11px", fontFamily: "system-ui", fontWeight: 600,
               cursor: "pointer", whiteSpace: "nowrap", marginLeft: "10px", flexShrink: 0,
             }}>
-              Done \u2192
+              >Done →
             </button>
           )}
         </div>
