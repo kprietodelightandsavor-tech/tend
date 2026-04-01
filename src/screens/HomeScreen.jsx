@@ -37,18 +37,18 @@ const MOTHER_CULTURE_DAILY = [
   "Make yourself something warm to drink and sit with it before opening any screens.",
   "Take a short walk, even just around the property. Move your body gently.",
   "Rest your eyes from screens for 20 minutes today. Look at something far away.",
-  "Go outside and look up. Sky, clouds, light \u2014 let it reset something in you.",
+  "Go outside and look up. Sky, clouds, light — let it reset something in you.",
   "Linger over breakfast. Let the morning be unhurried.",
 ];
 
 const REST_WEEK_RHYTHM = [
   [{ label: "Morning Quiet", note: "Sleep in. Linger over breakfast. No agenda." }, { label: "Church or Worship", note: "Let Sunday be what it is meant to be." }, { label: "Afternoon Rest", note: "Nap, read, sit outside. Simply be." }],
-  [{ label: "Morning Outside", note: "Begin the rest week outdoors \u2014 longer than usual, no nature journal required." }, { label: "Creative Morning", note: "Art, music, handicraft. Let the children follow their own curiosity." }, { label: "Read Aloud", note: "A longer session than usual. Let the story breathe." }, { label: "Free Afternoon", note: "No assignments. No checklist." }],
+  [{ label: "Morning Outside", note: "Begin the rest week outdoors — longer than usual, no nature journal required." }, { label: "Creative Morning", note: "Art, music, handicraft. Let the children follow their own curiosity." }, { label: "Read Aloud", note: "A longer session than usual. Let the story breathe." }, { label: "Free Afternoon", note: "No assignments. No checklist." }],
   [{ label: "Morning Slow Start", note: "Breakfast together, no rush to begin anything." }, { label: "Outing or Errand", note: "Library, farm stand, nature trail, or simply a drive somewhere new." }, { label: "Quiet Afternoon", note: "Independent reading, drawing, rest." }],
-  [{ label: "Morning Chores Together", note: "Tend the home slowly. Order as an act of love." }, { label: "Cook Something Together", note: "Let the kitchen be today\u2019s classroom." }, { label: "Outside Time", note: "Unstructured. Let them wander." }, { label: "Evening Rest", note: "A good book, early bedtime." }],
-  [{ label: "Morning Quiet Time", note: "Bible, journaling, tea. Begin the day gently." }, { label: "Creative Project", note: "Something with hands \u2014 building, painting, sewing, baking." }, { label: "Nature Walk", note: "No sketching required today. Just walk and notice." }],
-  [{ label: "Morning Outside", note: "End the rest week where you began \u2014 in the open air." }, { label: "Read Aloud", note: "Revisit a favourite, or begin something new for next term." }, { label: "Prepare for the Week", note: "Light tidying, gather books, set the table for Monday." }, { label: "Celebrate the Rest", note: "Name one good thing from this week away." }],
-  [{ label: "Family Day", note: "No school, no agenda. Just be together." }, { label: "Outdoor Adventure", note: "A longer outing \u2014 park, trail, town, or simply the back pasture." }, { label: "Evening Gathering", note: "Good food, good conversation, early rest." }],
+  [{ label: "Morning Chores Together", note: "Tend the home slowly. Order as an act of love." }, { label: "Cook Something Together", note: "Let the kitchen be today's classroom." }, { label: "Outside Time", note: "Unstructured. Let them wander." }, { label: "Evening Rest", note: "A good book, early bedtime." }],
+  [{ label: "Morning Quiet Time", note: "Bible, journaling, tea. Begin the day gently." }, { label: "Creative Project", note: "Something with hands — building, painting, sewing, baking." }, { label: "Nature Walk", note: "No sketching required today. Just walk and notice." }],
+  [{ label: "Morning Outside", note: "End the rest week where you began — in the open air." }, { label: "Read Aloud", note: "Revisit a favourite, or begin something new for next term." }, { label: "Prepare for the Week", note: "Light tidying, gather books, set the table for Monday." }, { label: "Celebrate the Rest", note: "Name one good thing from this week away." }],
+  [{ label: "Family Day", note: "No school, no agenda. Just be together." }, { label: "Outdoor Adventure", note: "A longer outing — park, trail, town, or simply the back pasture." }, { label: "Evening Gathering", note: "Good food, good conversation, early rest." }],
 ];
 
 const FREE_KEYWORDS = ["rise", "chores", "piano", "free", "rest", "independent", "lunch", "outdoor", "nature", "afternoon", "pursuits", "break", "reset"];
@@ -57,18 +57,18 @@ const isFreeBlock = (subject) => FREE_KEYWORDS.some(k => subject.toLowerCase().i
 // ─── PREMIUM MODAL ────────────────────────────────────────────────────────────
 export function PremiumModal({ onClose }) {
   const FREE_FEATURES = [
-    "Daily schedule \u2014 one repeating template",
+    "Daily schedule — one repeating template",
     "Outdoor time tracker toward your weekly goal",
-    "Consider the Lilies \u2014 up to 3 journal entries",
-    "One habit focus (Attention) with today\u2019s ideas",
+    "Consider the Lilies — up to 3 journal entries",
+    "One habit focus (Attention) with today's ideas",
     "5 free narration sessions",
     "One student profile",
     "Daily Mother Culture prompt",
     "CM quote of the day",
   ];
   const PREMIUM_FEATURES = [
-    "Full weekly planner \u2014 different schedule per day, editable blocks",
-    "Week grid view \u2014 see your whole week at a glance",
+    "Full weekly planner — different schedule per day, editable blocks",
+    "Week grid view — see your whole week at a glance",
     "Beauty Loop anchored to your daily subjects",
     "Term counter with rest week gentle rhythm",
     "All five Charlotte Mason habits with 12-week reflection",
@@ -91,7 +91,7 @@ export function PremiumModal({ onClose }) {
         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontStyle: "italic", color: "var(--ink-lt)", marginBottom: 24, lineHeight: 1.8 }}>Beauty. Meaning. Connection.</p>
         <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, padding: "16px 18px", marginBottom: 24 }}>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.9 }}>
-            Tend Premium is for the family that wants to go deeper \u2014 a full weekly planner that breathes with your rhythm, a living nature and commonplace journal, all five habits tended over twelve weeks, and the tools to make Charlotte Mason homeschooling feel as beautiful as it actually is.
+            Tend Premium is for the family that wants to go deeper — a full weekly planner that breathes with your rhythm, a living nature and commonplace journal, all five habits tended over twelve weeks, and the tools to make Charlotte Mason homeschooling feel as beautiful as it actually is.
           </p>
         </div>
         <div style={{ display: "flex", gap: 10, marginBottom: 28 }}>
@@ -110,38 +110,38 @@ export function PremiumModal({ onClose }) {
           </div>
         </div>
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 12 }}>Free \u2014 always</p>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 12 }}>Free — always</p>
           {FREE_FEATURES.map((f, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
-              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>\u2713</span>
+              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>✓</span>
               <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.5 }}>{f}</p>
             </div>
           ))}
         </div>
         <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, padding: "18px", marginBottom: 28 }}>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 14 }}>Premium \u2014 everything above, plus</p>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 14 }}>Premium — everything above, plus</p>
           {PREMIUM_FEATURES.map((f, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
-              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>\u2726</span>
+              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>✦</span>
               <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.5 }}>{f}</p>
             </div>
           ))}
         </div>
         <a href="https://delightnsavor.gumroad.com/l/qrxxi" target="_blank" rel="noopener noreferrer"
           style={{ display: "block", background: "var(--sage)", borderRadius: 2, padding: "14px 0", width: "100%", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "white", textAlign: "center", textDecoration: "none", marginBottom: 12 }}>
-          Join Tend Premium \u2192
+          Join Tend Premium →
         </a>
         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, fontStyle: "italic", color: "var(--ink-faint)", textAlign: "center", marginBottom: 20, lineHeight: 1.6 }}>
-          $47/year or $4.99/month \u00b7 cancel anytime
+          $47/year or $4.99/month · cancel anytime
         </p>
         <div style={{ display: "flex", flexDirection: "column", marginBottom: 20, borderTop: "1px solid var(--rule)", borderBottom: "1px solid var(--rule)" }}>
           <a href="https://www.delightandsavor.com" target="_blank" rel="noopener noreferrer"
             style={{ display: "block", textAlign: "center", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", textDecoration: "none", padding: "12px 0", borderBottom: "1px solid var(--rule)" }}>
-            Explore curriculum & the blog at Delight & Savor \u2192
+            Explore curriculum & the blog at Delight & Savor →
           </a>
           <a href="https://substack.com/@delightandsavor" target="_blank" rel="noopener noreferrer"
             style={{ display: "block", textAlign: "center", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", textDecoration: "none", padding: "12px 0" }}>
-            Follow along on Substack \u2192
+            Follow along on Substack →
           </a>
         </div>
         <button onClick={onClose}
@@ -168,7 +168,7 @@ const NATURE_DAYS = {
   Monday:    { step: "Read",    label: "Nature Lore Reading",       getInstruction: (t) => t ? "Read aloud from " + t.read + ". This week: " + t.subject + "." : "Read aloud from The Year Round by C.J. Hylander." },
   Tuesday:   { step: "Observe", label: "Nature Walk",              getInstruction: (t) => t?.observe || "Go outside and observe nature with fresh eyes." },
   Wednesday: { step: "Record",  label: "Consider the Lilies Entry", getInstruction: ()  => "Words or sentences, a sketch, and watercolor. Let the page be a living record of what you noticed." },
-  Thursday:  { step: "Finish",  label: "Continue Reading",         getInstruction: (t) => t ? "Finish any remaining reading on " + t.subject + ", or revisit Tuesday\u2019s walk through narration." : "Finish this week\u2019s nature lore reading." },
+  Thursday:  { step: "Finish",  label: "Continue Reading",         getInstruction: (t) => t ? "Finish any remaining reading on " + t.subject + ", or revisit Tuesday's walk through narration." : "Finish this week's nature lore reading." },
   Friday:    { step: "Watch",   label: "Nature Clip",              getInstruction: (t) => t ? "Find a short video about " + t.subject.toLowerCase() + ". Let the children see it moving." : "Find a short nature video to watch together." },
 };
 
@@ -207,7 +207,7 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, initialWeekStart, saveT
       const saved = JSON.parse(localStorage.getItem("tend_nature_current") || "null");
       if (saved?.subject) return saved;
     } catch {}
-    return { subject: "The Story of the Tadpole", read: "The Year Round by C.J. Hylander \u00b7 Spring section", observe: "Go outside and look near ponds or puddles for frogs or tadpoles. Just notice.", action: "Sit quietly near water for 5 minutes." };
+    return { subject: "The Story of the Tadpole", read: "The Year Round by C.J. Hylander · Spring section", observe: "Go outside and look near ponds or puddles for frogs or tadpoles. Just notice.", action: "Sit quietly near water for 5 minutes." };
   });
 
   // If week rolled over, persist the reset immediately
@@ -287,7 +287,7 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, initialWeekStart, saveT
         </div>
         <div style={{ flex: 1 }}>
           <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 3 }}>
-            {hours >= OUTDOOR_GOAL_HOURS ? "Goal reached \u2726" : (OUTDOOR_GOAL_HOURS - hours) + "h to go \u00b7 goal " + OUTDOOR_GOAL_HOURS + "h"}
+            {hours >= OUTDOOR_GOAL_HOURS ? "Goal reached ✦" : (OUTDOOR_GOAL_HOURS - hours) + "h to go · goal " + OUTDOOR_GOAL_HOURS + "h"}
           </p>
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
             {[15, 30, 45, 60].map(n => (
@@ -324,7 +324,7 @@ function RestWeekHome() {
           <Icon.Sun />
           <p className="eyebrow" style={{ marginBottom: 0 }}>A Gentle Rhythm for Today</p>
         </div>
-        <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>Not a schedule \u2014 just a shape for the day.</p>
+        <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>Not a schedule — just a shape for the day.</p>
         {REST_WEEK_RHYTHM[day].map((r, i) => (
           <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "12px 0", borderBottom: "1px solid var(--rule)" }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", opacity: .5, marginTop: 8, flexShrink: 0 }} />
@@ -354,7 +354,7 @@ function WeekendRhythmHome({ today, week }) {
     <div style={{ marginBottom: 28 }}>
       <div style={{ padding: "14px 16px", background: isSunday ? "var(--gold-bg)" : "var(--sage-bg)", borderRadius: 3, border: "1px solid " + (isSunday ? "#E0CBA8" : "var(--sage-md)"), marginBottom: 20 }}>
         <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: isSunday ? "var(--gold)" : "var(--sage)", marginBottom: 3 }}>
-          {today} \u00b7 {rhythm.theme}
+          {today} · {rhythm.theme}
         </p>
         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.7 }}>"{rhythm.quote}"</p>
       </div>
@@ -371,7 +371,7 @@ function WeekendRhythmHome({ today, week }) {
           </div>
         </div>
       ))}
-      <p className="caption italic" style={{ marginTop: 16, textAlign: "center" }}>Not a schedule \u2014 just a gentle shape for the day.</p>
+      <p className="caption italic" style={{ marginTop: 16, textAlign: "center" }}>Not a schedule — just a gentle shape for the day.</p>
     </div>
   );
 }
@@ -382,14 +382,14 @@ const BEAUTY_ROTATION = {
     morning: {
       anchors: ["language", "using language", "math"],
       items: [
-        { id: "bl-m-bio",  label: "Biography Study",   note: "A life worth knowing. Read a chapter and narrate \u2014 what made this person who they were?" },
+        { id: "bl-m-bio",  label: "Biography Study",   note: "A life worth knowing. Read a chapter and narrate — what made this person who they were?" },
         { id: "bl-m-cit",  label: "Citizenship Study", note: "Stories of virtue and civic life. What does it mean to be a good neighbor, citizen, steward?" },
       ],
     },
     afternoon: {
       anchors: ["science", "artist", "beauty"],
       items: [
-        { id: "bl-m-art",  label: "Artist Study",        note: "Picture study \u2014 observe quietly, narrate, then sketch from memory." },
+        { id: "bl-m-art",  label: "Artist Study",        note: "Picture study — observe quietly, narrate, then sketch from memory." },
         { id: "bl-m-poet", label: "Poet & Poetry Study", note: "Read the poem aloud twice. What image stayed with you?" },
       ],
     },
@@ -408,7 +408,7 @@ const BEAUTY_ROTATION = {
       anchors: ["geography", "composer", "hymn"],
       items: [
         { id: "bl-f-comp", label: "Composer Study", note: "Listen to one piece all the way through without doing anything else." },
-        { id: "bl-f-hymn", label: "Hymn Study",     note: "This term\u2019s hymn \u2014 sing it slowly. Let the words land." },
+        { id: "bl-f-hymn", label: "Hymn Study",     note: "This term's hymn — sing it slowly. Let the words land." },
       ],
     },
   },
@@ -607,7 +607,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Icon.Sun />
-          <p className="eyebrow" style={{ marginBottom: 0 }}>Today \u00b7 {today}</p>
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Today · {today}</p>
         </div>
         <button onClick={() => onNavigate("planner")}
           style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase" }}>
@@ -647,7 +647,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
                 <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{b.time}</span>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 16, color: isDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease" }}>{b.subject}</p>
-                  {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped \u00b7 tap to restore</p>}
+                  {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped · tap to restore</p>}
                   {b.note && !isSkipped && !isDone && <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
                   {isDone && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
                   {!isDone && !isSkipped && isBibleBlock && (
@@ -693,7 +693,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
                       onMouseDown={e => e.stopPropagation()}
                       onTouchStart={e => e.stopPropagation()}
                       style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", padding: 0, textAlign: "left", opacity: b.motherNote ? 1 : 0.5 }}>
-                      {b.motherNote ? "\u2726 " + b.motherNote : "your time \u00b7 what will you tend?"}
+                      {b.motherNote ? "✦ " + b.motherNote : "your time · what will you tend?"}
                     </button>
                   )}
                 </div>
@@ -703,7 +703,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
         );
       })}
 
-      <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap to complete \u00b7 Tap again to undo \u00b7 Hold to skip</p>
+      <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap to complete · Tap again to undo · Hold to skip</p>
     </div>
   );
 }
@@ -734,7 +734,7 @@ function BeautyLoopHome({ today, week }) {
     <div style={{ marginBottom: 28, background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 4, padding: "16px 18px", opacity: allDone ? 0.6 : 1, transition: "opacity .3s" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
         <Icon.Leaf />
-        <p className="eyebrow" style={{ marginBottom: 0, textDecoration: allDone ? "line-through" : "none", color: allDone ? "var(--ink-faint)" : undefined }}>Beauty Loop \u00b7 {today}</p>
+        <p className="eyebrow" style={{ marginBottom: 0, textDecoration: allDone ? "line-through" : "none", color: allDone ? "var(--ink-faint)" : undefined }}>Beauty Loop · {today}</p>
       </div>
       {items.map((l, i) => {
         const checked = !!done[l.id];
@@ -837,7 +837,7 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
       ))}
       <button onClick={() => onNavigate("habits")}
         style={{ background: "none", border: "none", cursor: "pointer", marginTop: 14, fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)" }}>
-        Change habit focus \u2192
+        Change habit focus →
       </button>
     </div>
   );
@@ -877,7 +877,7 @@ export default function HomeScreen({ onNavigate, settings }) {
       <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
       <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
-        <p className="caption">\u2014 Charlotte Mason, {cmQuote.source}</p>
+        <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
 
       <NatureOutdoorCard
