@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import "./styles/globals.css";
 import { supabase } from "./lib/supabase";
+import BibleReadingScreen from "./screens/BibleReadingScreen";
 
 import BottomNav        from "./components/BottomNav";
 import OnboardingScreen from "./screens/OnboardingScreen";
@@ -206,6 +207,7 @@ const SCREENS = {
   naturestudy:  NatureStudyScreen,
   teachinglog:  TeachingLogScreen,
   annualreport: AnnualReportScreen,
+  scripture:      BibleReadingScreen,
 };
 
 const STORAGE_KEY = 'tend_user';
