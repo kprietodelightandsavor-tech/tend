@@ -1,275 +1,326 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
 
-// ── All four CC cycles — 144 weeks total ──────────────────────────────────────
-// Order: finish Cycle 3 (weeks 29-36 remaining), then Cycle 4, Cycle 1, Cycle 2, repeat
-// You are currently at Cycle 3 Week 28 (just finished). Next = Cycle 3 Week 29.
-
-const CYCLE3 = [
-  { nt: "Acts 4",                    ot: "Joshua 1:1-9",                   psalm: "Psalm 73",  wisdom: "Proverbs 1:1-19"    }, // W1
-  { nt: "Acts 6, 7:54-60",           ot: "Joshua 2:1-24",                  psalm: "Psalm 74",  wisdom: "Proverbs 1:20-33"   }, // W2
-  { nt: "Acts 8",                    ot: "Joshua 3:1-17, 4:10-13",         psalm: "Psalm 75",  wisdom: "Proverbs 2"         }, // W3
-  { nt: "Acts 9:1-19",               ot: "Joshua 6",                       psalm: "Psalm 76",  wisdom: "Proverbs 3:1-12"    }, // W4
-  { nt: "Acts 9:20-42",              ot: "Joshua 23",                      psalm: "Psalm 77",  wisdom: "Proverbs 3:13-35"   }, // W5
-  { nt: "Acts 10:1-26",              ot: "Judges 6:1-18",                  psalm: "Psalm 78",  wisdom: "Proverbs 4"         }, // W6
-  { nt: "Acts 10:27-48",             ot: "Judges 6:19-40",                 psalm: "Psalm 79",  wisdom: "Proverbs 5"         }, // W7
-  { nt: "Acts 11",                   ot: "Judges 7:1-22",                  psalm: "Psalm 80",  wisdom: "Proverbs 6:1-19"    }, // W8
-  { nt: "Acts 12:1-19",              ot: "Judges 13",                      psalm: "Psalm 81",  wisdom: "Proverbs 6:19-35"   }, // W9
-  { nt: "Acts 13:1-12",              ot: "Judges 16:2-31",                 psalm: "Psalm 82",  wisdom: "Proverbs 8:1-21"    }, // W10
-  { nt: "Acts 13:13-52",             ot: "Ruth 1",                         psalm: "Psalm 83",  wisdom: "Proverbs 8:22-36"   }, // W11
-  { nt: "Acts 14:1-20",              ot: "Ruth 2",                         psalm: "Psalm 84",  wisdom: "Proverbs 9"         }, // W12
-  { nt: "Acts 16:1-15",              ot: "Ruth 3",                         psalm: "Psalm 85",  wisdom: "Proverbs 10:1-19"   }, // W13
-  { nt: "Acts 16:16-40",             ot: "Ruth 4:1-12, 14-22",             psalm: "Psalm 86",  wisdom: "Proverbs 10:20-32"  }, // W14
-  { nt: "Acts 17:1-15",              ot: "1 Samuel 1:1-2, 7-28",           psalm: "Psalm 87",  wisdom: "Proverbs 11:1-18"   }, // W15
-  { nt: "Acts 17:16-34",             ot: "1 Samuel 3:1-21",                psalm: "Psalm 88",  wisdom: "Proverbs 11:19-31"  }, // W16
-  { nt: "Acts 18:1-17",              ot: "1 Samuel 8:1-22",                psalm: "Psalm 89",  wisdom: "Proverbs 12"        }, // W17
-  { nt: "Acts 18:18-28",             ot: "1 Samuel 9",                     psalm: "Psalm 90",  wisdom: "Proverbs 13"        }, // W18
-  { nt: "Acts 19:1-20",              ot: "1 Samuel 10",                    psalm: "Psalm 91",  wisdom: "Proverbs 14:1-19"   }, // W19
-  { nt: "Acts 19:21-41",             ot: "1 Samuel 13:1-14",               psalm: "Psalm 92",  wisdom: "Proverbs 14:20-35"  }, // W20
-  { nt: "Acts 20:1-21",              ot: "1 Samuel 14:1-15",               psalm: "Psalm 93",  wisdom: "Proverbs 15:1-19"   }, // W21
-  { nt: "Acts 20:22-38",             ot: "1 Samuel 15:10-31",              psalm: "Psalm 94",  wisdom: "Proverbs 15:20-33"  }, // W22
-  { nt: "Acts 21:1-26",              ot: "1 Samuel 16",                    psalm: "Psalm 95",  wisdom: "Proverbs 16:1-17"   }, // W23
-  { nt: "Acts 21:27-36",             ot: "1 Samuel 17:1-24",               psalm: "Psalm 96",  wisdom: "Proverbs 16:18-33"  }, // W24
-  { nt: "Acts 22",                   ot: "1 Samuel 17:25-58, 18:1-9",      psalm: "Psalm 97",  wisdom: "Proverbs 17:1-15"   }, // W25
-  { nt: "Acts 23:1-22",              ot: "1 Samuel 19:1-14",               psalm: "Psalm 98",  wisdom: "Proverbs 17:16-28"  }, // W26
-  { nt: "Acts 23:23-35",             ot: "1 Samuel 20",                    psalm: "Psalm 99",  wisdom: "Proverbs 18"        }, // W27
-  { nt: "Acts 24:1-21",              ot: "1 Samuel 24",                    psalm: "Psalm 100", wisdom: "Proverbs 19:1-15"   }, // W28
-  { nt: "Acts 25",                   ot: "1 Samuel 31:1-7, 2 Samuel 2:4",  psalm: "Psalm 101", wisdom: "Proverbs 19:16-29"  }, // W29
-  { nt: "Acts 26:1-18",              ot: "2 Samuel 5:1-5, 17-25",          psalm: "Psalm 102", wisdom: "Proverbs 20:1-15"   }, // W30
-  { nt: "Acts 26:19-32",             ot: "2 Samuel 6:1-19",                psalm: "Psalm 103", wisdom: "Proverbs 20:16-30"  }, // W31
-  { nt: "Acts 27:1-12",              ot: "2 Samuel 7:1-17",                psalm: "Psalm 104", wisdom: "Proverbs 21:1-15"   }, // W32
-  { nt: "Acts 27:13-44",             ot: "2 Samuel 22:1-30",               psalm: "Psalm 105", wisdom: "Proverbs 21:16-31"  }, // W33
-  { nt: "Acts 28:1-16",              ot: "2 Samuel 22:31-51, 23:1-7",      psalm: "Psalm 106", wisdom: "Proverbs 22:1-16"   }, // W34
-  { nt: "Acts 28:17-31",             ot: "2 Samuel 24:1-17",               psalm: "Psalm 107", wisdom: "Proverbs 22:17-29"  }, // W35
-  { nt: null,                        ot: "2 Samuel 24:18-25",              psalm: "Psalm 108", wisdom: null                  }, // W36
-];
-
-const CYCLE4 = [
-  { nt: "Romans 1:1-17",             ot: "1 Kings 1:1-27",                 psalm: "Psalm 109", wisdom: "Proverbs 23:1-16"   }, // W1
-  { nt: "Romans 8:1-17",             ot: "1 Kings 1:28-53",                psalm: "Psalm 110", wisdom: "Proverbs 23:17-35"  }, // W2
-  { nt: "Romans 8:18-39",            ot: "1 Kings 2:1-12",                 psalm: "Psalm 111", wisdom: "Proverbs 24:1-22"   }, // W3
-  { nt: "Romans 12:1-21",            ot: "1 Kings 3",                      psalm: "Psalm 112", wisdom: "Proverbs 24:23-34"  }, // W4
-  { nt: "1 Corinthians 1",           ot: "1 Kings 5",                      psalm: "Psalm 113", wisdom: "Proverbs 25:1-15"   }, // W5
-  { nt: "1 Corinthians 2",           ot: "1 Kings 7:51, 8:1-21",           psalm: "Psalm 114", wisdom: "Proverbs 25:16-28"  }, // W6
-  { nt: "1 Corinthians 13",          ot: "1 Kings 8:22-61",                psalm: "Psalm 115", wisdom: "Proverbs 26:1-13"   }, // W7
-  { nt: "Galatians 5",               ot: "1 Kings 9:1-9, 10:1-10",         psalm: "Psalm 116", wisdom: "Proverbs 26:14-28"  }, // W8
-  { nt: "Ephesians 1",               ot: "1 Kings 11:9-13, 26-40",         psalm: "Psalm 117", wisdom: "Proverbs 27:1-14"   }, // W9
-  { nt: "Ephesians 2:1-10",          ot: "1 Kings 12",                     psalm: "Psalm 118", wisdom: "Proverbs 27:15-27"  }, // W10
-  { nt: "Ephesians 6:10-20",         ot: "1 Kings 17",                     psalm: "Psalm 119", wisdom: "Proverbs 28:1-12"   }, // W11
-  { nt: "Colossians 3:1-17, 4:2-6",  ot: "1 Kings 18:16-46",               psalm: "Psalm 120", wisdom: "Proverbs 28:13-28"  }, // W12
-  { nt: "1 Thessalonians 1-2",       ot: "1 Kings 19",                     psalm: "Psalm 121", wisdom: "Proverbs 29:1-14"   }, // W13
-  { nt: "1 Thessalonians 3, 4:9-12", ot: "2 Kings 2",                      psalm: "Psalm 122", wisdom: "Proverbs 29:15-27"  }, // W14
-  { nt: "1 Thessalonians 5",         ot: "2 Kings 4:1-37",                 psalm: "Psalm 123", wisdom: "Proverbs 30:1-14"   }, // W15
-  { nt: "1 Timothy 1",               ot: "2 Kings 5",                      psalm: "Psalm 124", wisdom: "Proverbs 30:15-33"  }, // W16
-  { nt: "1 Timothy 2",               ot: "2 Kings 17:1-23",                psalm: "Psalm 125", wisdom: "Proverbs 31"        }, // W17
-  { nt: "1 Timothy 6",               ot: "2 Kings 18",                     psalm: "Psalm 126", wisdom: "Ecclesiastes 1"     }, // W18
-  { nt: "2 Timothy 1-2",             ot: "2 Kings 19",                     psalm: "Psalm 127", wisdom: "Ecclesiastes 2:1-16" }, // W19
-  { nt: "2 Timothy 3-4",             ot: "2 Kings 20",                     psalm: "Psalm 128", wisdom: "Ecclesiastes 2:17-26"}, // W20
-  { nt: "Titus",                     ot: "2 Kings 22",                     psalm: "Psalm 129", wisdom: "Ecclesiastes 3:1-14" }, // W21
-  { nt: "Hebrews 1",                 ot: "2 Kings 23:1-30",                psalm: "Psalm 130", wisdom: "Ecclesiastes 3:15-22"}, // W22
-  { nt: "Hebrews 2",                 ot: "2 Kings 24:1-17",                psalm: "Psalm 131", wisdom: "Ecclesiastes 4"     }, // W23
-  { nt: "Hebrews 3",                 ot: "2 Kings 25:8-21",                psalm: "Psalm 132", wisdom: null                  }, // W24
-  { nt: "Hebrews 4-5",               ot: "Daniel 1:1-21",                  psalm: "Psalm 133", wisdom: "Ecclesiastes 5:1-7"  }, // W25
-  { nt: "Hebrews 6",                 ot: "Daniel 2",                       psalm: "Psalm 134", wisdom: "Ecclesiastes 5:8-20" }, // W26
-  { nt: "Hebrews 7",                 ot: "Daniel 3",                       psalm: "Psalm 135", wisdom: "Ecclesiastes 6"      }, // W27
-  { nt: "Hebrews 9",                 ot: "Daniel 6",                       psalm: "Psalm 136", wisdom: "Ecclesiastes 7:1-14" }, // W28
-  { nt: "Hebrews 10",                ot: "Esther 1",                       psalm: "Psalm 137", wisdom: "Ecclesiastes 7:15-29"}, // W29
-  { nt: "Hebrews 11",                ot: "Esther 2",                       psalm: "Psalm 138", wisdom: "Ecclesiastes 8:1-10" }, // W30
-  { nt: "Hebrews 12",                ot: "Esther 4-5",                     psalm: "Psalm 139", wisdom: "Ecclesiastes 9"      }, // W31
-  { nt: "Hebrews 13",                ot: "Esther 6-7",                     psalm: "Psalm 140", wisdom: "Ecclesiastes 10"     }, // W32
-  { nt: "1 John 4:7-21",             ot: "Ezra 1:1-7, 3",                  psalm: "Psalm 141", wisdom: "Ecclesiastes 11"     }, // W33
-  { nt: "Revelation 1",              ot: "Nehemiah 1",                     psalm: "Psalm 142", wisdom: "Ecclesiastes 12"     }, // W34
-  { nt: "Revelation 21",             ot: "Nehemiah 2",                     psalm: "Psalm 143", wisdom: null                  }, // W35
-  { nt: "Revelation 22",             ot: "Nehemiah 9",                     psalm: "Psalm 144", wisdom: null                  }, // W36
-];
-
-const CYCLE1 = [
-  { nt: "Matthew 1",                 ot: "Genesis 1",                      psalm: "Psalm 1",   wisdom: "Proverbs 1:1-19"   }, // W1
-  { nt: "Matthew 2",                 ot: "Genesis 2",                      psalm: "Psalm 2",   wisdom: "Proverbs 1:20-33"  }, // W2
-  { nt: "Matthew 3",                 ot: "Genesis 3",                      psalm: "Psalm 3",   wisdom: "Proverbs 2"        }, // W3
-  { nt: "Matthew 4",                 ot: "Genesis 6:1-22, 7:1-10",         psalm: "Psalm 4",   wisdom: "Proverbs 3:1-18"   }, // W4
-  { nt: "Matthew 5:1-26",            ot: "Genesis 7:11-24, 8:1-19",        psalm: "Psalm 5",   wisdom: "Proverbs 3:19-35"  }, // W5
-  { nt: "Matthew 5:27-48",           ot: "Genesis 9:1-17",                 psalm: "Psalm 6",   wisdom: "Proverbs 4:1-19"   }, // W6
-  { nt: "Matthew 6:1-18",            ot: "Genesis 11:1-9",                 psalm: "Psalm 7",   wisdom: "Proverbs 4:20-27"  }, // W7
-  { nt: "Matthew 6:19-34",           ot: "Genesis 12:1-9",                 psalm: "Psalm 8",   wisdom: "Proverbs 5:1-14"   }, // W8
-  { nt: "Matthew 7",                 ot: "Genesis 15",                     psalm: "Psalm 9",   wisdom: "Proverbs 5:15-23"  }, // W9
-  { nt: "Matthew 8:1-22",            ot: "Genesis 17:1-22",                psalm: "Psalm 10",  wisdom: "Proverbs 6:1-19"   }, // W10
-  { nt: "Matthew 8:23-34",           ot: "Genesis 18:1-15",                psalm: "Psalm 11",  wisdom: "Proverbs 6:20-35"  }, // W11
-  { nt: "Matthew 9:1-17",            ot: "Genesis 21:1-21",                psalm: "Psalm 12",  wisdom: "Proverbs 7:1-13"   }, // W12
-  { nt: "Matthew 9:18-38",           ot: "Genesis 22:1-18",                psalm: "Psalm 13",  wisdom: "Proverbs 7:14-27"  }, // W13
-  { nt: "Matthew 10:1-25",           ot: "Genesis 24:1-27",                psalm: "Psalm 14",  wisdom: "Proverbs 8:1-21"   }, // W14
-  { nt: "Matthew 10:26-42",          ot: "Genesis 24:28-67",               psalm: "Psalm 15",  wisdom: "Proverbs 8:22-36"  }, // W15
-  { nt: "Matthew 11",                ot: "Genesis 25:19-34",               psalm: "Psalm 16",  wisdom: "Proverbs 9"        }, // W16
-  { nt: "Matthew 12:1-21",           ot: "Genesis 27:1-29",                psalm: "Psalm 17",  wisdom: "Proverbs 10:1-16"  }, // W17
-  { nt: "Matthew 12:22-50",          ot: "Genesis 28:10-22",               psalm: "Psalm 18",  wisdom: "Proverbs 10:17-32" }, // W18
-  { nt: "Matthew 13:1-30",           ot: "Genesis 32:22-32",               psalm: "Psalm 19",  wisdom: "Proverbs 11:1-15"  }, // W19
-  { nt: "Matthew 13:31-58",          ot: "Genesis 37:1-28",                psalm: "Psalm 20",  wisdom: "Proverbs 11:16-31" }, // W20
-  { nt: "Matthew 14:1-21",           ot: "Genesis 39",                     psalm: "Psalm 21",  wisdom: "Proverbs 12:1-14"  }, // W21
-  { nt: "Matthew 14:22-36",          ot: "Genesis 41:1-40",                psalm: "Psalm 22",  wisdom: "Proverbs 12:15-28" }, // W22
-  { nt: "Matthew 15:1-20",           ot: "Genesis 41:41-57",               psalm: "Psalm 23",  wisdom: "Proverbs 13:1-12"  }, // W23
-  { nt: "Matthew 15:21-39",          ot: "Genesis 45:1-15",                psalm: "Psalm 24",  wisdom: "Proverbs 13:13-25" }, // W24
-  { nt: "Matthew 16",                ot: "Genesis 46:1-7",                 psalm: "Psalm 25",  wisdom: "Proverbs 14:1-18"  }, // W25
-  { nt: "Matthew 17",                ot: "Genesis 50:15-26",               psalm: "Psalm 26",  wisdom: "Proverbs 14:19-35" }, // W26
-  { nt: "Matthew 18:1-9",            ot: "Exodus 1:1-22",                  psalm: "Psalm 27",  wisdom: "Proverbs 15:1-17"  }, // W27
-  { nt: "Matthew 19",                ot: "Exodus 2:1-25",                  psalm: "Psalm 28",  wisdom: "Proverbs 15:18-33" }, // W28
-  { nt: "Matthew 20:17-34",          ot: "Exodus 3:1-22",                  psalm: "Psalm 29",  wisdom: "Proverbs 16:1-16"  }, // W29
-  { nt: "Matthew 21:1-22",           ot: "Exodus 4:1-17",                  psalm: "Psalm 30",  wisdom: "Proverbs 16:17-33" }, // W30
-  { nt: "Matthew 22:1-22",           ot: "Exodus 5-6:1-13",                psalm: "Psalm 31",  wisdom: "Proverbs 17:1-14"  }, // W31
-  { nt: "Matthew 22:23-46",          ot: "Exodus 7:1-25",                  psalm: "Psalm 32",  wisdom: "Proverbs 17:15-28" }, // W32
-  { nt: "Matthew 23:1-28",           ot: "Exodus 8:1-32",                  psalm: "Psalm 33",  wisdom: "Proverbs 18:1-12"  }, // W33
-  { nt: "Matthew 23:29-39",          ot: "Exodus 9",                       psalm: "Psalm 34",  wisdom: "Proverbs 18:13-24" }, // W34
-  { nt: "Matthew 24:1-28",           ot: "Exodus 10",                      psalm: "Psalm 35",  wisdom: "Proverbs 19:1-15"  }, // W35
-  { nt: "Matthew 24:29-51",          ot: "Exodus 11-12:1-28",              psalm: "Psalm 36",  wisdom: "Proverbs 19:16-29" }, // W36
-];
-
-const CYCLE2 = [
-  { nt: "Mark 8:1-21",               ot: "Exodus 1:1-22",                  psalm: "Psalm 37",  wisdom: "Proverbs 23:1-16"   }, // W1
-  { nt: "Mark 8:22-38",              ot: "Exodus 2:1-10",                  psalm: "Psalm 38",  wisdom: "Proverbs 23:17-35"  }, // W2
-  { nt: "Mark 9:2-13",               ot: "Exodus 2:11-25",                 psalm: "Psalm 39",  wisdom: "Proverbs 24:1-22"   }, // W3
-  { nt: "Mark 9:14-32",              ot: "Exodus 3:1-22",                  psalm: "Psalm 40",  wisdom: "Proverbs 24:23-34"  }, // W4
-  { nt: "Mark 9:33-50",              ot: "Exodus 4:1-17",                  psalm: "Psalm 41",  wisdom: "Proverbs 25:1-15"   }, // W5
-  { nt: "Matthew 18:10-20",          ot: "Exodus 5:1-23",                  psalm: "Psalm 42",  wisdom: "Proverbs 25:16-28"  }, // W6
-  { nt: "Matthew 18:21-35",          ot: "Exodus 6:1-13",                  psalm: "Psalm 43",  wisdom: "Proverbs 26:1-13"   }, // W7
-  { nt: "Luke 10:1-24",              ot: "Exodus 7:1-25",                  psalm: "Psalm 44",  wisdom: "Proverbs 26:14-28"  }, // W8
-  { nt: "Luke 10:25-42",             ot: "Exodus 8:1-32",                  psalm: "Psalm 45",  wisdom: "Proverbs 27:1-14"   }, // W9
-  { nt: "Luke 13:10-17",             ot: "Exodus 9",                       psalm: "Psalm 46",  wisdom: "Proverbs 27:15-27"  }, // W10
-  { nt: "Luke 16:19-31",             ot: "Exodus 10",                      psalm: "Psalm 47",  wisdom: "Proverbs 28:1-12"   }, // W11
-  { nt: "Luke 17:11-37",             ot: "Exodus 12:3-28",                 psalm: "Psalm 48",  wisdom: "Proverbs 28:13-28"  }, // W12
-  { nt: "John 10:1-18",              ot: "Exodus 12:29-51",                psalm: "Psalm 49",  wisdom: "Proverbs 29:1-14"   }, // W13
-  { nt: "Matthew 20:1-16",           ot: "Exodus 14:5-31",                 psalm: "Psalm 50",  wisdom: "Proverbs 29:15-27"  }, // W14
-  { nt: "Luke 19:1-10",              ot: "Exodus 16:1-35",                 psalm: "Psalm 51",  wisdom: "Proverbs 30:1-14"   }, // W15
-  { nt: "Matthew 21:23-32",          ot: "Exodus 20:1-21",                 psalm: "Psalm 52",  wisdom: "Proverbs 30:15-33"  }, // W16
-  { nt: "Matthew 22:34-46",          ot: "Exodus 24",                      psalm: "Psalm 53",  wisdom: "Proverbs 31"        }, // W17
-  { nt: "Matthew 26:1-16",           ot: "Exodus 25",                      psalm: "Psalm 54",  wisdom: "Ecclesiastes 1"     }, // W18
-  { nt: "Matthew 26:17-29",          ot: "Exodus 32",                      psalm: "Psalm 55",  wisdom: "Ecclesiastes 2:1-16" }, // W19
-  { nt: "Matthew 26:30-46",          ot: "Exodus 33",                      psalm: "Psalm 56",  wisdom: "Ecclesiastes 2:17-26"}, // W20
-  { nt: "Matthew 26:47-75",          ot: "Exodus 34",                      psalm: "Psalm 57",  wisdom: "Ecclesiastes 3:1-14" }, // W21
-  { nt: "John 13:1-30",              ot: "Exodus 37",                      psalm: "Psalm 58",  wisdom: "Ecclesiastes 3:15-22"}, // W22
-  { nt: "Luke 23:1-25",              ot: "Exodus 39:1-21",                 psalm: "Psalm 59",  wisdom: "Ecclesiastes 4"     }, // W23
-  { nt: "Matthew 27:27-50",          ot: "Exodus 40",                      psalm: "Psalm 60",  wisdom: null                  }, // W24
-  { nt: "Matthew 27:51-66",          ot: "Numbers 10:1-10",                psalm: "Psalm 61",  wisdom: "Ecclesiastes 5:1-7"  }, // W25
-  { nt: "Matthew 28:1-15",           ot: "Numbers 20:2-18",                psalm: "Psalm 62",  wisdom: "Ecclesiastes 5:8-20" }, // W26
-  { nt: "Luke 24:13-49",             ot: "Numbers 27:12-23",               psalm: "Psalm 63",  wisdom: "Ecclesiastes 6"      }, // W27
-  { nt: "John 20:24-31",             ot: "Deuteronomy 1:1-25",             psalm: "Psalm 64",  wisdom: "Ecclesiastes 7:1-14" }, // W28
-  { nt: "John 21:1-14",              ot: "Deuteronomy 1:26-45",            psalm: "Psalm 65",  wisdom: "Ecclesiastes 7:15-29"}, // W29
-  { nt: "John 21:15-25",             ot: "Deuteronomy 4:1-31",             psalm: "Psalm 66",  wisdom: "Ecclesiastes 8:1-10" }, // W30
-  { nt: "Acts 1:1-11",               ot: "Deuteronomy 5",                  psalm: "Psalm 67",  wisdom: "Ecclesiastes 9"      }, // W31
-  { nt: "Acts 1:12-26",              ot: "Deuteronomy 6",                  psalm: "Psalm 68",  wisdom: "Ecclesiastes 10"     }, // W32
-  { nt: "Acts 2:1-21",               ot: "Deuteronomy 7",                  psalm: "Psalm 69",  wisdom: "Ecclesiastes 11"     }, // W33
-  { nt: "Acts 2:22-47",              ot: "Deuteronomy 31:14-29, 32:48-52", psalm: "Psalm 70",  wisdom: "Ecclesiastes 12"     }, // W34
-  { nt: "Acts 3:1-10",               ot: "Deuteronomy 34",                 psalm: "Psalm 71",  wisdom: null                  }, // W35
-  { nt: "Acts 3:11-26",              ot: null,                             psalm: "Psalm 72",  wisdom: null                  }, // W36
-];
-
-// ── Full sequence: finish C3 (from W29), then C4, C1, C2, repeat ──────────────
-// C3_REMAINING = weeks 29-36 of Cycle 3 (indices 28-35)
-const C3_REMAINING = CYCLE3.slice(28); // 8 weeks
-const ALL_READINGS = [...C3_REMAINING, ...CYCLE4, ...CYCLE1, ...CYCLE2];
-
-// Cycle labels for display
-function getCycleLabel(globalIdx) {
-  if (globalIdx < 8)  return `Cycle 3 \u00b7 Week ${globalIdx + 29}`;
-  if (globalIdx < 44) return `Cycle 4 \u00b7 Week ${globalIdx - 7}`;
-  if (globalIdx < 80) return `Cycle 1 \u00b7 Week ${globalIdx - 43}`;
-  if (globalIdx < 116) return `Cycle 2 \u00b7 Week ${globalIdx - 79}`;
-  return `Week ${globalIdx + 1}`;
+// ── Flame icon ────────────────────────────────────────────────────────────────
+export function FlameIcon({ size = 20, color = "#C29B61" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M12 2C12 2 7 7 7 13a5 5 0 0010 0c0-3-2-5-2-5s-.5 2.5-2 3.5C12 12 11 10 12 7c0 0-2 2-2 5a3 3 0 006 0c0-4-4-10-4-10z" fill={color} opacity="0.9"/>
+      <path d="M12 14c0 0-1.5-.5-1.5-2 0 0 .5 1 1.5 1s1.5-1 1.5-1c0 1.5-1.5 2-1.5 2z" fill="white" opacity="0.6"/>
+    </svg>
+  );
 }
 
-// ── Styling ───────────────────────────────────────────────────────────────────
-const ROTATION = ["nt", "ot", "psalm", "wisdom"];
+// ── Complete 108-week schedule ────────────────────────────────────────────────
+const SCHEDULE = [
+  // YEAR 1 — "In the Beginning"
+  // Term 1: Genesis (Weeks 1–12)
+  { week:1,  year:1, term:1, wisdom:"Proverbs 1:1-19",      nt:"Matthew 1",                 ot:"Genesis 1",                          psalm:"Psalm 1"    },
+  { week:2,  year:1, term:1, wisdom:"Proverbs 1:20-33",     nt:"Matthew 2",                 ot:"Genesis 2",                          psalm:"Psalm 2"    },
+  { week:3,  year:1, term:1, wisdom:"Proverbs 2",           nt:"Matthew 3-4",               ot:"Genesis 3",                          psalm:"Psalm 3"    },
+  { week:4,  year:1, term:1, wisdom:"Proverbs 3:1-18",      nt:"Matthew 5:1-48",            ot:"Genesis 6:1-22, 7:1-24",             psalm:"Psalm 4"    },
+  { week:5,  year:1, term:1, wisdom:"Proverbs 3:19-35",     nt:"Matthew 6",                 ot:"Genesis 8:1-22, 9:1-17",             psalm:"Psalm 5"    },
+  { week:6,  year:1, term:1, wisdom:"Proverbs 4:1-19",      nt:"Matthew 7",                 ot:"Genesis 11:1-9",                     psalm:"Psalm 6"    },
+  { week:7,  year:1, term:1, wisdom:"Proverbs 4:20-27",     nt:"Matthew 8:1-27",            ot:"Genesis 12:1-9, 15",                 psalm:"Psalm 7"    },
+  { week:8,  year:1, term:1, wisdom:"Proverbs 5:1-14",      nt:"Matthew 9:1-34",            ot:"Genesis 17, 18:1-15",                psalm:"Psalm 8"    },
+  { week:9,  year:1, term:1, wisdom:"Proverbs 5:15-23",     nt:"Matthew 13:1-43",           ot:"Genesis 22:1-18",                    psalm:"Psalm 9"    },
+  { week:10, year:1, term:1, wisdom:"Proverbs 6:1-19",      nt:"Matthew 14:13-33",          ot:"Genesis 25:19-34, 27:1-29",          psalm:"Psalm 10"   },
+  { week:11, year:1, term:1, wisdom:"Proverbs 6:20-35",     nt:"Matthew 16:13-28",          ot:"Genesis 37:1-28",                    psalm:"Psalm 11"   },
+  { week:12, year:1, term:1, wisdom:"Proverbs 7:1-27",      nt:"Matthew 17:1-20",           ot:"Genesis 39-41:16",                   psalm:"Psalm 12"   },
+  // Term 2: Genesis cont. + Exodus (Weeks 13–24)
+  { week:13, year:1, term:2, wisdom:"Proverbs 8:1-21",      nt:"Matthew 21:1-22",           ot:"Genesis 41:17-57, 45:1-15",          psalm:"Psalm 13"   },
+  { week:14, year:1, term:2, wisdom:"Proverbs 8:22-36",     nt:"Matthew 26:1-56",           ot:"Genesis 50:15-26",                   psalm:"Psalm 14"   },
+  { week:15, year:1, term:2, wisdom:"Proverbs 9",           nt:"Matthew 27:1-54",           ot:"Exodus 1-2:10",                      psalm:"Psalm 15"   },
+  { week:16, year:1, term:2, wisdom:"Proverbs 10:1-16",     nt:"Matthew 27:55-28:20",       ot:"Exodus 2:11-25, 3:1-22",             psalm:"Psalm 16"   },
+  { week:17, year:1, term:2, wisdom:"Proverbs 10:17-32",    nt:"Mark 1:1-45",               ot:"Exodus 4:1-17, 5:1-23",              psalm:"Psalm 17"   },
+  { week:18, year:1, term:2, wisdom:"Proverbs 11:1-15",     nt:"Mark 2:1-28",               ot:"Exodus 7-8 (plagues begin)",         psalm:"Psalm 18"   },
+  { week:19, year:1, term:2, wisdom:"Proverbs 11:16-31",    nt:"Mark 4:1-41",               ot:"Exodus 9-10 (plagues continue)",     psalm:"Psalm 19"   },
+  { week:20, year:1, term:2, wisdom:"Proverbs 12:1-14",     nt:"Mark 6:30-52",              ot:"Exodus 12:1-32 (Passover)",          psalm:"Psalm 20"   },
+  { week:21, year:1, term:2, wisdom:"Proverbs 12:15-28",    nt:"Mark 8:27-38, 9:2-29",      ot:"Exodus 14 (crossing the Red Sea)",   psalm:"Psalm 21"   },
+  { week:22, year:1, term:2, wisdom:"Proverbs 13:1-12",     nt:"Mark 10:13-52",             ot:"Exodus 16, 17:1-7",                  psalm:"Psalm 22"   },
+  { week:23, year:1, term:2, wisdom:"Proverbs 13:13-25",    nt:"Mark 14:1-52",              ot:"Exodus 19-20 (Sinai, the Law)",      psalm:"Psalm 23"   },
+  { week:24, year:1, term:2, wisdom:"Proverbs 14:1-18",     nt:"Mark 15-16",                ot:"Exodus 24 (covenant sealed)",        psalm:"Psalm 24"   },
+  // Term 3: Exodus cont. + Leviticus + Numbers (Weeks 25–36)
+  { week:25, year:1, term:3, wisdom:"Proverbs 14:19-35",    nt:"Luke 1:26-56, 2:1-20",      ot:"Exodus 25:1-22, 31:1-11",            psalm:"Psalm 25"   },
+  { week:26, year:1, term:3, wisdom:"Proverbs 15:1-17",     nt:"Luke 4:1-30",               ot:"Exodus 32 (golden calf)",            psalm:"Psalm 26"   },
+  { week:27, year:1, term:3, wisdom:"Proverbs 15:18-33",    nt:"Luke 6:17-49",              ot:"Exodus 33-34:10 (Moses and glory)",  psalm:"Psalm 27"   },
+  { week:28, year:1, term:3, wisdom:"Proverbs 16:1-16",     nt:"Luke 10:25-42",             ot:"Leviticus 16 (Day of Atonement)",    psalm:"Psalm 28"   },
+  { week:29, year:1, term:3, wisdom:"Proverbs 16:17-33",    nt:"Luke 15",                   ot:"Leviticus 19 (the Holiness Code)",   psalm:"Psalm 29"   },
+  { week:30, year:1, term:3, wisdom:"Proverbs 17:1-14",     nt:"Luke 19:1-48",              ot:"Numbers 9:15-23, 10:11-36",          psalm:"Psalm 30"   },
+  { week:31, year:1, term:3, wisdom:"Proverbs 17:15-28",    nt:"Luke 22:1-46",              ot:"Numbers 13-14 (the spies)",          psalm:"Psalm 31"   },
+  { week:32, year:1, term:3, wisdom:"Proverbs 18:1-12",     nt:"Luke 23",                   ot:"Numbers 20:1-13, 21:4-9",            psalm:"Psalm 32"   },
+  { week:33, year:1, term:3, wisdom:"Proverbs 18:13-24",    nt:"Luke 24",                   ot:"Numbers 22:1-38 (Balaam)",           psalm:"Psalm 33"   },
+  { week:34, year:1, term:3, wisdom:"Proverbs 19:1-15",     nt:"John 1:1-18",               ot:"Numbers 27:12-23",                   psalm:"Psalm 34"   },
+  { week:35, year:1, term:3, wisdom:"Proverbs 19:16-29",    nt:"John 3:1-21",               ot:"Deuteronomy 6 (the Shema)",          psalm:"Psalm 35"   },
+  { week:36, year:1, term:3, wisdom:"Proverbs 20:1-15",     nt:"John 6:25-59",              ot:"Deuteronomy 34 (Moses' death)",      psalm:"Psalm 36"   },
 
-const SLOT_STYLES = {
-  nt:     { accent: "#4A7C7E", light: "#EAF2F2", icon: "\u271d", label: "New Testament",    short: "NT"     },
-  ot:     { accent: "#A9B786", light: "#EFF4EA", icon: "\u2726", label: "Old Testament",    short: "OT"     },
-  psalm:  { accent: "#C29B61", light: "#FAF3E8", icon: "\u266a", label: "Psalm",            short: "Psalm"  },
-  wisdom: { accent: "#7A6A55", light: "#F7F4EF", icon: "\u25c8", label: "Proverbs & Wisdom",short: "Wisdom" },
-};
+  // YEAR 2 — "Into the Land"
+  // Term 1: John + Joshua + Judges (Weeks 37–48)
+  { week:37, year:2, term:1, wisdom:"Proverbs 20:16-30",    nt:"John 10:1-30",              ot:"Joshua 1-2 (Rahab)",                 psalm:"Psalm 37"   },
+  { week:38, year:2, term:1, wisdom:"Proverbs 21:1-15",     nt:"John 11:1-44",              ot:"Joshua 3-4, 6 (Jericho)",            psalm:"Psalm 38"   },
+  { week:39, year:2, term:1, wisdom:"Proverbs 21:16-31",    nt:"John 14-15",                ot:"Joshua 23-24 (covenant renewal)",    psalm:"Psalm 39"   },
+  { week:40, year:2, term:1, wisdom:"Proverbs 22:1-16",     nt:"John 17",                   ot:"Judges 2:6-23 (the cycle)",          psalm:"Psalm 40"   },
+  { week:41, year:2, term:1, wisdom:"Proverbs 22:17-29",    nt:"John 20-21",                ot:"Judges 4-5 (Deborah)",               psalm:"Psalm 41"   },
+  { week:42, year:2, term:1, wisdom:"Proverbs 23:1-18",     nt:"Acts 1-2:41",               ot:"Judges 6:1-40 (Gideon called)",      psalm:"Psalm 42"   },
+  { week:43, year:2, term:1, wisdom:"Proverbs 23:19-35",    nt:"Acts 2:42-4:31",            ot:"Judges 7 (Gideon's victory)",        psalm:"Psalm 43"   },
+  { week:44, year:2, term:1, wisdom:"Proverbs 24:1-22",     nt:"Acts 6-7 (Stephen)",        ot:"Judges 11:1-11, 29-40 (Jephthah)",  psalm:"Psalm 44"   },
+  { week:45, year:2, term:1, wisdom:"Proverbs 24:23-34",    nt:"Acts 8-9:31",               ot:"Judges 13, 16:4-30 (Samson)",       psalm:"Psalm 45"   },
+  { week:46, year:2, term:1, wisdom:"Proverbs 25:1-15",     nt:"Acts 10-11",                ot:"Ruth 1-2",                           psalm:"Psalm 46"   },
+  { week:47, year:2, term:1, wisdom:"Proverbs 25:16-28",    nt:"Acts 12-13:12",             ot:"Ruth 3-4",                           psalm:"Psalm 47"   },
+  { week:48, year:2, term:1, wisdom:"Proverbs 26:1-16",     nt:"Acts 13:13-52",             ot:"1 Samuel 1-3 (Hannah, Samuel)",      psalm:"Psalm 48"   },
+  // Term 2: Acts + Samuel (Weeks 49–60)
+  { week:49, year:2, term:2, wisdom:"Proverbs 26:17-28",    nt:"Acts 14-15",                ot:"1 Samuel 8-10 (Saul becomes king)",  psalm:"Psalm 49"   },
+  { week:50, year:2, term:2, wisdom:"Proverbs 27:1-14",     nt:"Acts 16:1-40",              ot:"1 Samuel 16-17 (David, Goliath)",    psalm:"Psalm 50"   },
+  { week:51, year:2, term:2, wisdom:"Proverbs 27:15-27",    nt:"Acts 17",                   ot:"1 Samuel 18:1-16, 20:1-42",          psalm:"Psalm 51"   },
+  { week:52, year:2, term:2, wisdom:"Proverbs 28:1-14",     nt:"Acts 18-19:20",             ot:"1 Samuel 24 (David spares Saul)",    psalm:"Psalm 52"   },
+  { week:53, year:2, term:2, wisdom:"Proverbs 28:15-28",    nt:"Acts 19:21-20:38",          ot:"2 Samuel 5:1-12, 7:1-17",            psalm:"Psalm 53"   },
+  { week:54, year:2, term:2, wisdom:"Proverbs 29:1-14",     nt:"Acts 21-22",                ot:"2 Samuel 9 (Mephibosheth)",          psalm:"Psalm 54"   },
+  { week:55, year:2, term:2, wisdom:"Proverbs 29:15-27",    nt:"Acts 23-24",                ot:"2 Samuel 11-12:15 \u26a0\ufe0f mature themes \u2014 alt: 2 Samuel 9", psalm:"Psalm 55" },
+  { week:56, year:2, term:2, wisdom:"Proverbs 30:1-14",     nt:"Acts 25-26",                ot:"2 Samuel 22:1-51 (David's song)",    psalm:"Psalm 56"   },
+  { week:57, year:2, term:2, wisdom:"Proverbs 30:15-33",    nt:"Acts 27-28",                ot:"1 Kings 3 (Solomon's wisdom)",       psalm:"Psalm 57"   },
+  { week:58, year:2, term:2, wisdom:"Proverbs 31",          nt:"Romans 1:1-17, 3:21-31",    ot:"1 Kings 8:22-53 (temple prayer)",    psalm:"Psalm 58"   },
+  { week:59, year:2, term:2, wisdom:"Ecclesiastes 1",       nt:"Romans 5-6",                ot:"1 Kings 11:1-13 (Solomon's fall)",   psalm:"Psalm 59"   },
+  { week:60, year:2, term:2, wisdom:"Ecclesiastes 2:1-16",  nt:"Romans 8",                  ot:"1 Kings 12:1-24 (kingdom splits)",   psalm:"Psalm 60"   },
+  // Term 3: Romans + Kings + Elijah (Weeks 61–72)
+  { week:61, year:2, term:3, wisdom:"Ecclesiastes 2:17-26", nt:"Romans 12",                 ot:"1 Kings 17 (Elijah begins)",         psalm:"Psalm 61"   },
+  { week:62, year:2, term:3, wisdom:"Ecclesiastes 3:1-14",  nt:"Romans 15:1-13",            ot:"1 Kings 18 (Mount Carmel)",          psalm:"Psalm 62"   },
+  { week:63, year:2, term:3, wisdom:"Ecclesiastes 3:15-22", nt:"1 Corinthians 1-2",         ot:"1 Kings 19 (still small voice)",     psalm:"Psalm 63"   },
+  { week:64, year:2, term:3, wisdom:"Ecclesiastes 4",       nt:"1 Corinthians 13",          ot:"2 Kings 2:1-18 (Elijah taken)",      psalm:"Psalm 64"   },
+  { week:65, year:2, term:3, wisdom:"Ecclesiastes 5:1-7",   nt:"1 Corinthians 15:1-28",     ot:"2 Kings 5 (Naaman)",                 psalm:"Psalm 65"   },
+  { week:66, year:2, term:3, wisdom:"Ecclesiastes 5:8-20",  nt:"2 Corinthians 4-5",         ot:"2 Kings 17:1-23 (fall of Israel)",   psalm:"Psalm 66"   },
+  { week:67, year:2, term:3, wisdom:"Ecclesiastes 6",       nt:"2 Corinthians 12:1-10",     ot:"2 Kings 22-23:3 (Josiah)",           psalm:"Psalm 67"   },
+  { week:68, year:2, term:3, wisdom:"Ecclesiastes 7:1-14",  nt:"Galatians 2:15-21, 5:1-25", ot:"2 Kings 24-25:12 (exile begins)",    psalm:"Psalm 68"   },
+  { week:69, year:2, term:3, wisdom:"Ecclesiastes 7:15-29", nt:"Ephesians 1-2:10",          ot:"1 Chronicles 28-29 (temple prep)",   psalm:"Psalm 69"   },
+  { week:70, year:2, term:3, wisdom:"Ecclesiastes 8",       nt:"Ephesians 6:10-20",         ot:"2 Chronicles 20:1-30 (Jehoshaphat)", psalm:"Psalm 70"   },
+  { week:71, year:2, term:3, wisdom:"Ecclesiastes 9",       nt:"Philippians 1-2:18",        ot:"2 Chronicles 34-35:19 (Josiah)",     psalm:"Psalm 71"   },
+  { week:72, year:2, term:3, wisdom:"Ecclesiastes 10",      nt:"Philippians 4",             ot:"Isaiah 40 (Comfort my people)",      psalm:"Psalm 72"   },
 
-// ── State ─────────────────────────────────────────────────────────────────────
-// Each track has its own index into ALL_READINGS, advancing independently
-const DEFAULT_STATE = { nt_week: 0, ot_week: 0, psalm_week: 0, wisdom_week: 0 };
+  // YEAR 3 — "Exile, Return & New Creation"
+  // Term 1: Prophets (Weeks 73–84)
+  { week:73,  year:3, term:1, wisdom:"Ecclesiastes 11",      nt:"Colossians 1-2",            ot:"Isaiah 53 (suffering servant)",      psalm:"Psalm 73"   },
+  { week:74,  year:3, term:1, wisdom:"Ecclesiastes 12",      nt:"Colossians 3:1-17",         ot:"Isaiah 55 (come, all who thirst)",   psalm:"Psalm 74"   },
+  { week:75,  year:3, term:1, wisdom:"Proverbs 1:1-19",      nt:"1 Thessalonians 4-5",       ot:"Jeremiah 1 (the call)",              psalm:"Psalm 75"   },
+  { week:76,  year:3, term:1, wisdom:"Proverbs 2",           nt:"2 Thessalonians 2-3",       ot:"Jeremiah 31:27-34 (new covenant)",   psalm:"Psalm 76"   },
+  { week:77,  year:3, term:1, wisdom:"Proverbs 3:1-18",      nt:"1 Timothy 6",               ot:"Lamentations 3:1-33",                psalm:"Psalm 77"   },
+  { week:78,  year:3, term:1, wisdom:"Proverbs 4:1-19",      nt:"2 Timothy 3-4",             ot:"Ezekiel 37 (valley of dry bones)",   psalm:"Psalm 78"   },
+  { week:79,  year:3, term:1, wisdom:"Proverbs 5:1-14",      nt:"Titus 2-3",                 ot:"Amos 5:1-24 (let justice roll)",     psalm:"Psalm 79"   },
+  { week:80,  year:3, term:1, wisdom:"Proverbs 6:1-19",      nt:"Hebrews 1-2",               ot:"Micah 6 (what does the Lord require)", psalm:"Psalm 80" },
+  { week:81,  year:3, term:1, wisdom:"Proverbs 7",           nt:"Hebrews 4-5",               ot:"Habakkuk 3 (though the fig tree)",   psalm:"Psalm 81"   },
+  { week:82,  year:3, term:1, wisdom:"Proverbs 8:1-21",      nt:"Hebrews 11",                ot:"Zephaniah 3:14-20",                  psalm:"Psalm 82"   },
+  { week:83,  year:3, term:1, wisdom:"Proverbs 8:22-36",     nt:"Hebrews 12:1-13",           ot:"Malachi 3:1-4:6",                    psalm:"Psalm 83"   },
+  { week:84,  year:3, term:1, wisdom:"Proverbs 9",           nt:"Hebrews 13",                ot:"Jonah 1-4 (complete)",               psalm:"Psalm 84"   },
+  // Term 2: Daniel + Esther + Ezra/Nehemiah (Weeks 85–96)
+  { week:85,  year:3, term:2, wisdom:"Proverbs 10:1-16",     nt:"James 1-2",                 ot:"Daniel 1 (purpose of heart)",        psalm:"Psalm 85"   },
+  { week:86,  year:3, term:2, wisdom:"Proverbs 10:17-32",    nt:"James 3-5",                 ot:"Daniel 3 (fiery furnace)",           psalm:"Psalm 86"   },
+  { week:87,  year:3, term:2, wisdom:"Proverbs 11:1-15",     nt:"1 Peter 1-2",               ot:"Daniel 6 (lions' den)",              psalm:"Psalm 87"   },
+  { week:88,  year:3, term:2, wisdom:"Proverbs 11:16-31",    nt:"1 Peter 3-5",               ot:"Daniel 9:1-19 (Daniel's prayer)",    psalm:"Psalm 88"   },
+  { week:89,  year:3, term:2, wisdom:"Proverbs 12:1-14",     nt:"2 Peter 1-3",               ot:"Esther 1-2 (Esther chosen)",         psalm:"Psalm 89"   },
+  { week:90,  year:3, term:2, wisdom:"Proverbs 12:15-28",    nt:"1 John 1-2",                ot:"Esther 3-5 (Haman's plot)",          psalm:"Psalm 90"   },
+  { week:91,  year:3, term:2, wisdom:"Proverbs 13:1-12",     nt:"1 John 3-4",                ot:"Esther 7-9:17 (rescue)",             psalm:"Psalm 91"   },
+  { week:92,  year:3, term:2, wisdom:"Proverbs 13:13-25",    nt:"1 John 5, 2 John, 3 John",  ot:"Ezra 1, 3 (return, altar rebuilt)",  psalm:"Psalm 92"   },
+  { week:93,  year:3, term:2, wisdom:"Proverbs 14:1-18",     nt:"Jude",                      ot:"Ezra 7-8:23 (Ezra's journey)",       psalm:"Psalm 93"   },
+  { week:94,  year:3, term:2, wisdom:"Proverbs 14:19-35",    nt:"Revelation 1",              ot:"Nehemiah 1-2 (prayer, journey)",     psalm:"Psalm 94"   },
+  { week:95,  year:3, term:2, wisdom:"Proverbs 15:1-17",     nt:"Revelation 4-5",            ot:"Nehemiah 4, 6:15-16 (the wall)",     psalm:"Psalm 95"   },
+  { week:96,  year:3, term:2, wisdom:"Proverbs 15:18-33",    nt:"Revelation 12-13",          ot:"Nehemiah 8 (Ezra reads the Law)",    psalm:"Psalm 96"   },
+  // Term 3: Job + Revelation + Closing (Weeks 97–108)
+  { week:97,  year:3, term:3, wisdom:"Proverbs 16:1-16",     nt:"Revelation 17-18",          ot:"Job 1-2 (the testing)",              psalm:"Psalm 97"   },
+  { week:98,  year:3, term:3, wisdom:"Proverbs 16:17-33",    nt:"Revelation 19-20",          ot:"Job 3 (Job's lament)",               psalm:"Psalm 98"   },
+  { week:99,  year:3, term:3, wisdom:"Proverbs 17:1-14",     nt:"Revelation 21",             ot:"Job 38-39 (God's answer)",           psalm:"Psalm 99"   },
+  { week:100, year:3, term:3, wisdom:"Proverbs 17:15-28",    nt:"Revelation 22",             ot:"Job 40:1-9, 42:1-17 (restoration)",  psalm:"Psalm 100"  },
+  { week:101, year:3, term:3, wisdom:"Proverbs 18:1-12",     nt:"Romans 1:1-17",             ot:"Isaiah 6 (the call of Isaiah)",      psalm:"Psalm 101"  },
+  { week:102, year:3, term:3, wisdom:"Proverbs 18:13-24",    nt:"Romans 8",                  ot:"Isaiah 61 (the Spirit of the Lord)", psalm:"Psalm 102"  },
+  { week:103, year:3, term:3, wisdom:"Proverbs 19:1-15",     nt:"Romans 12",                 ot:"Ezekiel 36:22-36 (new heart)",       psalm:"Psalm 103"  },
+  { week:104, year:3, term:3, wisdom:"Proverbs 19:16-29",    nt:"Ephesians 1-2:10",          ot:"Zechariah 8:1-17",                   psalm:"Psalm 104"  },
+  { week:105, year:3, term:3, wisdom:"Proverbs 20:1-16",     nt:"Ephesians 3-4",             ot:"Zechariah 9:9-10, 12:10, 14:1-9",   psalm:"Psalm 105"  },
+  { week:106, year:3, term:3, wisdom:"Proverbs 20:17-30",    nt:"Philippians 1-2",           ot:"Nehemiah 9:1-38 (great confession)", psalm:"Psalm 106"  },
+  { week:107, year:3, term:3, wisdom:"Proverbs 21:1-16",     nt:"Colossians 3:1-17",         ot:"Isaiah 65:17-25 (new creation)",     psalm:"Psalm 107"  },
+  { week:108, year:3, term:3, wisdom:"Proverbs 21:17-31",    nt:"1 John 4:7-21",             ot:"Revelation 22:1-5 (river of life)",  psalm:"Psalm 108"  },
+];
 
-function loadState() {
+// ── Track config ──────────────────────────────────────────────────────────────
+const TRACKS = [
+  {
+    key: "wisdom",
+    day: "Day 1",
+    dayName: "Monday",
+    label: "Proverbs & Wisdom",
+    short: "Wisdom",
+    icon: "\u25c8",
+    color: "#7A6A55",
+    light: "#F7F4EF",
+    prompt: "Which piece of wisdom caught your attention most? What would it look like to actually live that out this week?",
+    note: "For Ecclesiastes: What is the Preacher saying about life — and does it match what you see in the world around you?",
+  },
+  {
+    key: "nt",
+    day: "Day 2",
+    dayName: "Tuesday",
+    label: "New Testament",
+    short: "NT",
+    icon: "\u271d",
+    color: "#4A7C7E",
+    light: "#EAF2F2",
+    prompt: "Tell back what happened or what was said, in your own words. What stands out most to you?",
+    note: "If narration is thin, gently ask: What do you think Jesus meant by this? Or \u2014 why do you think this was included here?",
+  },
+  {
+    key: "ot",
+    day: "Day 3",
+    dayName: "Wednesday\u2013Thursday",
+    label: "Old Testament",
+    short: "OT",
+    icon: "\u2726",
+    color: "#A9B786",
+    light: "#EFF4EA",
+    prompt: "Tell the story back \u2014 what happened, who was involved, and what changed by the end?",
+    note: "For law or lists: What does this reveal about what God cares about? What does it show us about his character?",
+  },
+  {
+    key: "psalm",
+    day: "Day 4",
+    dayName: "Friday",
+    label: "Psalm",
+    short: "Psalm",
+    icon: "\u266a",
+    color: "#C29B61",
+    light: "#FAF3E8",
+    prompt: "Read it slowly \u2014 perhaps twice. Let it settle. No narration required today. Simply receive it.",
+    note: "On hard mornings, let the Psalm do the work. It holds what words sometimes cannot.",
+  },
+];
+
+// ── State helpers ─────────────────────────────────────────────────────────────
+const DEFAULT_STATE = { wisdom_week: 0, nt_week: 0, ot_week: 0, psalm_week: 0 };
+
+function loadLocal() {
   try {
-    const raw = localStorage.getItem("tend_bible_v3");
+    const raw = localStorage.getItem("living_feast_v1");
     return raw ? { ...DEFAULT_STATE, ...JSON.parse(raw) } : DEFAULT_STATE;
   } catch { return DEFAULT_STATE; }
 }
 
-function saveState(s) { localStorage.setItem("tend_bible_v3", JSON.stringify(s)); }
+function saveLocal(s) {
+  try { localStorage.setItem("living_feast_v1", JSON.stringify(s)); } catch {}
+}
 
 function getReading(state, track) {
-  const idx = Math.min(state[`${track}_week`] || 0, ALL_READINGS.length - 1);
-  return ALL_READINGS[idx]?.[track] || null;
+  const idx = Math.min(state[`${track}_week`] ?? 0, SCHEDULE.length - 1);
+  return SCHEDULE[idx]?.[track] || null;
+}
+
+function getWeekMeta(state, track) {
+  const idx = Math.min(state[`${track}_week`] ?? 0, SCHEDULE.length - 1);
+  const w = SCHEDULE[idx];
+  if (!w) return "";
+  return `Year ${w.year} \u00b7 Week ${w.week}`;
 }
 
 function advanceTrack(state, track) {
   const key = `${track}_week`;
-  let next = (state[key] || 0) + 1;
-  while (next < ALL_READINGS.length && !ALL_READINGS[next][track]) next++;
-  if (next >= ALL_READINGS.length) next = state[key] || 0;
+  const next = Math.min((state[key] ?? 0) + 1, SCHEDULE.length - 1);
   return { ...state, [key]: next };
 }
 
 function getSuggested(state) {
-  return ROTATION.reduce((behind, t) =>
-    (state[`${t}_week`] || 0) < (state[`${behind}_week`] || 0) ? t : behind
-  , ROTATION[0]);
+  return TRACKS.reduce((behind, t) =>
+    (state[`${t.key}_week`] ?? 0) < (state[`${behind.key}_week`] ?? 0) ? t : behind
+  , TRACKS[0]);
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
-export default function BibleReadingScreen({ compact = false }) {
-  const [state, setState]     = useState(loadState);
-  const [active, setActive]   = useState(() => getSuggested(loadState()));
+// ── Main component ────────────────────────────────────────────────────────────
+export default function BibleReadingScreen({ compact = false, userId = null }) {
+  const [state, setState]   = useState(loadLocal);
+  const [active, setActive] = useState(() => getSuggested(loadLocal()).key);
   const [showSettings, setShowSettings] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const suggested  = getSuggested(state);
-  const style      = SLOT_STYLES[active];
-  const reading    = getReading(state, active);
+  const suggested = getSuggested(state);
+  const track     = TRACKS.find(t => t.key === active);
+  const reading   = getReading(state, active);
+  const weekMeta  = getWeekMeta(state, active);
 
-  const markDone = () => {
+  // Load from Supabase on mount
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from("bible_reading_progress")
+      .select("track, week_index")
+      .eq("user_id", userId)
+      .then(({ data }) => {
+        if (!data?.length) return;
+        const merged = { ...DEFAULT_STATE };
+        data.forEach(row => { merged[`${row.track}_week`] = row.week_index; });
+        setState(merged);
+        saveLocal(merged);
+      });
+  }, [userId]);
+
+  const persist = async (newState) => {
+    setState(newState);
+    saveLocal(newState);
+    if (!userId) return;
+    setSaving(true);
+    // Upsert each track independently
+    const upserts = TRACKS.map(t => ({
+      user_id: userId,
+      track: t.key,
+      week_index: newState[`${t.key}_week`] ?? 0,
+    }));
+    await supabase
+      .from("bible_reading_progress")
+      .upsert(upserts, { onConflict: "user_id,track" });
+    setSaving(false);
+  };
+
+  const markDone = async () => {
     const next = advanceTrack(state, active);
-    setState(next); saveState(next);
-    setActive(getSuggested(next));
+    await persist(next);
+    setActive(getSuggested(next).key);
   };
 
   // ── Compact widget ──────────────────────────────────────────────────────────
   if (compact) {
     const activeIdx = state[`${active}_week`] ?? 0;
     return (
-      <div style={{ borderLeft: `3px solid ${style.accent}`, paddingLeft: "12px", margin: "6px 0", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+      <div style={{ borderLeft: `3px solid ${track.color}`, paddingLeft: "12px", margin: "6px 0", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
         {/* Track tabs */}
         <div style={{ display: "flex", gap: "5px", marginBottom: "8px", flexWrap: "wrap" }}>
-          {ROTATION.map(track => {
-            const s = SLOT_STYLES[track];
-            const isActive = track === active;
+          {TRACKS.map(t => {
+            const isActive = t.key === active;
+            const isSuggested = t.key === suggested.key;
             return (
-              <button key={track} onClick={() => setActive(track)} style={{
-                background: isActive ? s.accent : "transparent", color: isActive ? "white" : s.accent,
-                border: `1.5px solid ${s.accent}`, borderRadius: "20px", padding: "2px 9px",
-                fontSize: "10px", fontFamily: "system-ui", fontWeight: 700, cursor: "pointer",
-                display: "flex", alignItems: "center", gap: "3px", opacity: isActive ? 1 : 0.65,
+              <button key={t.key} onClick={() => setActive(t.key)} style={{
+                background: isActive ? t.color : "transparent",
+                color: isActive ? "white" : t.color,
+                border: `1.5px solid ${t.color}`,
+                borderRadius: "20px", padding: "2px 9px",
+                fontSize: "10px", fontFamily: "system-ui", fontWeight: 700,
+                cursor: "pointer", display: "flex", alignItems: "center", gap: "3px",
+                opacity: isActive ? 1 : 0.65,
               }}>
-                <span>{s.icon}</span><span>{s.short}</span>
-                {track === suggested && !isActive && <span style={{ fontSize: "6px" }}>\u25cf</span>}
+                <span>{t.icon}</span><span>{t.short}</span>
+                {isSuggested && !isActive && <span style={{ fontSize: "6px" }}>\u25cf</span>}
               </button>
             );
           })}
         </div>
-        {/* Reference row */}
+        {/* Reference */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <p style={{ margin: 0, fontSize: "17px", fontWeight: 600, color: "#2D3748", lineHeight: 1.3 }}>
             {reading ? reading : <span style={{ color: "#9CA3AF", fontStyle: "italic", fontSize: "14px" }}>No reading this week</span>}
           </p>
           {reading && (
             <button onClick={markDone} style={{
-              background: style.accent, color: "white", border: "none", borderRadius: "5px",
+              background: track.color, color: "white", border: "none", borderRadius: "5px",
               padding: "4px 12px", fontSize: "11px", fontFamily: "system-ui", fontWeight: 600,
               cursor: "pointer", whiteSpace: "nowrap", marginLeft: "10px", flexShrink: 0,
-            }}>Done \u2192</button>
+            }}>
+              Done \u2192
+            </button>
           )}
         </div>
         <p style={{ margin: "3px 0 0", fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>
-          {getCycleLabel(activeIdx)}
+          {getWeekMeta(state, active)} {saving ? "\u00b7 saving\u2026" : ""}
         </p>
       </div>
     );
@@ -278,32 +329,43 @@ export default function BibleReadingScreen({ compact = false }) {
   // ── Full screen ─────────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: "100vh", background: "#FAFAF7", fontFamily: "'Cormorant Garamond', Georgia, serif", paddingBottom: "80px" }}>
-      {/* Sticky header */}
+
+      {/* Header */}
       <div style={{ background: "white", borderBottom: "1px solid #E8E4DC", padding: "20px 24px 0", position: "sticky", top: 0, zIndex: 10 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
-          <div>
-            <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>Daily Scripture</p>
-            <h1 style={{ margin: "2px 0 0", fontSize: "22px", fontWeight: 700, color: "#2D3748" }}>{reading || "\u2014"}</h1>
-            <p style={{ margin: "2px 0 0", fontFamily: "system-ui", fontSize: "11px", color: "#9CA3AF" }}>{getCycleLabel(state[`${active}_week`] || 0)}</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <FlameIcon size={22} color="#C29B61" />
+            <div>
+              <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "9px", color: "#9CA3AF", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                The Living Feast
+              </p>
+              <h1 style={{ margin: 0, fontSize: "20px", fontWeight: 600, color: "#2D3748" }}>
+                {reading || "\u2014"}
+              </h1>
+              <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>
+                {weekMeta}{saving ? " \u00b7 saving\u2026" : ""}
+              </p>
+            </div>
           </div>
           <button onClick={() => setShowSettings(true)} style={{ background: "none", border: "none", fontSize: "17px", cursor: "pointer", color: "#C4B89A", marginTop: "4px" }}>\u2699</button>
         </div>
-        {/* Track tabs */}
+
+        {/* Day tabs */}
         <div style={{ display: "flex", borderTop: "1px solid #F0EBE0" }}>
-          {ROTATION.map(track => {
-            const s = SLOT_STYLES[track];
-            const isActive = track === active;
-            const ref = getReading(state, track);
+          {TRACKS.map(t => {
+            const isActive = t.key === active;
+            const isSuggested = t.key === suggested.key;
+            const ref = getReading(state, t.key);
             return (
-              <button key={track} onClick={() => setActive(track)} style={{
+              <button key={t.key} onClick={() => setActive(t.key)} style={{
                 flex: 1, padding: "10px 4px 12px", background: "none", border: "none",
-                borderBottom: isActive ? `3px solid ${s.accent}` : "3px solid transparent",
+                borderBottom: isActive ? `3px solid ${t.color}` : "3px solid transparent",
                 cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
               }}>
-                <span style={{ fontSize: "14px", color: isActive ? s.accent : "#BDB5A8" }}>{s.icon}</span>
-                <span style={{ fontFamily: "system-ui", fontSize: "9px", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: isActive ? s.accent : "#BDB5A8" }}>{s.short}</span>
-                <span style={{ fontFamily: "system-ui", fontSize: "9px", color: isActive ? "#4A5568" : "#C4B89A", textAlign: "center", lineHeight: 1.3, maxWidth: "72px" }}>{ref || "\u2014"}</span>
-                {track === suggested && <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: s.accent, display: "block", opacity: isActive ? 0 : 0.55, marginTop: "1px" }} />}
+                <span style={{ fontSize: "13px", color: isActive ? t.color : "#BDB5A8" }}>{t.icon}</span>
+                <span style={{ fontFamily: "system-ui", fontSize: "8px", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: isActive ? t.color : "#BDB5A8" }}>{t.short}</span>
+                <span style={{ fontFamily: "system-ui", fontSize: "8px", color: isActive ? "#4A5568" : "#C4B89A", textAlign: "center", maxWidth: "64px", lineHeight: 1.3 }}>{ref || "\u2014"}</span>
+                {isSuggested && <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: t.color, display: "block", opacity: isActive ? 0 : 0.55, marginTop: "1px" }} />}
               </button>
             );
           })}
@@ -311,50 +373,87 @@ export default function BibleReadingScreen({ compact = false }) {
       </div>
 
       {/* Off-suggested note */}
-      {active !== suggested && (
+      {active !== suggested.key && (
         <div style={{ margin: "14px 24px 0", padding: "8px 14px", background: "#F7F5F0", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ color: SLOT_STYLES[suggested].accent }}>{SLOT_STYLES[suggested].icon}</span>
+          <span style={{ color: suggested.color }}>{suggested.icon}</span>
           <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "11px", color: "#9CA3AF" }}>
-            Suggested today: <span style={{ color: SLOT_STYLES[suggested].accent, fontWeight: 700 }}>{SLOT_STYLES[suggested].label}</span> \u2014 but read what calls to you.
+            Suggested today: <span style={{ color: suggested.color, fontWeight: 700 }}>{suggested.label}</span> \u2014 but read what calls to you.
           </p>
         </div>
       )}
 
       {/* Reading card */}
-      <div style={{ padding: "24px" }}>
-        <div style={{ background: "white", borderRadius: "14px", padding: "32px 28px", border: `1px solid ${style.light}`, boxShadow: "0 1px 8px rgba(0,0,0,0.04)", textAlign: "center" }}>
-          <p style={{ margin: "0 0 8px", fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: style.accent }}>{style.label}</p>
-          <p style={{ margin: 0, fontSize: "28px", fontWeight: 700, color: "#2D3748", lineHeight: 1.3 }}>
-            {reading || <span style={{ color: "#9CA3AF", fontStyle: "italic", fontSize: "20px" }}>No reading this week</span>}
+      <div style={{ padding: "20px 24px" }}>
+        <div style={{
+          background: "white", borderRadius: "14px", padding: "28px 24px",
+          borderTop: `4px solid ${track.color}`,
+          border: `1px solid ${track.light}`,
+          boxShadow: "0 1px 8px rgba(0,0,0,0.04)", textAlign: "center", marginBottom: "16px",
+        }}>
+          <p style={{ margin: "0 0 4px", fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: track.color }}>{track.label}</p>
+          <p style={{ margin: "0 0 2px", fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>{track.dayName}</p>
+          <p style={{ margin: 0, fontSize: "26px", fontWeight: 600, color: "#2D3748", lineHeight: 1.3 }}>
+            {reading || <span style={{ color: "#9CA3AF", fontStyle: "italic", fontSize: "18px" }}>No reading this week</span>}
           </p>
-          <p style={{ margin: "10px 0 0", fontFamily: "system-ui", fontSize: "11px", color: "#9CA3AF" }}>{getCycleLabel(state[`${active}_week`] || 0)}</p>
         </div>
 
-        {/* Up next */}
-        {(() => {
-          const nextIdx = (state[`${active}_week`] || 0) + 1;
-          const nextRef = ALL_READINGS[nextIdx]?.[active];
-          if (!nextRef || nextIdx >= ALL_READINGS.length) return null;
+        {/* Narration prompt */}
+        <div style={{ background: "white", borderRadius: "12px", padding: "18px 20px", border: "1px solid #E8E4DC", marginBottom: "10px" }}>
+          <p style={{ margin: "0 0 8px", fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            After Reading
+          </p>
+          <p style={{ margin: 0, fontSize: "16px", color: "#4A5568", lineHeight: 1.85, fontStyle: "italic" }}>
+            \u201c{track.prompt}\u201d
+          </p>
+        </div>
+
+        {/* Track note */}
+        <div style={{ background: track.key === "psalm" ? "#FAF3E8" : "#F7F5F0", borderRadius: "10px", padding: "14px 16px", borderLeft: `3px solid ${track.color}`, marginBottom: "16px" }}>
+          <p style={{ margin: 0, fontSize: "14px", color: "#6B7280", lineHeight: 1.75, fontStyle: "italic" }}>
+            {active === "wisdom" && reading?.toLowerCase().includes("ecclesiastes")
+              ? "For Ecclesiastes: What is the Preacher saying about life \u2014 and does it match what you see in the world around you?"
+              : track.note}
+          </p>
+        </div>
+
+        {/* Full week at a glance */}
+        <p style={{ margin: "0 0 10px", fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          This Week\u2019s Full Feast
+        </p>
+        {TRACKS.map(t => {
+          const isActive = t.key === active;
+          const ref = getReading(state, t.key);
           return (
-            <div style={{ marginTop: "14px", padding: "12px 16px", background: "#F7F5F0", borderRadius: "10px", display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ color: style.accent }}>{style.icon}</span>
-              <div>
-                <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Up next</p>
-                <p style={{ margin: 0, fontSize: "15px", color: "#4A5568" }}>{nextRef}</p>
+            <div key={t.key} onClick={() => setActive(t.key)} style={{
+              display: "flex", alignItems: "center", gap: "12px",
+              padding: "10px 12px", borderRadius: "8px", marginBottom: "6px",
+              background: isActive ? "#F7F5F0" : "white",
+              border: `1px solid ${isActive ? "#E8E4DC" : "#F0EBE0"}`,
+              cursor: "pointer",
+            }}>
+              <span style={{ color: t.color, fontSize: "14px", flexShrink: 0 }}>{t.icon}</span>
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "9px", fontWeight: 700, color: t.color, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                  {t.day} \u00b7 {t.dayName}
+                </p>
+                <p style={{ margin: 0, fontSize: "14px", color: "#2D3748" }}>{ref || "\u2014"}</p>
               </div>
+              {isActive && <span style={{ color: track.color, fontSize: "10px" }}>\u25cf</span>}
             </div>
           );
-        })()}
+        })}
       </div>
 
       {/* Bottom button */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "white", borderTop: "1px solid #E8E4DC", padding: "14px 24px" }}>
         <button onClick={markDone} disabled={!reading} style={{
-          width: "100%", background: reading ? style.accent : "#E8E4DC", color: "white",
+          width: "100%", background: reading ? track.color : "#E8E4DC", color: "white",
           border: "none", borderRadius: "12px", padding: "14px",
           fontSize: "17px", fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontWeight: 700, cursor: reading ? "pointer" : "default", letterSpacing: "0.03em",
-        }}>We read it \u2014 move on \u2192</button>
+        }}>
+          We read it \u2014 move on \u2192
+        </button>
       </div>
 
       {/* Settings sheet */}
@@ -365,23 +464,25 @@ export default function BibleReadingScreen({ compact = false }) {
               <h2 style={{ margin: 0, fontSize: "22px", fontWeight: 700, color: "#2D3748", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>Adjust Your Position</h2>
               <button onClick={() => setShowSettings(false)} style={{ background: "#F3F0E8", border: "none", borderRadius: "50%", width: "32px", height: "32px", fontSize: "16px", cursor: "pointer", color: "#6B7280" }}>\u00d7</button>
             </div>
-            <p style={{ margin: "0 0 20px", fontFamily: "system-ui", fontSize: "12px", color: "#9CA3AF", lineHeight: 1.6 }}>Use arrows to move each track forward or back one week.</p>
-            {ROTATION.map(track => {
-              const s = SLOT_STYLES[track];
-              const key = `${track}_week`;
-              const idx = state[key] || 0;
-              const ref = getReading(state, track);
+            <p style={{ margin: "0 0 20px", fontFamily: "system-ui", fontSize: "12px", color: "#9CA3AF", lineHeight: 1.6 }}>
+              Each track saves independently. Use arrows to move forward or back one week.
+            </p>
+            {TRACKS.map(t => {
+              const key = `${t.key}_week`;
+              const idx = state[key] ?? 0;
+              const ref = getReading(state, t.key);
+              const meta = getWeekMeta(state, t.key);
               return (
-                <div key={track} style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "1px solid #F0EBE0" }}>
+                <div key={t.key} style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "1px solid #F0EBE0" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                    <span style={{ color: s.accent }}>{s.icon}</span>
-                    <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "11px", fontWeight: 700, color: "#6B7280", letterSpacing: "0.06em", textTransform: "uppercase" }}>{s.label}</p>
+                    <span style={{ color: t.color }}>{t.icon}</span>
+                    <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "11px", fontWeight: 700, color: "#6B7280", letterSpacing: "0.06em", textTransform: "uppercase" }}>{t.label}</p>
                   </div>
-                  <p style={{ margin: "0 0 8px", fontSize: "16px", color: "#2D3748" }}>{ref || "No reading"}</p>
+                  <p style={{ margin: "0 0 8px", fontSize: "15px", color: "#2D3748" }}>{ref || "No reading"}</p>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <button onClick={() => { const n = { ...state, [key]: Math.max(0, idx - 1) }; setState(n); saveState(n); }} style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>\u2190</button>
-                    <span style={{ fontFamily: "system-ui", fontSize: "11px", color: "#9CA3AF", minWidth: "110px", textAlign: "center" }}>{getCycleLabel(idx)}</span>
-                    <button onClick={() => { const n = { ...state, [key]: Math.min(ALL_READINGS.length - 1, idx + 1) }; setState(n); saveState(n); }} style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>\u2192</button>
+                    <button onClick={() => { const n = { ...state, [key]: Math.max(0, idx - 1) }; persist(n); }} style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>\u2190</button>
+                    <span style={{ fontFamily: "system-ui", fontSize: "11px", color: "#9CA3AF", minWidth: "110px", textAlign: "center" }}>{meta}</span>
+                    <button onClick={() => { const n = { ...state, [key]: Math.min(SCHEDULE.length - 1, idx + 1) }; persist(n); }} style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>\u2192</button>
                   </div>
                 </div>
               );
