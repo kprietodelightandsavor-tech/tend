@@ -20,6 +20,14 @@ const Icon = {
       <line x1="3" y1="10" x2="21" y2="10"/>
     </svg>
   ),
+  Sprout: () => (
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 20h10"/>
+      <path d="M12 20V10"/>
+      <path d="M12 10C12 10 8 9 7 5c3 0 5 2 5 5z"/>
+      <path d="M12 10C12 10 16 9 17 5c-3 0-5 2-5 5z"/>
+    </svg>
+  ),
   Tend: () => (
     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 22V12"/>
@@ -30,15 +38,24 @@ const Icon = {
   ),
 };
 
+const HABITS = [
+  { key: "attention", label: "Attention",  desc: "Training the mind to focus and observe" },
+  { key: "narration", label: "Narration",  desc: "Telling back what was read or learned" },
+  { key: "outdoor",   label: "Outdoor",    desc: "Daily time in nature and open air" },
+  { key: "stillness", label: "Stillness",  desc: "Quiet, rest, and unhurried presence" },
+  { key: "orderly",   label: "Orderly",    desc: "Order in work, space, and habit" },
+];
+
 export default function SettingsScreen({ settings, onSave, onNavigate }) {
-  const [name, setName]           = useState(settings?.name || "");
-  const [outdoorGoal, setGoal]    = useState(settings?.outdoorGoal || 15);
-  const [term, setTerm]           = useState(settings?.term || 1);
-  const [week, setWeek]           = useState(settings?.week || 1);
-  const [saved, setSaved]         = useState(false);
+  const [name, setName]             = useState(settings?.name || "");
+  const [outdoorGoal, setGoal]      = useState(settings?.outdoorGoal || 15);
+  const [term, setTerm]             = useState(settings?.term || 1);
+  const [week, setWeek]             = useState(settings?.week || 1);
+  const [activeHabit, setHabit]     = useState(settings?.activeHabit || "attention");
+  const [saved, setSaved]           = useState(false);
 
   const save = () => {
-    onSave({ name, outdoorGoal, term, week });
+    onSave({ name, outdoorGoal, term, week, activeHabit });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -67,6 +84,48 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
 
       <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
 
+      {/* Habit in Focus */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <Icon.Sprout />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Habit in Focus</p>
+        </div>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
+          Choose one Charlotte Mason habit to tend this season. It will appear each day on your home screen.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {HABITS.map(h => (
+            <button key={h.key} onClick={() => setHabit(h.key)}
+              style={{
+                display: "flex", alignItems: "flex-start", gap: 12,
+                padding: "12px 14px", borderRadius: 3, textAlign: "left",
+                border: "1px solid " + (activeHabit === h.key ? "var(--sage)" : "var(--rule)"),
+                background: activeHabit === h.key ? "var(--sage-bg)" : "none",
+                cursor: "pointer", transition: "all .2s",
+              }}>
+              <div style={{
+                width: 18, height: 18, borderRadius: "50%", flexShrink: 0, marginTop: 2,
+                border: "1.5px solid " + (activeHabit === h.key ? "var(--sage)" : "var(--rule)"),
+                background: activeHabit === h.key ? "var(--sage)" : "none",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                {activeHabit === h.key && (
+                  <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 13l4 4L19 7"/>
+                  </svg>
+                )}
+              </div>
+              <div>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: activeHabit === h.key ? "var(--sage)" : "var(--ink)", marginBottom: 2 }}>{h.label}</p>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", lineHeight: 1.5 }}>{h.desc}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
+
       {/* Outdoor goal */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
@@ -79,7 +138,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <button onClick={() => setGoal(g => Math.max(1, g - 1))}
             style={{ width: 36, height: 36, borderRadius: "50%", border: "1px solid var(--rule)", background: "none", cursor: "pointer", fontSize: 20, color: "var(--ink-faint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            −
+            \u2212
           </button>
           <div style={{ textAlign: "center", flex: 1 }}>
             <span className="serif" style={{ fontSize: 36, color: "var(--sage)" }}>{outdoorGoal}</span>
@@ -110,7 +169,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
             <button key={n} onClick={() => setTerm(n)}
               style={{
                 flex: 1, padding: "12px 0", borderRadius: 2,
-                border: `1px solid ${term === n ? "var(--sage)" : "var(--rule)"}`,
+                border: "1px solid " + (term === n ? "var(--sage)" : "var(--rule)"),
                 background: term === n ? "var(--sage-bg)" : "none",
                 cursor: "pointer", fontFamily: "'Playfair Display', serif",
                 fontSize: 18, color: term === n ? "var(--sage)" : "var(--ink)",
@@ -126,7 +185,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
             <button key={n} onClick={() => setWeek(n)}
               style={{
                 width: 40, height: 40, borderRadius: 2,
-                border: `1px solid ${week === n ? "var(--sage)" : "var(--rule)"}`,
+                border: "1px solid " + (week === n ? "var(--sage)" : "var(--rule)"),
                 background: week === n ? "var(--sage)" : "none",
                 cursor: "pointer", fontSize: 13,
                 color: week === n ? "white" : "var(--ink)",
@@ -149,7 +208,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.7, marginBottom: 8 }}>
           Tend is a daily rhythm app for Charlotte Mason homeschool families.
         </p>
-        <p className="caption">Version 1.0 · Delight & Savor</p>
+        <p className="caption">Version 1.0 \u00b7 Delight & Savor</p>
         <a href="https://delightandsavor.com" target="_blank" rel="noopener noreferrer"
           style={{ display: "block", marginTop: 4, fontSize: 12, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".06em" }}>
           delightandsavor.com
@@ -158,24 +217,24 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
 
       {/* Save */}
       <button className="btn-sage" style={{ width: "100%" }} onClick={save}>
-        {saved ? "Saved ✦" : "Save Settings"}
+        {saved ? "Saved \u2726" : "Save Settings"}
       </button>
 
       <button onClick={() => onNavigate("home")}
-  style={{ width: "100%", background: "none", border: "none", cursor: "pointer", marginTop: 16, fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", padding: "10px 0" }}>
-  Back to Home
-</button>
+        style={{ width: "100%", background: "none", border: "none", cursor: "pointer", marginTop: 16, fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", padding: "10px 0" }}>
+        Back to Home
+      </button>
 
-<div style={{ height: 1, background: "var(--rule)", margin: "24px 0" }} />
+      <div style={{ height: 1, background: "var(--rule)", margin: "24px 0" }} />
 
-<button onClick={async () => {
-  const { supabase } = await import("../lib/supabase");
-  localStorage.removeItem("tend_user");
-  await supabase.auth.signOut();
-}}
-  style={{ width: "100%", background: "none", border: "1px solid #E8C4BB", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--red)" }}>
-  Sign Out
-</button>
+      <button onClick={async () => {
+        const { supabase } = await import("../lib/supabase");
+        localStorage.removeItem("tend_user");
+        await supabase.auth.signOut();
+      }}
+        style={{ width: "100%", background: "none", border: "1px solid #E8C4BB", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--red)" }}>
+        Sign Out
+      </button>
     </div>
   );
 }
