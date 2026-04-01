@@ -330,7 +330,7 @@ function RestWeekHome() {
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", opacity: .5, marginTop: 8, flexShrink: 0 }} />
             <div>
               <p style={{ fontSize: 16, color: "var(--ink)", fontFamily: "'Playfair Display', serif", marginBottom: 3 }}>{r.label}</p>
-              <p className="caption italic" style={{ lineHeight: 1.6 }}>{r.note}</p>
+              <p className="caption italic" ...>Tap to complete · Tap again to undo · Hold to skip</p>
             </div>
           </div>
         ))}
