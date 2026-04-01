@@ -190,7 +190,13 @@ const TRACKS = [
 ];
 
 // ── State helpers ─────────────────────────────────────────────────────────────
-const DEFAULT_STATE = { wisdom_week: 0, nt_week: 0, ot_week: 0, psalm_week: 0 };
+const DEFAULT_STATE = {
+  wisdom_week: 0,
+  nt_week:     0,
+  ot_week:     0,
+  psalm_week:  0,
+  onboarded:   false, // false = show the start picker on first launch
+};
 
 function loadLocal() {
   try {
@@ -278,13 +284,25 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
     setActive(getSuggested(next).key);
   };
 
-  // ── Compact widget ──────────────────────────────────────────────────────────
+  // ── Start picker (shown once on first open, or via gear) ────────────────────
+  if (!state.onboarded) {
+    return (
+      <StartPicker
+        compact={compact}
+        onComplete={(picks) => {
+          const next = { ...DEFAULT_STATE, ...picks, onboarded: true };
+          persist(next);
+          setActive(getSuggested(next).key);
+        }}
+      />
+    );
+  }
   if (compact) {
     const activeIdx = state[`${active}_week`] ?? 0;
     return (
       <div style={{ borderLeft: `3px solid ${track.color}`, paddingLeft: "12px", margin: "6px 0", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
-        {/* Track tabs */}
-        <div style={{ display: "flex", gap: "5px", marginBottom: "8px", flexWrap: "wrap" }}>
+        {/* Track tabs + gear */}
+        <div style={{ display: "flex", gap: "5px", marginBottom: "8px", flexWrap: "wrap", alignItems: "center" }}>
           {TRACKS.map(t => {
             const isActive = t.key === active;
             const isSuggested = t.key === suggested.key;
@@ -303,6 +321,10 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
               </button>
             );
           })}
+          <button onClick={() => setShowSettings(true)} style={{
+            marginLeft: "auto", background: "none", border: "none",
+            cursor: "pointer", color: "#C4B89A", fontSize: "14px", padding: "0 2px",
+          }} title="Adjust reading position">\u2699</button>
         </div>
         {/* Reference */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -322,6 +344,7 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
         <p style={{ margin: "3px 0 0", fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>
           {getWeekMeta(state, active)} {saving ? "\u00b7 saving\u2026" : ""}
         </p>
+        {showSettings && <SettingsSheet state={state} persist={persist} onClose={() => setShowSettings(false)} />}
       </div>
     );
   }
@@ -456,40 +479,199 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
         </button>
       </div>
 
-      {/* Settings sheet */}
-      {showSettings && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "flex-end" }} onClick={() => setShowSettings(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ width: "100%", background: "white", borderRadius: "20px 20px 0 0", padding: "24px 24px 48px", maxHeight: "80vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-              <h2 style={{ margin: 0, fontSize: "22px", fontWeight: 700, color: "#2D3748", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>Adjust Your Position</h2>
-              <button onClick={() => setShowSettings(false)} style={{ background: "#F3F0E8", border: "none", borderRadius: "50%", width: "32px", height: "32px", fontSize: "16px", cursor: "pointer", color: "#6B7280" }}>\u00d7</button>
+      {showSettings && <SettingsSheet state={state} persist={persist} onClose={() => setShowSettings(false)} />}
+    </div>
+  );
+}
+
+// ── Settings sheet (shared by compact and full screen) ────────────────────────
+function SettingsSheet({ state, persist, onClose }) {
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "flex-end" }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "100%", background: "white", borderRadius: "20px 20px 0 0", padding: "24px 24px 48px", maxHeight: "80vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+          <h2 style={{ margin: 0, fontSize: "22px", fontWeight: 700, color: "#2D3748", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+            Adjust Your Position
+          </h2>
+          <button onClick={onClose} style={{ background: "#F3F0E8", border: "none", borderRadius: "50%", width: "32px", height: "32px", fontSize: "16px", cursor: "pointer", color: "#6B7280" }}>\u00d7</button>
+        </div>
+        <p style={{ margin: "0 0 20px", fontFamily: "system-ui", fontSize: "12px", color: "#9CA3AF", lineHeight: 1.6 }}>
+          Each track saves independently. Use arrows to move forward or back one week.
+        </p>
+        {TRACKS.map(t => {
+          const key  = `${t.key}_week`;
+          const idx  = state[key] ?? 0;
+          const ref  = getReading(state, t.key);
+          const meta = getWeekMeta(state, t.key);
+          return (
+            <div key={t.key} style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "1px solid #F0EBE0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                <span style={{ color: t.color }}>{t.icon}</span>
+                <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "11px", fontWeight: 700, color: "#6B7280", letterSpacing: "0.06em", textTransform: "uppercase" }}>{t.label}</p>
+              </div>
+              <p style={{ margin: "0 0 8px", fontSize: "15px", color: "#2D3748" }}>{ref || "No reading"}</p>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <button onClick={() => persist({ ...state, [key]: Math.max(0, idx - 1) })}
+                  style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>\u2190</button>
+                <span style={{ fontFamily: "system-ui", fontSize: "11px", color: "#9CA3AF", minWidth: "110px", textAlign: "center" }}>{meta}</span>
+                <button onClick={() => persist({ ...state, [key]: Math.min(SCHEDULE.length - 1, idx + 1) })}
+                  style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>\u2192</button>
+              </div>
             </div>
-            <p style={{ margin: "0 0 20px", fontFamily: "system-ui", fontSize: "12px", color: "#9CA3AF", lineHeight: 1.6 }}>
-              Each track saves independently. Use arrows to move forward or back one week.
-            </p>
-            {TRACKS.map(t => {
-              const key = `${t.key}_week`;
-              const idx = state[key] ?? 0;
-              const ref = getReading(state, t.key);
-              const meta = getWeekMeta(state, t.key);
-              return (
-                <div key={t.key} style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "1px solid #F0EBE0" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                    <span style={{ color: t.color }}>{t.icon}</span>
-                    <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "11px", fontWeight: 700, color: "#6B7280", letterSpacing: "0.06em", textTransform: "uppercase" }}>{t.label}</p>
-                  </div>
-                  <p style={{ margin: "0 0 8px", fontSize: "15px", color: "#2D3748" }}>{ref || "No reading"}</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <button onClick={() => { const n = { ...state, [key]: Math.max(0, idx - 1) }; persist(n); }} style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>\u2190</button>
-                    <span style={{ fontFamily: "system-ui", fontSize: "11px", color: "#9CA3AF", minWidth: "110px", textAlign: "center" }}>{meta}</span>
-                    <button onClick={() => { const n = { ...state, [key]: Math.min(SCHEDULE.length - 1, idx + 1) }; persist(n); }} style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>\u2192</button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Start picker ──────────────────────────────────────────────────────────────
+// Shown on first open. Lets users pick their starting week for each track.
+// Groups SCHEDULE by track into searchable lists.
+
+function StartPicker({ compact, onComplete }) {
+  const [step, setStep] = useState(0); // 0=welcome, 1-4=track pickers
+  const [picks, setPicks] = useState({
+    wisdom_week: 0,
+    nt_week:     0,
+    ot_week:     0,
+    psalm_week:  0,
+  });
+
+  const steps = [
+    { key: "welcome" },
+    ...TRACKS.map(t => ({ key: t.key, track: t })),
+  ];
+
+  const current = steps[step];
+  const isLast  = step === steps.length - 1;
+
+  // Build unique reading list per track for the dropdown
+  const getOptions = (trackKey) =>
+    SCHEDULE.map((w, idx) => ({ idx, ref: w[trackKey], year: w.year, week: w.week }))
+      .filter(o => o.ref);
+
+  const containerStyle = compact
+    ? { background: "white", borderRadius: "12px", padding: "20px", border: "1px solid #E8E4DC", fontFamily: "'Cormorant Garamond', Georgia, serif" }
+    : { minHeight: "100vh", background: "#FAFAF7", fontFamily: "'Cormorant Garamond', Georgia, serif", paddingBottom: "80px" };
+
+  return (
+    <div style={containerStyle}>
+      {/* Progress bar */}
+      {step > 0 && (
+        <div style={{ height: "3px", background: "#E8E4DC", marginBottom: "24px", borderRadius: "2px" }}>
+          <div style={{ height: "100%", background: "#C29B61", borderRadius: "2px", width: `${(step / (steps.length - 1)) * 100}%`, transition: "width 0.3s ease" }} />
         </div>
       )}
+
+      <div style={{ padding: compact ? "0" : "32px 24px 100px", maxWidth: "480px", margin: "0 auto" }}>
+
+        {/* Welcome */}
+        {step === 0 && (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+              <FlameIcon size={32} color="#C29B61" />
+              <div>
+                <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                  Delight & Savor
+                </p>
+                <h2 style={{ margin: 0, fontSize: "26px", fontWeight: 600, color: "#2D3748" }}>
+                  The Living Feast
+                </h2>
+              </div>
+            </div>
+            <p style={{ margin: "0 0 16px", fontSize: "17px", color: "#6B7280", lineHeight: 1.7, fontStyle: "italic" }}>
+              A three-year feast through the whole story of Scripture.
+            </p>
+            <div style={{ margin: "16px 0 20px" }}>
+              {TRACKS.map(t => (
+                <div key={t.key} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                  <span style={{ width: "28px", height: "28px", borderRadius: "7px", background: t.light, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: t.color, flexShrink: 0 }}>
+                    {t.icon}
+                  </span>
+                  <div>
+                    <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, color: t.color, letterSpacing: "0.06em", textTransform: "uppercase" }}>{t.dayName}</p>
+                    <p style={{ margin: 0, fontSize: "15px", color: "#4A5568" }}>{t.label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p style={{ margin: 0, fontSize: "14px", color: "#9CA3AF", fontStyle: "italic", lineHeight: 1.7 }}>
+              Already partway through a reading program? Next you'll choose where each track begins.
+            </p>
+          </div>
+        )}
+
+        {/* Track picker */}
+        {step > 0 && current.track && (() => {
+          const t = current.track;
+          const options = getOptions(t.key);
+          const currentIdx = picks[`${t.key}_week`];
+          const currentRef = options.find(o => o.idx === currentIdx);
+          return (
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                <span style={{ fontSize: "22px", color: t.color }}>{t.icon}</span>
+                <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 600, color: "#2D3748" }}>{t.label}</h2>
+              </div>
+              <p style={{ margin: "0 0 6px", fontFamily: "system-ui", fontSize: "10px", color: t.color, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                {t.dayName}
+              </p>
+              <p style={{ margin: "0 0 20px", fontSize: "15px", color: "#6B7280", lineHeight: 1.7 }}>
+                Where would you like to begin? Start from the beginning or choose any passage.
+              </p>
+
+              {/* Current selection display */}
+              <div style={{ background: t.light, borderRadius: "10px", padding: "14px 16px", marginBottom: "16px", borderLeft: `3px solid ${t.color}` }}>
+                <p style={{ margin: "0 0 2px", fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, color: t.color, letterSpacing: "0.06em", textTransform: "uppercase" }}>Starting at</p>
+                <p style={{ margin: 0, fontSize: "20px", fontWeight: 600, color: "#2D3748" }}>
+                  {currentRef?.ref || options[0]?.ref}
+                </p>
+                <p style={{ margin: "2px 0 0", fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>
+                  Year {currentRef?.year || 1} \u00b7 Week {currentRef?.week || 1}
+                </p>
+              </div>
+
+              {/* Dropdown selector */}
+              <label style={{ display: "block", fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "8px" }}>
+                Choose a different starting point
+              </label>
+              <select
+                value={currentIdx}
+                onChange={e => setPicks(prev => ({ ...prev, [`${t.key}_week`]: parseInt(e.target.value) }))}
+                style={{ width: "100%", padding: "12px 14px", border: "2px solid #E8E4DC", borderRadius: "10px", fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "16px", color: "#2D3748", background: "white", appearance: "none", cursor: "pointer" }}
+              >
+                {options.map(o => (
+                  <option key={o.idx} value={o.idx}>
+                    Y{o.year} W{o.week} \u2014 {o.ref}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        })()}
+      </div>
+
+      {/* Bottom nav */}
+      <div style={{
+        position: compact ? "relative" : "fixed",
+        bottom: 0, left: 0, right: 0,
+        background: "white", borderTop: compact ? "none" : "1px solid #E8E4DC",
+        padding: compact ? "16px 0 0" : "14px 24px",
+        display: "flex", gap: "10px",
+      }}>
+        {step > 0 && (
+          <button onClick={() => setStep(s => s - 1)} style={{ padding: "12px 18px", background: "#F3F0E8", border: "none", borderRadius: "10px", fontFamily: "system-ui", fontSize: "13px", fontWeight: 600, color: "#6B7280", cursor: "pointer" }}>
+            \u2190 Back
+          </button>
+        )}
+        <button
+          onClick={() => isLast ? onComplete(picks) : setStep(s => s + 1)}
+          style={{ flex: 1, background: "#C29B61", color: "white", border: "none", borderRadius: "10px", padding: "13px", fontSize: "16px", fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, cursor: "pointer", letterSpacing: "0.03em" }}
+        >
+          {isLast ? "Begin The Living Feast \u2192" : "Continue \u2192"}
+        </button>
+      </div>
     </div>
   );
 }
