@@ -172,8 +172,36 @@ const NATURE_DAYS = {
   Friday:    { step: "Watch",   label: "Nature Clip",              getInstruction: (t) => t ? "Find a short video about " + t.subject.toLowerCase() + ". Let the children see it moving." : "Find a short nature video to watch together." },
 };
 
-function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPaid }) {
-  const [minutes, setMinutes] = useState(initialMinutes || 0);
+// Returns the Monday of the current week as YYYY-MM-DD
+function getWeekStart() {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(d.setDate(diff));
+  return monday.toISOString().slice(0, 10);
+}
+
+async function saveOutdoorToSupabase(userId, weekStart, minutes) {
+  try {
+    const { supabase } = await import("../lib/supabase");
+    await supabase
+      .from("outdoor_log")
+      .upsert({ user_id: userId, week_start: weekStart, minutes }, { onConflict: "user_id,week_start" });
+  } catch (e) {
+    console.error("outdoor_log save failed:", e);
+  }
+}
+
+function NatureOutdoorCard({ onNavigate, initialMinutes, initialWeekStart, saveToMeta, userId, today, isPaid }) {
+  const currentWeekStart = getWeekStart();
+
+  // If the stored week_start is older than current week, reset to 0
+  const resolvedMinutes = (initialWeekStart && initialWeekStart === currentWeekStart)
+    ? (initialMinutes || 0)
+    : 0;
+
+  const [minutes, setMinutes] = useState(resolvedMinutes);
+
   const [current] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("tend_nature_current") || "null");
@@ -182,12 +210,27 @@ function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPa
     return { subject: "The Story of the Tadpole", read: "The Year Round by C.J. Hylander \u00b7 Spring section", observe: "Go outside and look near ponds or puddles for frogs or tadpoles. Just notice.", action: "Sit quietly near water for 5 minutes." };
   });
 
-  useEffect(() => { setMinutes(initialMinutes || 0); }, [initialMinutes]);
+  // If week rolled over, persist the reset immediately
+  useEffect(() => {
+    if (initialWeekStart && initialWeekStart !== currentWeekStart) {
+      if (saveToMeta) saveToMeta({ outdoor_minutes: 0, outdoor_week_start: currentWeekStart });
+    }
+  }, []);
+
+  // Sync if parent reloads same-week data
+  useEffect(() => {
+    if (initialWeekStart === currentWeekStart) {
+      setMinutes(initialMinutes || 0);
+    }
+  }, [initialMinutes]);
 
   const adjust = async (n) => {
     const next = Math.max(0, minutes + n);
     setMinutes(next);
-    if (saveToMeta) await saveToMeta({ outdoor_minutes: next });
+    // Save to user metadata (for HomeScreen display)
+    if (saveToMeta) await saveToMeta({ outdoor_minutes: next, outdoor_week_start: currentWeekStart });
+    // Save to Supabase outdoor_log table (for reports)
+    if (userId) await saveOutdoorToSupabase(userId, currentWeekStart, next);
   };
 
   const hours = Math.floor(minutes / 60);
@@ -840,7 +883,9 @@ export default function HomeScreen({ onNavigate, settings }) {
       <NatureOutdoorCard
         onNavigate={onNavigate}
         initialMinutes={settings?.outdoorMinutes || 0}
+        initialWeekStart={settings?.outdoorWeekStart || null}
         saveToMeta={settings?.saveToMeta}
+        userId={settings?.userId || null}
         today={today}
         isPaid={settings?.isPaid || false}
       />
