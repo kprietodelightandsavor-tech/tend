@@ -344,7 +344,6 @@ function WeekendRhythmHome({ today, week }) {
 // Each anchor maps a subject keyword to a slot (morning/afternoon) and day.
 // Items rotate odd/even based on term week number.
 
-import BibleReadingScreen from "./BibleReadingScreen";
 
 const BEAUTY_ROTATION = {
   Monday: {
@@ -634,7 +633,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
               style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px", cursor: b.status !== "skipped" ? "pointer" : "default", opacity: isDone ? 0.35 : isSkipped ? 0.45 : 1, transition: "opacity .4s ease" }}>
               <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: isDone || isSkipped ? "var(--rule)" : blockColor, marginRight: 12, flexShrink: 0, transition: "background .3s ease", minHeight: 36 }} />
               <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{b.time}</span>
-              <BibleReadingScreen compact={true} />
+        
 
 <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 20px" }} />
             </div>
@@ -843,7 +842,7 @@ export default function HomeScreen({ onNavigate, settings }) {
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
         <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
-<BibleReadingScreen compact={true} />
+
 
       <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 20px" }} />
 
