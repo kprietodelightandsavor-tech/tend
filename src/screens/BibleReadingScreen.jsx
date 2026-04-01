@@ -75,7 +75,7 @@ const SCHEDULE = [
   { week:52, year:2, term:2, wisdom:"Proverbs 28:1-14",     nt:"Acts 18-19:20",             ot:"1 Samuel 24 (David spares Saul)",    psalm:"Psalm 52"   },
   { week:53, year:2, term:2, wisdom:"Proverbs 28:15-28",    nt:"Acts 19:21-20:38",          ot:"2 Samuel 5:1-12, 7:1-17",            psalm:"Psalm 53"   },
   { week:54, year:2, term:2, wisdom:"Proverbs 29:1-14",     nt:"Acts 21-22",                ot:"2 Samuel 9 (Mephibosheth)",          psalm:"Psalm 54"   },
-  { week:55, year:2, term:2, wisdom:"Proverbs 29:15-27",    nt:"Acts 23-24",                ot:"2 Samuel 11-12:15 \u26a0\ufe0f mature themes \u2014 alt: 2 Samuel 9", psalm:"Psalm 55" },
+  { week:55, year:2, term:2, wisdom:"Proverbs 29:15-27",    nt:"Acts 23-24",                ot:"2 Samuel 11-12:15 \u26a0\ufe0f mature themes — alt: 2 Samuel 9", psalm:"Psalm 55" },
   { week:56, year:2, term:2, wisdom:"Proverbs 30:1-14",     nt:"Acts 25-26",                ot:"2 Samuel 22:1-51 (David's song)",    psalm:"Psalm 56"   },
   { week:57, year:2, term:2, wisdom:"Proverbs 30:15-33",    nt:"Acts 27-28",                ot:"1 Kings 3 (Solomon's wisdom)",       psalm:"Psalm 57"   },
   { week:58, year:2, term:2, wisdom:"Proverbs 31",          nt:"Romans 1:1-17, 3:21-31",    ot:"1 Kings 8:22-53 (temple prayer)",    psalm:"Psalm 58"   },
@@ -145,7 +145,7 @@ const TRACKS = [
     dayName: "Monday",
     label: "Proverbs & Wisdom",
     short: "Wisdom",
-    icon: "\u25c8",
+    icon: "◈",
     color: "#7A6A55",
     light: "#F7F4EF",
     prompt: "Which piece of wisdom caught your attention most? What would it look like to actually live that out this week?",
@@ -157,22 +157,22 @@ const TRACKS = [
     dayName: "Tuesday",
     label: "New Testament",
     short: "NT",
-    icon: "\u271d",
+    icon: "✝",
     color: "#4A7C7E",
     light: "#EAF2F2",
     prompt: "Tell back what happened or what was said, in your own words. What stands out most to you?",
-    note: "If narration is thin, gently ask: What do you think Jesus meant by this? Or \u2014 why do you think this was included here?",
+    note: "If narration is thin, gently ask: What do you think Jesus meant by this? Or — why do you think this was included here?",
   },
   {
     key: "ot",
     day: "Day 3",
-    dayName: "Wednesday\u2013Thursday",
+    dayName: "Wednesday–Thursday",
     label: "Old Testament",
     short: "OT",
-    icon: "\u2726",
+    icon: "✦",
     color: "#A9B786",
     light: "#EFF4EA",
-    prompt: "Tell the story back \u2014 what happened, who was involved, and what changed by the end?",
+    prompt: "Tell the story back — what happened, who was involved, and what changed by the end?",
     note: "For law or lists: What does this reveal about what God cares about? What does it show us about his character?",
   },
   {
@@ -181,10 +181,10 @@ const TRACKS = [
     dayName: "Friday",
     label: "Psalm",
     short: "Psalm",
-    icon: "\u266a",
+    icon: "♪",
     color: "#C29B61",
     light: "#FAF3E8",
-    prompt: "Read it slowly \u2014 perhaps twice. Let it settle. No narration required today. Simply receive it.",
+    prompt: "Read it slowly — perhaps twice. Let it settle. No narration required today. Simply receive it.",
     note: "On hard mornings, let the Psalm do the work. It holds what words sometimes cannot.",
   },
 ];
@@ -218,7 +218,7 @@ function getWeekMeta(state, track) {
   const idx = Math.min(state[`${track}_week`] ?? 0, SCHEDULE.length - 1);
   const w = SCHEDULE[idx];
   if (!w) return "";
-  return `Year ${w.year} \u00b7 Week ${w.week}`;
+  return `Year ${w.year} · Week ${w.week}`;
 }
 
 function advanceTrack(state, track) {
@@ -322,7 +322,7 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
                 opacity: isActive ? 1 : 0.65,
               }}>
                 <span>{t.icon}</span><span>{t.short}</span>
-                {isSuggested && !isActive && <span style={{ fontSize: "6px" }}>\u25cf</span>}
+                {isSuggested && !isActive && <span style={{ fontSize: "6px" }}>●</span>}
               </button>
             );
           })}
@@ -342,12 +342,12 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
               padding: "4px 12px", fontSize: "11px", fontFamily: "system-ui", fontWeight: 600,
               cursor: "pointer", whiteSpace: "nowrap", marginLeft: "10px", flexShrink: 0,
             }}>
-              >Done →
+              Done →
             </button>
           )}
         </div>
         <p style={{ margin: "3px 0 0", fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>
-          {getWeekMeta(state, active)} {saving ? "\u00b7 saving\u2026" : ""}
+          {getWeekMeta(state, active)} {saving ? "· saving..." : ""}
         </p>
         {showSettings && <SettingsSheet state={state} persist={persist} onClose={() => setShowSettings(false)} />}
       </div>
@@ -368,14 +368,14 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
                 The Living Feast
               </p>
               <h1 style={{ margin: 0, fontSize: "20px", fontWeight: 600, color: "#2D3748" }}>
-                {reading || "\u2014"}
+                {reading || "—"}
               </h1>
               <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>
-                {weekMeta}{saving ? " \u00b7 saving\u2026" : ""}
+                {weekMeta}{saving ? " · saving..." : ""}
               </p>
             </div>
           </div>
-          <button onClick={() => setShowSettings(true)} style={{ background: "none", border: "none", fontSize: "17px", cursor: "pointer", color: "#C4B89A", marginTop: "4px" }}>\u2699</button>
+          <button onClick={() => setShowSettings(true)} style={{ background: "none", border: "none", fontSize: "17px", cursor: "pointer", color: "#C4B89A", marginTop: "4px" }}>⚙</button>
         </div>
 
         {/* Day tabs */}
@@ -392,7 +392,7 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
               }}>
                 <span style={{ fontSize: "13px", color: isActive ? t.color : "#BDB5A8" }}>{t.icon}</span>
                 <span style={{ fontFamily: "system-ui", fontSize: "8px", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: isActive ? t.color : "#BDB5A8" }}>{t.short}</span>
-                <span style={{ fontFamily: "system-ui", fontSize: "8px", color: isActive ? "#4A5568" : "#C4B89A", textAlign: "center", maxWidth: "64px", lineHeight: 1.3 }}>{ref || "\u2014"}</span>
+                <span style={{ fontFamily: "system-ui", fontSize: "8px", color: isActive ? "#4A5568" : "#C4B89A", textAlign: "center", maxWidth: "64px", lineHeight: 1.3 }}>{ref || "—"}</span>
                 {isSuggested && <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: t.color, display: "block", opacity: isActive ? 0 : 0.55, marginTop: "1px" }} />}
               </button>
             );
@@ -405,7 +405,7 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
         <div style={{ margin: "14px 24px 0", padding: "8px 14px", background: "#F7F5F0", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ color: suggested.color }}>{suggested.icon}</span>
           <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "11px", color: "#9CA3AF" }}>
-            Suggested today: <span style={{ color: suggested.color, fontWeight: 700 }}>{suggested.label}</span> \u2014 but read what calls to you.
+            Suggested today: <span style={{ color: suggested.color, fontWeight: 700 }}>{suggested.label}</span> — but read what calls to you.
           </p>
         </div>
       )}
@@ -431,7 +431,7 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
             After Reading
           </p>
           <p style={{ margin: 0, fontSize: "16px", color: "#4A5568", lineHeight: 1.85, fontStyle: "italic" }}>
-            \u201c{track.prompt}\u201d
+            "{track.prompt}"
           </p>
         </div>
 
@@ -439,14 +439,14 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
         <div style={{ background: track.key === "psalm" ? "#FAF3E8" : "#F7F5F0", borderRadius: "10px", padding: "14px 16px", borderLeft: `3px solid ${track.color}`, marginBottom: "16px" }}>
           <p style={{ margin: 0, fontSize: "14px", color: "#6B7280", lineHeight: 1.75, fontStyle: "italic" }}>
             {active === "wisdom" && reading?.toLowerCase().includes("ecclesiastes")
-              ? "For Ecclesiastes: What is the Preacher saying about life \u2014 and does it match what you see in the world around you?"
+              ? "For Ecclesiastes: What is the Preacher saying about life — and does it match what you see in the world around you?"
               : track.note}
           </p>
         </div>
 
         {/* Full week at a glance */}
         <p style={{ margin: "0 0 10px", fontFamily: "system-ui", fontSize: "10px", fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-          This Week\u2019s Full Feast
+          This Week's Full Feast
         </p>
         {TRACKS.map(t => {
           const isActive = t.key === active;
@@ -462,11 +462,11 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
               <span style={{ color: t.color, fontSize: "14px", flexShrink: 0 }}>{t.icon}</span>
               <div style={{ flex: 1 }}>
                 <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "9px", fontWeight: 700, color: t.color, letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                  {t.day} \u00b7 {t.dayName}
+                  {t.day} · {t.dayName}
                 </p>
-                <p style={{ margin: 0, fontSize: "14px", color: "#2D3748" }}>{ref || "\u2014"}</p>
+                <p style={{ margin: 0, fontSize: "14px", color: "#2D3748" }}>{ref || "—"}</p>
               </div>
-              {isActive && <span style={{ color: track.color, fontSize: "10px" }}>\u25cf</span>}
+              {isActive && <span style={{ color: track.color, fontSize: "10px" }}>●</span>}
             </div>
           );
         })}
@@ -480,7 +480,7 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
           fontSize: "17px", fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontWeight: 700, cursor: reading ? "pointer" : "default", letterSpacing: "0.03em",
         }}>
-          We read it \u2014 move on \u2192
+          We read it — move on →
         </button>
       </div>
 
@@ -498,7 +498,7 @@ function SettingsSheet({ state, persist, onClose }) {
           <h2 style={{ margin: 0, fontSize: "22px", fontWeight: 700, color: "#2D3748", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
             Adjust Your Position
           </h2>
-          <button onClick={onClose} style={{ background: "#F3F0E8", border: "none", borderRadius: "50%", width: "32px", height: "32px", fontSize: "16px", cursor: "pointer", color: "#6B7280" }}>\u00d7</button>
+          <button onClick={onClose} style={{ background: "#F3F0E8", border: "none", borderRadius: "50%", width: "32px", height: "32px", fontSize: "16px", cursor: "pointer", color: "#6B7280" }}>×</button>
         </div>
         <p style={{ margin: "0 0 20px", fontFamily: "system-ui", fontSize: "12px", color: "#9CA3AF", lineHeight: 1.6 }}>
           Each track saves independently. Use arrows to move forward or back one week.
@@ -517,10 +517,10 @@ function SettingsSheet({ state, persist, onClose }) {
               <p style={{ margin: "0 0 8px", fontSize: "15px", color: "#2D3748" }}>{ref || "No reading"}</p>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <button onClick={() => persist({ ...state, [key]: Math.max(0, idx - 1) })}
-                  style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>\u2190</button>
+                  style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>←</button>
                 <span style={{ fontFamily: "system-ui", fontSize: "11px", color: "#9CA3AF", minWidth: "110px", textAlign: "center" }}>{meta}</span>
                 <button onClick={() => persist({ ...state, [key]: Math.min(SCHEDULE.length - 1, idx + 1) })}
-                  style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>\u2192</button>
+                  style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F3F0E8", border: "none", cursor: "pointer", fontSize: "16px", color: "#6B7280" }}>→</button>
               </div>
             </div>
           );
@@ -638,7 +638,7 @@ function StartPicker({ compact, onComplete }) {
                   {currentRef?.ref || options[0]?.ref}
                 </p>
                 <p style={{ margin: "2px 0 0", fontFamily: "system-ui", fontSize: "10px", color: "#9CA3AF" }}>
-                  Year {currentRef?.year || 1} \u00b7 Week {currentRef?.week || 1}
+                  Year {currentRef?.year || 1} · Week {currentRef?.week || 1}
                 </p>
               </div>
 
@@ -653,7 +653,7 @@ function StartPicker({ compact, onComplete }) {
               >
                 {options.map(o => (
                   <option key={o.idx} value={o.idx}>
-                    Y{o.year} W{o.week} \u2014 {o.ref}
+                    Y{o.year} W{o.week} — {o.ref}
                   </option>
                 ))}
               </select>
@@ -672,14 +672,14 @@ function StartPicker({ compact, onComplete }) {
       }}>
         {step > 0 && (
           <button onClick={() => setStep(s => s - 1)} style={{ padding: "12px 18px", background: "#F3F0E8", border: "none", borderRadius: "10px", fontFamily: "system-ui", fontSize: "13px", fontWeight: 600, color: "#6B7280", cursor: "pointer" }}>
-            \u2190 Back
+            ← Back
           </button>
         )}
         <button
           onClick={() => isLast ? onComplete(picks) : setStep(s => s + 1)}
           style={{ flex: 1, background: "#C29B61", color: "white", border: "none", borderRadius: "10px", padding: "13px", fontSize: "16px", fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, cursor: "pointer", letterSpacing: "0.03em" }}
         >
-          {isLast ? "Begin The Living Feast \u2192" : "Continue \u2192"}
+          {isLast ? "Begin The Living Feast →" : "Continue →"}
         </button>
       </div>
     </div>
