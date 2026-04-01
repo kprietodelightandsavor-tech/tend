@@ -635,8 +635,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
               <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{b.time}</span>
         
 
-<span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, ...}}>{b.time}</span>
-        
+<span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{b.time}</span>        
 
 <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 20px" }} />
             </div>
