@@ -234,7 +234,7 @@ function getSuggested(state) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function BibleReadingScreen({ compact = false, userId = null }) {
+export default function BibleReadingScreen({ compact = false, userId = null, onNavigate = null }) {
   const [state, setState]   = useState(loadLocal);
   const [active, setActive] = useState(() => getSuggested(loadLocal()).key);
   const [showSettings, setShowSettings] = useState(false);
@@ -362,6 +362,11 @@ export default function BibleReadingScreen({ compact = false, userId = null }) {
       <div style={{ background: "white", borderBottom: "1px solid #E8E4DC", padding: "20px 24px 0", position: "sticky", top: 0, zIndex: 10 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {onNavigate && (
+              <button onClick={() => onNavigate("home")} style={{ background: "none", border: "none", cursor: "pointer", color: "#C4B89A", fontSize: "22px", padding: 0, lineHeight: 1, marginRight: "2px" }}>
+                ‹
+              </button>
+            )}
             <FlameIcon size={22} color="#C29B61" />
             <div>
               <p style={{ margin: 0, fontFamily: "system-ui", fontSize: "9px", color: "#9CA3AF", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
