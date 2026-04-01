@@ -635,22 +635,11 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
               <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{b.time}</span>
         
 
+<span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, ...}}>{b.time}</span>
+        
+
 <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 20px" }} />
             </div>
-            {isRise && !isDone && !isSkipped && riseShineItems.length > 0 && (
-              <div style={{ paddingLeft: 53, paddingBottom: 10 }} onClick={e => e.stopPropagation()}>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {riseShineItems.map((item, idx) => {
-                    const checked = b.subChecked?.[idx];
-                    return (
-                      <button key={idx} onClick={() => toggleSub(b.id, idx)}
-                        style={{ background: checked ? "var(--sage-bg)" : "none", border: `1px solid ${checked ? "var(--sage)" : "var(--rule)"}`, borderRadius: 20, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: checked ? "var(--sage)" : "var(--ink-faint)", transition: "all .2s", textDecoration: checked ? "line-through" : "none" }}>
-                        {item}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
             )}
             {showMother && (
               <div style={{ paddingLeft: 53, paddingBottom: 8 }} onClick={e => e.stopPropagation()}>
