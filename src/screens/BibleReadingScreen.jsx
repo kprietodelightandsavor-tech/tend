@@ -1,7 +1,306 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 
-// ── Flame icon ────────────────────────────────────────────────────────────────
+// ── Memory verses with durations ──────────────────────────────────────────────
+// 38 verses across 108 weeks — 2, 3, or 6 week durations
+const MEMORY_VERSES = [
+  { ref:"Genesis 1:1",           weeks:2 },
+  { ref:"Romans 5:12",           weeks:2 },
+  { ref:"Genesis 12:1",          weeks:2 },
+  { ref:"Genesis 22:14",         weeks:2 },
+  { ref:"Genesis 50:20",         weeks:3 },
+  { ref:"Matthew 1:21",          weeks:2 },
+  { ref:"Matthew 28:19-20",      weeks:6 },
+  { ref:"Mark 1:17",             weeks:2 },
+  { ref:"John 6:35",             weeks:3 },
+  { ref:"Exodus 20:2-3",         weeks:3 },
+  { ref:"Leviticus 19:18",       weeks:3 },
+  { ref:"Numbers 14:9",          weeks:2 },
+  { ref:"John 1:1",              weeks:2 },
+  { ref:"Deuteronomy 6:4-5",     weeks:6 },
+  { ref:"Joshua 1:9",            weeks:3 },
+  { ref:"Joshua 24:15",          weeks:3 },
+  { ref:"Ruth 1:16",             weeks:3 },
+  { ref:"Acts 16:31",            weeks:2 },
+  { ref:"2 Samuel 7:16",         weeks:2 },
+  { ref:"Romans 8:1",            weeks:2 },
+  { ref:"Lamentations 3:22-23",  weeks:6 },
+  { ref:"Ephesians 2:8-9",       weeks:3 },
+  { ref:"2 Chronicles 20:15",    weeks:2 },
+  { ref:"Isaiah 40:31",          weeks:3 },
+  { ref:"Romans 8:28",           weeks:3 },
+  { ref:"Isaiah 53:5",           weeks:3 },
+  { ref:"Jeremiah 1:5",          weeks:2 },
+  { ref:"Micah 6:8",             weeks:3 },
+  { ref:"Habakkuk 3:17-18",      weeks:3 },
+  { ref:"Hebrews 11:1",          weeks:3 },
+  { ref:"Esther 4:14",           weeks:3 },
+  { ref:"1 John 1:9",            weeks:2 },
+  { ref:"Nehemiah 8:10",         weeks:2 },
+  { ref:"Job 38:4",              weeks:2 },
+  { ref:"Job 42:5",              weeks:2 },
+  { ref:"Ezekiel 36:26",         weeks:3 },
+  { ref:"Isaiah 65:17",          weeks:2 },
+  { ref:"Revelation 22:20",      weeks:6 },
+];
+
+// Build week-to-verse lookup (1-indexed)
+const VERSE_BY_WEEK = {};
+let _w = 1;
+for (const v of MEMORY_VERSES) {
+  for (let i = 0; i < v.weeks; i++) { VERSE_BY_WEEK[_w++] = v; }
+}
+
+function getVerseForWeek(weekNumber) {
+  return VERSE_BY_WEEK[weekNumber] || VERSE_BY_WEEK[1];
+}
+
+// API.Bible ESV Bible ID
+const ESV_BIBLE_ID = "f421fe261da7624f-01";
+
+async function fetchVerseText(ref) {
+  const cacheKey = "lf_verse_" + ref.replace(/[\s:,-]+/g, "_");
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) return JSON.parse(cached);
+  } catch {}
+  try {
+    const apiKey = import.meta.env.VITE_BIBLE_API_KEY;
+    if (!apiKey) return null;
+    const encoded = encodeURIComponent(ref);
+    const res = await fetch(
+      "https://api.scripture.api.bible/v1/bibles/" + ESV_BIBLE_ID + "/search?query=" + encoded + "&limit=1",
+      { headers: { "api-key": apiKey } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const passage = data?.data?.passages?.[0] || data?.data?.verses?.[0];
+    if (!passage) return null;
+    const text = (passage.content || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    if (!text) return null;
+    const result = { ref, text };
+    try { localStorage.setItem(cacheKey, JSON.stringify(result)); } catch {}
+    return result;
+  } catch { return null; }
+}
+
+// ── Memory Verse Card — exported for HomeScreen and BibleReadingScreen ────────
+export function MemoryVerseCard({ weekNumber = 1, onNavigate = null, prominent = false }) {
+  const verseData = getVerseForWeek(weekNumber);
+  const [verse, setVerse] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchVerseText(verseData.ref).then(v => { setVerse(v); setLoading(false); });
+  }, [verseData.ref]);
+
+  // How many weeks on this verse, which week are we on
+  const versesBeforeThis = (() => {
+    let count = 0;
+    for (const v of MEMORY_VERSES) {
+      if (v.ref === verseData.ref) break;
+      count += v.weeks;
+    }
+    return count;
+  })();
+  const weekOnThisVerse = weekNumber - versesBeforeThis;
+  const weeksRemaining = verseData.weeks - weekOnThisVerse + 1;
+
+  if (prominent) {
+    // Large prominent version for top of HomeScreen
+    return (
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ color: "var(--gold)", fontSize: 13 }}>✦</span>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--gold)", margin: 0 }}>
+              Memory Verse
+            </p>
+          </div>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, color: "var(--ink-faint)", margin: 0, letterSpacing: ".06em" }}>
+            Week {weekOnThisVerse} of {verseData.weeks}
+          </p>
+        </div>
+        {loading ? (
+          <p className="corm italic" style={{ fontSize: 17, color: "var(--ink-faint)", margin: 0 }}>Loading...</p>
+        ) : verse?.text ? (
+          <>
+            <p className="corm" style={{ fontSize: 21, color: "var(--ink)", lineHeight: 1.75, margin: "0 0 8px", fontStyle: "italic" }}>
+              "{verse.text}"
+            </p>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--gold)", letterSpacing: ".08em", margin: 0 }}>
+              {verseData.ref} &nbsp;·&nbsp; ESV
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="corm italic" style={{ fontSize: 18, color: "var(--ink-faint)", margin: "0 0 6px" }}>
+              {verseData.ref}
+            </p>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--ink-faint)", margin: 0 }}>ESV</p>
+          </>
+        )}
+        {onNavigate && (
+          <button onClick={() => onNavigate("scripture")}
+            style={{ background: "none", border: "none", cursor: "pointer", marginTop: 10, fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", padding: 0 }}>
+            Open Living Feast →
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // Compact version for Bible screen
+  return (
+    <div style={{ background: "var(--gold-bg)", border: "1px solid #E0CBA8", borderRadius: 4, padding: "16px 18px", marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ color: "var(--gold)", fontSize: 12 }}>✦</span>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--gold)", margin: 0 }}>Memory Verse</p>
+        </div>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, color: "var(--ink-faint)", margin: 0 }}>
+          Week {weekOnThisVerse} of {verseData.weeks}
+        </p>
+      </div>
+      {loading ? (
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", margin: 0 }}>Loading...</p>
+      ) : verse?.text ? (
+        <>
+          <p className="corm italic" style={{ fontSize: 16, color: "var(--ink)", lineHeight: 1.75, margin: "0 0 6px" }}>"{verse.text}"</p>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "var(--gold)", letterSpacing: ".06em", margin: 0 }}>{verseData.ref} · ESV</p>
+        </>
+      ) : (
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", margin: 0 }}>{verseData.ref} · ESV</p>
+      )}
+    </div>
+  );
+}
+
+const MEMORY_VERSES = [
+  { week:1,  ref:"Genesis 1:1" },        { week:2,  ref:"Genesis 2:7" },
+  { week:3,  ref:"Romans 5:12" },        { week:4,  ref:"Genesis 11:4" },
+  { week:5,  ref:"Genesis 12:1" },       { week:6,  ref:"Genesis 18:14" },
+  { week:7,  ref:"Hebrews 11:17-18" },   { week:8,  ref:"Romans 9:13" },
+  { week:9,  ref:"Genesis 22:14" },      { week:10, ref:"Genesis 50:20" },
+  { week:11, ref:"Genesis 45:7" },       { week:12, ref:"Exodus 2:24" },
+  { week:13, ref:"Matthew 1:21" },       { week:14, ref:"Matthew 26:28" },
+  { week:15, ref:"Exodus 1:12" },        { week:16, ref:"Matthew 28:19-20" },
+  { week:17, ref:"Mark 1:17" },          { week:18, ref:"Mark 2:17" },
+  { week:19, ref:"Mark 4:20" },          { week:20, ref:"John 6:35" },
+  { week:21, ref:"Mark 8:29" },          { week:22, ref:"Exodus 16:4" },
+  { week:23, ref:"Exodus 20:2-3" },      { week:24, ref:"Mark 16:6" },
+  { week:25, ref:"Exodus 25:8" },        { week:26, ref:"Exodus 32:26" },
+  { week:27, ref:"Exodus 33:14" },       { week:28, ref:"Leviticus 16:30" },
+  { week:29, ref:"Leviticus 19:18" },    { week:30, ref:"Luke 19:10" },
+  { week:31, ref:"Numbers 14:9" },       { week:32, ref:"Numbers 21:9" },
+  { week:33, ref:"Numbers 22:38" },      { week:34, ref:"John 1:1" },
+  { week:35, ref:"Deuteronomy 6:4-5" },  { week:36, ref:"John 6:51" },
+  { week:37, ref:"Joshua 1:9" },         { week:38, ref:"Joshua 6:2" },
+  { week:39, ref:"Joshua 24:15" },       { week:40, ref:"Judges 2:10" },
+  { week:41, ref:"Judges 5:3" },         { week:42, ref:"Judges 6:12" },
+  { week:43, ref:"Judges 7:2" },         { week:44, ref:"Acts 7:59-60" },
+  { week:45, ref:"1 Samuel 24:12" },     { week:46, ref:"Ruth 1:16" },
+  { week:47, ref:"Ruth 4:14" },          { week:48, ref:"1 Samuel 3:10" },
+  { week:49, ref:"Acts 14:22" },         { week:50, ref:"Acts 16:31" },
+  { week:51, ref:"1 Samuel 18:3" },      { week:52, ref:"Acts 18:9-10" },
+  { week:53, ref:"2 Samuel 7:16" },      { week:54, ref:"2 Samuel 9:7" },
+  { week:55, ref:"Romans 8:1" },         { week:56, ref:"2 Samuel 22:2-3" },
+  { week:57, ref:"1 Kings 3:9" },        { week:58, ref:"Romans 3:23-24" },
+  { week:59, ref:"1 Kings 11:6" },       { week:60, ref:"Romans 8:28" },
+  { week:61, ref:"1 Kings 17:24" },      { week:62, ref:"1 Kings 18:21" },
+  { week:63, ref:"1 Kings 19:12" },      { week:64, ref:"2 Kings 2:9" },
+  { week:65, ref:"2 Kings 5:13" },       { week:66, ref:"Romans 12:1" },
+  { week:67, ref:"2 Kings 22:19" },      { week:68, ref:"Lamentations 3:22-23" },
+  { week:69, ref:"Ephesians 2:8-9" },    { week:70, ref:"2 Chronicles 20:15" },
+  { week:71, ref:"Philippians 1:6" },    { week:72, ref:"Isaiah 40:31" },
+  { week:73, ref:"Isaiah 53:5" },        { week:74, ref:"Isaiah 55:1" },
+  { week:75, ref:"Jeremiah 1:5" },       { week:76, ref:"Jeremiah 31:33" },
+  { week:77, ref:"Lamentations 3:22-23" },{ week:78, ref:"Ezekiel 37:3" },
+  { week:79, ref:"Amos 5:24" },          { week:80, ref:"Micah 6:8" },
+  { week:81, ref:"Habakkuk 3:17-18" },   { week:82, ref:"Hebrews 11:1" },
+  { week:83, ref:"Hebrews 12:1" },       { week:84, ref:"Jonah 2:9" },
+  { week:85, ref:"Daniel 1:8" },         { week:86, ref:"Daniel 3:17-18" },
+  { week:87, ref:"1 Peter 1:7" },        { week:88, ref:"Daniel 9:9" },
+  { week:89, ref:"Esther 4:14" },        { week:90, ref:"1 John 1:9" },
+  { week:91, ref:"Esther 8:16" },        { week:92, ref:"Ezra 3:11" },
+  { week:93, ref:"Ezra 8:22" },          { week:94, ref:"Nehemiah 2:4" },
+  { week:95, ref:"Nehemiah 4:14" },      { week:96, ref:"Nehemiah 8:10" },
+  { week:97, ref:"Job 1:21" },           { week:98, ref:"Job 3:3" },
+  { week:99, ref:"Job 38:4" },           { week:100, ref:"Job 42:5" },
+  { week:101, ref:"Isaiah 6:3" },        { week:102, ref:"Isaiah 61:1" },
+  { week:103, ref:"Ezekiel 36:26" },     { week:104, ref:"Zechariah 8:8" },
+  { week:105, ref:"Zechariah 9:9" },     { week:106, ref:"Nehemiah 9:6" },
+  { week:107, ref:"Isaiah 65:17" },      { week:108, ref:"Revelation 22:20" },
+];
+
+// API.Bible ESV Bible ID
+const ESV_BIBLE_ID = "f421fe261da7624f-01";
+
+function getMemoryVerseRef(weekIndex) {
+  return MEMORY_VERSES[weekIndex] || MEMORY_VERSES[0];
+}
+
+async function fetchVerseText(ref) {
+  const cacheKey = "lf_verse_" + ref.replace(/\s+/g, "_");
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) return JSON.parse(cached);
+  } catch {}
+  try {
+    const apiKey = import.meta.env.VITE_BIBLE_API_KEY;
+    if (!apiKey) return null;
+    // Convert ref to passage ID format for API.Bible
+    const encoded = encodeURIComponent(ref);
+    const res = await fetch(
+      "https://api.scripture.api.bible/v1/bibles/" + ESV_BIBLE_ID + "/search?query=" + encoded + "&limit=1",
+      { headers: { "api-key": apiKey } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const passage = data?.data?.passages?.[0] || data?.data?.verses?.[0];
+    if (!passage) return null;
+    // Strip HTML tags from content
+    const text = passage.content?.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const result = { ref, text };
+    try { localStorage.setItem(cacheKey, JSON.stringify(result)); } catch {}
+    return result;
+  } catch { return null; }
+}
+
+// ── Exported memory verse card for HomeScreen ─────────────────────────────────
+export function MemoryVerseCard({ weekIndex = 0 }) {
+  const verseRef = getMemoryVerseRef(weekIndex);
+  const [verse, setVerse] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchVerseText(verseRef.ref).then(v => { setVerse(v); setLoading(false); });
+  }, [verseRef.ref]);
+
+  return (
+    <div style={{ marginBottom: 20, background: "#FAF3E8", border: "1px solid #E0CBA8", borderRadius: 4, padding: "16px 18px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <span style={{ color: "#C29B61", fontSize: 14 }}>✦</span>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#C29B61", margin: 0 }}>Memory Verse</p>
+      </div>
+      {loading ? (
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "#9CA3AF", margin: 0 }}>Loading...</p>
+      ) : verse?.text ? (
+        <>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, color: "#2D3748", lineHeight: 1.75, margin: "0 0 8px", fontStyle: "italic" }}>"{verse.text}"</p>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "#C29B61", letterSpacing: ".06em", margin: 0 }}>{verseRef.ref} · ESV</p>
+        </>
+      ) : (
+        <>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, color: "#2D3748", lineHeight: 1.75, margin: "0 0 8px", fontStyle: "italic" }}>"{verseRef.ref}"</p>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, color: "#C29B61", letterSpacing: ".06em", margin: 0 }}>This week's memory verse · ESV</p>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function FlameIcon({ size = 20, color = "#C29B61" }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -417,6 +716,9 @@ export default function BibleReadingScreen({ compact = false, userId = null, onN
 
       {/* Reading card */}
       <div style={{ padding: "20px 24px" }}>
+
+        {/* Memory verse */}
+        <MemoryVerseCard weekNumber={SCHEDULE[state[`${active}_week`] ?? 0]?.week || 1} />
         <div style={{
           background: "white", borderRadius: "14px", padding: "28px 24px",
           borderTop: `4px solid ${track.color}`,
