@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, BEAUTY_LOOP, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { supabase } from "../lib/supabase";
-import BibleReadingScreen from "./BibleReadingScreen";
+import BibleReadingScreen, { MemoryVerseCard } from "./BibleReadingScreen";
 
 const HABIT_ICONS = {
   attention: () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>),
@@ -874,11 +874,12 @@ export default function HomeScreen({ onNavigate, settings }) {
       <p className="eyebrow" style={{ marginBottom: 6 }}>
         {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
       </p>
-      <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
-      <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
-        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
-        <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
-      </div>
+      <h1 className="display serif" style={{ marginBottom: 16 }}>{greeting},<br />{name}.</h1>
+
+      {/* Memory verse — prominent, at top */}
+      <MemoryVerseCard weekNumber={settings?.week || 1} onNavigate={onNavigate} prominent={true} />
+
+      <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 20px" }} />
 
       <NatureOutdoorCard
         onNavigate={onNavigate}
@@ -904,6 +905,12 @@ export default function HomeScreen({ onNavigate, settings }) {
           <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
         </>
       )}
+
+      {/* CM quote — closing benediction at bottom */}
+      <div style={{ marginTop: 8, paddingTop: 20, borderTop: "1px solid var(--rule)" }}>
+        <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
+        <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
+      </div>
     </div>
   );
 }
