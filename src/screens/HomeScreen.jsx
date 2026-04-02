@@ -156,6 +156,17 @@ export function PremiumModal({ onClose }) {
 // ─── OUTDOOR TRACKER ──────────────────────────────────────────────────────────
 const OUTDOOR_GOAL_HOURS = 15;
 
+async function saveOutdoorToSupabase(userId, weekStart, minutes) {
+  try {
+    const { supabase } = await import("../lib/supabase");
+    await supabase
+      .from("outdoor_log")
+      .upsert({ user_id: userId, week_start: weekStart, minutes }, { onConflict: "user_id,week_start" });
+  } catch (e) {
+    console.error("outdoor_log save failed:", e);
+  }
+}
+
 function getSeason() {
   const now = new Date(), month = now.getMonth(), day = now.getDate();
   if ((month === 2 && day >= 20) || month === 3 || month === 4 || (month === 5 && day < 21)) return "spring";
@@ -181,16 +192,7 @@ function getWeekStart() {
   return monday.toISOString().slice(0, 10);
 }
 
-async function saveOutdoorToSupabase(userId, weekStart, minutes) {
-  try {
-    const { supabase } = await import("../lib/supabase");
-    await supabase
-      .from("outdoor_log")
-      .upsert({ user_id: userId, week_start: weekStart, minutes }, { onConflict: "user_id,week_start" });
-  } catch (e) {
-    console.error("outdoor_log save failed:", e);
-  }
-}
+
 
 function NatureOutdoorCard({ onNavigate, initialMinutes, initialWeekStart, saveToMeta, userId, today, isPaid }) {
   const currentWeekStart = getWeekStart();
