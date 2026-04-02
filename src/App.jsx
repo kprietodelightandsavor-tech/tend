@@ -9,7 +9,7 @@ import HomeScreen       from "./screens/HomeScreen";
 import PlannerScreen    from "./screens/PlannerScreen";
 import NarrationScreen  from "./screens/NarrationScreen";
 import OutdoorsScreen   from "./screens/OutdoorsScreen";
-import HabitsScreen     from "./screens/HabitScreen";
+import HabitsScreen from "./screens/HabitScreen.jsx";
 import LiliesScreen     from "./screens/LiliesScreen";
 import StudentsScreen   from "./screens/StudentsScreen";
 import MenuScreen       from "./screens/MenuScreen";
