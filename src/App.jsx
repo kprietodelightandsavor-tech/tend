@@ -3,22 +3,22 @@ import "./styles/globals.css";
 import { supabase } from "./lib/supabase";
 import BibleReadingScreen from "./screens/BibleReadingScreen";
 
-import BottomNav        from "./components/BottomNav";
-import OnboardingScreen from "./screens/OnboardingScreen";
-import HomeScreen       from "./screens/HomeScreen";
-import PlannerScreen    from "./screens/PlannerScreen";
-import NarrationScreen  from "./screens/NarrationScreen";
-import OutdoorsScreen   from "./screens/OutdoorsScreen";
-import HabitsScreen from "./screens/HabitScreen.jsx";
-import LiliesScreen     from "./screens/LiliesScreen";
-import StudentsScreen   from "./screens/StudentsScreen";
-import MenuScreen       from "./screens/MenuScreen";
-import SettingsScreen   from "./screens/SettingsScreen";
-import NatureStudyScreen from "./screens/NatureStudyScreen";
-import TeachingLogScreen from "./screens/TeachingLogScreen";
+import BottomNav          from "./components/BottomNav";
+import OnboardingScreen   from "./screens/OnboardingScreen";
+import HomeScreen         from "./screens/HomeScreen";
+import PlannerScreen      from "./screens/PlannerScreen";
+import NarrationScreen    from "./screens/NarrationScreen";
+import OutdoorsScreen     from "./screens/OutdoorsScreen";
+import HabitsScreen       from "./screens/HabitScreen";
+import LiliesScreen       from "./screens/LiliesScreen";
+import StudentsScreen     from "./screens/StudentsScreen";
+import MenuScreen         from "./screens/MenuScreen";
+import SettingsScreen     from "./screens/SettingsScreen";
+import NatureStudyScreen  from "./screens/NatureStudyScreen";
+import TeachingLogScreen  from "./screens/TeachingLogScreen";
 import AnnualReportScreen from "./screens/AnnualReportScreen";
 
-const NAV_SCREENS = ["home", "planner", "narration", "menu"];
+const NAV_SCREENS = ["home", "planner", "narration", "scripture", "menu"];
 
 // ─── QUICK NOTES ─────────────────────────────────────────────────────────────
 const NOTES_KEY = "tend_quick_notes";
@@ -49,7 +49,6 @@ function QuickNotesSheet({ onClose, students, userId }) {
     return res.json();
   };
 
-  // Load notes on open
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
     callNotes({ method: "list", userId })
@@ -88,7 +87,7 @@ function QuickNotesSheet({ onClose, students, userId }) {
   const formatDate = (ts) => {
     const d = new Date(ts);
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
-      " · " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      " \u00b7 " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   };
 
   return (
@@ -97,23 +96,20 @@ function QuickNotesSheet({ onClose, students, userId }) {
         onClick={e => e.stopPropagation()}>
         <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 20px" }} />
 
-        {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <p className="serif" style={{ fontSize: 20 }}>Quick Notes</p>
           <div style={{ display: "flex", gap: 8 }}>
             {["add", "list"].map(v => (
               <button key={v} onClick={() => setView(v)}
-                style={{ padding: "5px 12px", borderRadius: 20, border: `1px solid ${view === v ? "var(--sage)" : "var(--rule)"}`, background: view === v ? "var(--sage-bg)" : "none", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: view === v ? "var(--sage)" : "var(--ink-faint)" }}>
-                {v === "add" ? "+ Add" : `Notes (${notes.length})`}
+                style={{ padding: "5px 12px", borderRadius: 20, border: "1px solid " + (view === v ? "var(--sage)" : "var(--rule)"), background: view === v ? "var(--sage-bg)" : "none", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: view === v ? "var(--sage)" : "var(--ink-faint)" }}>
+                {v === "add" ? "+ Add" : "Notes (" + notes.length + ")"}
               </button>
             ))}
           </div>
         </div>
 
-        {/* ADD VIEW */}
         {view === "add" && (
           <>
-            {/* Tags */}
             <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
               <div style={{ flex: 1 }}>
                 <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 6 }}>Subject</p>
@@ -133,16 +129,14 @@ function QuickNotesSheet({ onClose, students, userId }) {
               )}
             </div>
 
-            {/* Text area */}
             <textarea className="textarea" placeholder="What do you want to remember?"
               value={text} onChange={e => setText(e.target.value)} rows={4}
               style={{ marginBottom: 14 }} />
 
-            {/* Voice + Save */}
             <div style={{ display: "flex", gap: 10 }}>
               {voiceOk && (
                 <button onClick={listening ? stopListening : startListening}
-                  style={{ width: 44, height: 44, borderRadius: "50%", background: listening ? "#c0392b" : "var(--sage-bg)", border: `1px solid ${listening ? "#c0392b" : "var(--sage-md)"}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .2s" }}>
+                  style={{ width: 44, height: 44, borderRadius: "50%", background: listening ? "#c0392b" : "var(--sage-bg)", border: "1px solid " + (listening ? "#c0392b" : "var(--sage-md)"), cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .2s" }}>
                   <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke={listening ? "white" : "var(--sage)"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
                     <path d="M19 10v2a7 7 0 01-14 0v-2"/>
@@ -156,17 +150,16 @@ function QuickNotesSheet({ onClose, students, userId }) {
                 </p>
               )}
               <button className="btn-sage" style={{ flex: 1 }} onClick={save} disabled={!text.trim() || saving}>
-                {saving ? "Saving…" : "Save Note"}
+                {saving ? "Saving..." : "Save Note"}
               </button>
             </div>
           </>
         )}
 
-        {/* LIST VIEW */}
         {view === "list" && (
           <>
             {loading ? (
-              <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)", textAlign: "center", padding: "24px 0" }}>Loading notes…</p>
+              <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)", textAlign: "center", padding: "24px 0" }}>Loading notes...</p>
             ) : notes.length === 0 ? (
               <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)", textAlign: "center", padding: "24px 0", lineHeight: 1.7 }}>
                 No notes yet. Tap + Add to capture something.
@@ -181,7 +174,7 @@ function QuickNotesSheet({ onClose, students, userId }) {
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, color: "var(--ink-faint)" }}>{formatDate(n.created_at)}</p>
                     <button onClick={() => deleteNote(n.id)}
-                      style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", padding: 0 }}>✕</button>
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", padding: 0 }}>\u2715</button>
                   </div>
                 </div>
                 <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, color: "var(--ink)", lineHeight: 1.7 }}>{n.text}</p>
@@ -194,23 +187,24 @@ function QuickNotesSheet({ onClose, students, userId }) {
   );
 }
 
+// ─── SCREENS ──────────────────────────────────────────────────────────────────
 const SCREENS = {
-  home:      HomeScreen,
-  planner:   PlannerScreen,
-  narration: NarrationScreen,
-  outdoors:  OutdoorsScreen,
-  habits:    HabitsScreen,
-  lilies:    LiliesScreen,
-  students:  StudentsScreen,
-  menu:      MenuScreen,
-  settings:  SettingsScreen,
+  home:         HomeScreen,
+  planner:      PlannerScreen,
+  narration:    NarrationScreen,
+  outdoors:     OutdoorsScreen,
+  habits:       HabitsScreen,
+  lilies:       LiliesScreen,
+  students:     StudentsScreen,
+  menu:         MenuScreen,
+  settings:     SettingsScreen,
   naturestudy:  NatureStudyScreen,
   teachinglog:  TeachingLogScreen,
   annualreport: AnnualReportScreen,
-  scripture:      BibleReadingScreen,
+  scripture:    BibleReadingScreen,
 };
 
-const STORAGE_KEY = 'tend_user';
+const STORAGE_KEY = "tend_user";
 
 function saveLocal(data) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
@@ -276,7 +270,7 @@ function AuthScreen() {
 
       <button className="btn-sage" style={{ width: "100%", opacity: loading ? .6 : 1 }}
         onClick={handle} disabled={loading || !email || !password}>
-        {loading ? "Please wait…" : mode === "signin" ? "Sign In" : "Create Account"}
+        {loading ? "Please wait..." : mode === "signin" ? "Sign In" : "Create Account"}
       </button>
 
       {mode === "signin" && (
@@ -304,30 +298,27 @@ function AuthScreen() {
 
 // ─── APP ─────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [session, setSession]   = useState(null);
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [screen, setScreen]     = useState("home");
+  const [session, setSession]     = useState(null);
+  const [userData, setUserData]   = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [screen, setScreen]       = useState("home");
   const [showNotes, setShowNotes] = useState(false);
 
-  // ── Save to both localStorage and Supabase metadata ──────────────────────
   const persistData = async (data) => {
     saveLocal(data);
     setUserData(data);
     try {
       await supabase.auth.updateUser({ data });
     } catch(e) {
-      console.log('Supabase sync failed, localStorage used:', e);
+      console.log("Supabase sync failed, localStorage used:", e);
     }
   };
 
-  // ── Load user data fresh from Supabase ────────────────────────────────────
   const loadUserData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const meta   = user?.user_metadata || {};
       const cached = loadLocal();
-      // Supabase wins on conflicts so is_paid always comes through
       const merged = { ...cached, ...meta };
       if (merged.onboarded) {
         saveLocal(merged);
@@ -336,7 +327,6 @@ export default function App() {
         setUserData(meta);
       }
     } catch(e) {
-      // Fall back to cache if Supabase unreachable
       const cached = loadLocal();
       if (cached) setUserData(cached);
     } finally {
@@ -344,7 +334,6 @@ export default function App() {
     }
   };
 
-  // ── Load on mount ─────────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -370,7 +359,6 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Onboarding complete ───────────────────────────────────────────────────
   const completeOnboarding = async ({ name, activeHabit, term, week }) => {
     const data = {
       name,
@@ -380,13 +368,12 @@ export default function App() {
       onboarded:          true,
       is_rest_week:       false,
       outdoor_minutes:    0,
-      outdoor_week_start: new Date().toISOString().split('T')[0],
+      outdoor_week_start: new Date().toISOString().split("T")[0],
     };
     await persistData(data);
     setScreen("home");
   };
 
-  // ── Save settings ─────────────────────────────────────────────────────────
   const saveSettings = async (updated) => {
     const newData = {
       ...userData,
@@ -398,47 +385,42 @@ export default function App() {
     };
     await persistData(newData);
   };
-  outdoorWeekStart: userData?.outdoor_week_start || null
 
-  // ── Save to meta (used by HomeScreen for outdoor minutes) ─────────────────
   const saveToMeta = async (updates) => {
     const newData = { ...userData, ...updates };
     await persistData(newData);
   };
 
-  // ── Loading ───────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--cream)" }}>
-        <p className="corm italic" style={{ fontSize: 18, color: "var(--ink-faint)" }}>Tending…</p>
+        <p className="corm italic" style={{ fontSize: 18, color: "var(--ink-faint)" }}>Tending...</p>
       </div>
     );
   }
 
-  // ── Not logged in ─────────────────────────────────────────────────────────
   if (!session) return <AuthScreen />;
 
-  // ── Onboarding ────────────────────────────────────────────────────────────
   if (!userData?.onboarded) {
     return <OnboardingScreen onComplete={completeOnboarding} />;
   }
 
-  // ── Main app ──────────────────────────────────────────────────────────────
   const ScreenComponent = SCREENS[screen] || HomeScreen;
   const showNav = NAV_SCREENS.includes(screen);
 
   const settings = {
-    name:           userData?.name         || "Friend",
-    activeHabit:    userData?.active_habit || "attention",
-    term:           userData?.term         || 1,
-    week:           userData?.week         || 1,
-    isRestWeek:     userData?.is_rest_week || false,
-    outdoorGoal:    15,
-    userId:         session.user.id,
-    outdoorMinutes: userData?.outdoor_minutes || 0,
+    name:             userData?.name              || "Friend",
+    activeHabit:      userData?.active_habit      || "attention",
+    term:             userData?.term              || 1,
+    week:             userData?.week              || 1,
+    isRestWeek:       userData?.is_rest_week      || false,
+    outdoorGoal:      15,
+    userId:           session.user.id,
+    outdoorMinutes:   userData?.outdoor_minutes   || 0,
+    outdoorWeekStart: userData?.outdoor_week_start || null,
     saveToMeta,
-    isPaid:         userData?.is_paid      || false,
-    students:       userData?.children     || [],
+    isPaid:           userData?.is_paid           || false,
+    students:         userData?.children          || [],
   };
 
   return (
@@ -446,9 +428,8 @@ export default function App() {
       <div key={screen} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
         <ScreenComponent onNavigate={id => setScreen(id)} settings={settings} onSave={saveSettings} />
       </div>
-      <div style={{ position: "fixed", bottom: showNav ? 90 : 22, right: 22, fontFamily: "'Playfair Display', serif", fontSize: 56, color: "var(--sage)", opacity: .05, pointerEvents: "none", userSelect: "none", lineHeight: 1 }}>❧</div>
+      <div style={{ position: "fixed", bottom: showNav ? 90 : 22, right: 22, fontFamily: "'Playfair Display', serif", fontSize: 56, color: "var(--sage)", opacity: .05, pointerEvents: "none", userSelect: "none", lineHeight: 1 }}>\u2767</div>
 
-      {/* Floating Quick Notes button */}
       <button onClick={() => setShowNotes(true)}
         style={{ position: "fixed", bottom: showNav ? 104 : 24, left: 22, width: 44, height: 44, borderRadius: "50%", background: "var(--cream)", border: "1.5px solid var(--sage-md)", boxShadow: "0 2px 12px rgba(0,0,0,.1)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, transition: "all .2s" }}>
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--sage)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
