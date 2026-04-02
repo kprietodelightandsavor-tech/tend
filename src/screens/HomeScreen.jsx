@@ -886,6 +886,14 @@ export default function HomeScreen({ onNavigate, settings }) {
       {/* Memory verse — prominent, at top */}
       <MemoryVerseCard weekNumber={settings?.week || 1} onNavigate={onNavigate} prominent={true} />
 
+      {/* Outdoor time tracker — right under the verse */}
+      <OutdoorTrackerCard
+        initialMinutes={settings?.outdoorMinutes || 0}
+        initialWeekStart={settings?.outdoorWeekStart || null}
+        saveToMeta={settings?.saveToMeta}
+        userId={settings?.userId || null}
+      />
+
       <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
 
       {isRestWeek ? (
@@ -902,14 +910,6 @@ export default function HomeScreen({ onNavigate, settings }) {
       )}
 
       <div style={{ height: 1, background: "var(--rule)", margin: "8px 0 20px" }} />
-
-      {/* Outdoor time tracker */}
-      <OutdoorTrackerCard
-        initialMinutes={settings?.outdoorMinutes || 0}
-        initialWeekStart={settings?.outdoorWeekStart || null}
-        saveToMeta={settings?.saveToMeta}
-        userId={settings?.userId || null}
-      />
 
       {/* Nature study — topic and today's step */}
       <NatureStudyCard onNavigate={onNavigate} today={today} />
