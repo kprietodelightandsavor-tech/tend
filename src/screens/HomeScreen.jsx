@@ -239,7 +239,7 @@ function NatureStudyCard({ onNavigate, today }) {
   );
 }
 
-function OutdoorTrackerCard({ initialMinutes, initialWeekStart, saveToMeta, userId }) {
+function OutdoorTrackerCard({ initialMinutes, initialWeekStart, saveToMeta, userId, onNavigate, today }) {
   const currentWeekStart = getWeekStart();
   const resolvedMinutes = (initialWeekStart && initialWeekStart === currentWeekStart)
     ? (initialMinutes || 0) : 0;
@@ -268,16 +268,23 @@ function OutdoorTrackerCard({ initialMinutes, initialWeekStart, saveToMeta, user
   const r = 28, circ = 2 * Math.PI * r, dash = circ * pct;
   const goalReached = hours >= OUTDOOR_GOAL_HOURS;
 
+  // Today's nature suggestion
+  const natureDay = NATURE_DAYS[today];
+  const current = (() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("tend_nature_current") || "null");
+      if (saved?.subject) return saved;
+    } catch {}
+    return { subject: "The Story of the Tadpole" };
+  })();
+
   return (
     <div className="card" style={{ marginBottom: 20 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
         <Icon.Sun />
         <p className="eyebrow" style={{ marginBottom: 0 }}>Weekly Outdoor Time</p>
       </div>
-      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", lineHeight: 1.6, marginBottom: 14 }}>
-        Track time spent outdoors this week — walks, nature study, free time outside, and any time in the open air.
-      </p>
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
         <div style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}>
           <svg width="64" height="64" style={{ transform: "rotate(-90deg)" }}>
             <circle cx="32" cy="32" r={r} fill="none" stroke="var(--rule)" strokeWidth="3.5"/>
@@ -309,6 +316,25 @@ function OutdoorTrackerCard({ initialMinutes, initialWeekStart, saveToMeta, user
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Nature study link */}
+      <div style={{ borderTop: "1px solid var(--rule)", paddingTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Icon.Leaf />
+          <div>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", margin: 0 }}>
+              {natureDay ? natureDay.step + " · " + natureDay.label : "Nature Study"}
+            </p>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", margin: 0 }}>
+              {current.subject}
+            </p>
+          </div>
+        </div>
+        <button onClick={() => onNavigate("naturestudy")}
+          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "var(--sage)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", flexShrink: 0 }}>
+          Open <Icon.Arrow />
+        </button>
       </div>
     </div>
   );
@@ -886,12 +912,14 @@ export default function HomeScreen({ onNavigate, settings }) {
       {/* Memory verse — prominent, at top */}
       <MemoryVerseCard weekNumber={settings?.week || 1} onNavigate={onNavigate} prominent={true} />
 
-      {/* Outdoor time tracker — right under the verse */}
+      {/* Outdoor tracker with leaf link to nature study */}
       <OutdoorTrackerCard
         initialMinutes={settings?.outdoorMinutes || 0}
         initialWeekStart={settings?.outdoorWeekStart || null}
         saveToMeta={settings?.saveToMeta}
         userId={settings?.userId || null}
+        onNavigate={onNavigate}
+        today={today}
       />
 
       <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
@@ -908,11 +936,6 @@ export default function HomeScreen({ onNavigate, settings }) {
           <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
         </>
       )}
-
-      <div style={{ height: 1, background: "var(--rule)", margin: "8px 0 20px" }} />
-
-      {/* Nature study — topic and today's step */}
-      <NatureStudyCard onNavigate={onNavigate} today={today} />
 
       {/* CM quote — closing benediction at bottom */}
       <div style={{ marginTop: 8, paddingTop: 20, borderTop: "1px solid var(--rule)" }}>
