@@ -1315,7 +1315,7 @@ export default function HabitScreen({ onNavigate, settings }) {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
             <span style={{ color: colors.text }}><HIcon /></span>
-            <h2 style={{ fontFamily: "'Playfair Display\'", serif", fontSize: 22, color: "var(--ink)" }}>{habit.name}</h2>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, color: "var(--ink)" }}>{habit.name}</h2>
           </div>
           <p className="corm italic" style={{ fontSize: 17, color: "var(--ink)", lineHeight: 1.85, marginBottom: 20 }}>
             {habit.desc}
