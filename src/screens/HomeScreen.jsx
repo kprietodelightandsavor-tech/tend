@@ -20,10 +20,12 @@ const Icon = {
   X:       () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
 };
 
-// ─── DAILY OFFSET ─────────────────────────────────────────────────────────────
+// DAILY OFFSET FEATURE
 const DAILY_OFFSET_KEY = "tend_daily_offset";
 
 function DailyOffsetControl({ offset, onOffsetChange }) {
+  useEffect(() => { console.log("DailyOffsetControl rendered with offset:", offset); }, [offset]);
+  
   const updateOffset = (minutes) => {
     const dateKey = new Date().toISOString().slice(0, 10);
     try {
@@ -39,9 +41,9 @@ function DailyOffsetControl({ offset, onOffsetChange }) {
   const options = [0, 15, 30, 45, 60];
 
   return (
-    <div style={{ padding: "14px 16px", background: offset > 0 ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${offset > 0 ? "#E0CBA8" : "var(--sage-md)"}`, borderRadius: 4, marginBottom: 20 }}>
+    <div style={{ padding: "16px", background: "#F5F3F1", border: "2px solid #D4C4B8", borderRadius: 6, marginBottom: 24, marginTop: 16 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: offset > 0 ? "var(--gold)" : "var(--sage)", marginBottom: 0 }}>
+        <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: offset > 0 ? "#A67C52" : "#8B8B7E", marginBottom: 0, fontWeight: 600 }}>
           {offset > 0 ? `Started ${offset}m late` : "On Schedule"}
         </p>
         {offset > 0 && (
@@ -70,22 +72,6 @@ function getAdjustedTime(timeString, offset) {
   return `${String(newHours).padStart(2, "0")}:${String(newMins).padStart(2, "0")}`;
 }
 
-// ─── PREMIUM MODAL ────────────────────────────────────────────────────────────
-export function PremiumModal({ onClose }) {
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
-      <div style={{ width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 52px", maxHeight: "92dvh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
-        <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
-        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 400, color: "var(--ink)" }}>Tend Premium</h2>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontStyle: "italic", color: "var(--ink-lt)", marginBottom: 24, lineHeight: 1.8 }}>Coming soon...</p>
-        <button onClick={onClose} style={{ width: "100%", background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
-          Close
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function HomeScreen({ onNavigate, settings }) {
   const hour       = new Date().getHours();
   const greeting   = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
@@ -110,36 +96,19 @@ export default function HomeScreen({ onNavigate, settings }) {
         {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
       </p>
       <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
-
+      
       <DailyOffsetControl offset={dailyOffset} onOffsetChange={setDailyOffset} />
+      
+      <div style={{ padding: "12px", background: "#fff3cd", border: "1px solid #ffc107", marginBottom: 16, textAlign: "center" }}>
+        <p style={{ margin: 0, fontSize: 12, color: "#856404" }}>Current offset: {dailyOffset}m</p>
+      </div>
 
       <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
         <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
 
-      <div style={{ marginTop: 40, marginBottom: 32, padding: "28px 20px 24px", borderTop: "1px solid var(--rule)", textAlign: "center" }}>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink-faint)", lineHeight: 2, marginBottom: 14 }}>
-          The Lord is my shepherd; I shall not want.<br />
-          He makes me lie down in green pastures.<br />
-          He leads me beside still waters.<br />
-          He restores my soul.<br />
-          He leads me in paths of righteousness for his name's sake.<br />
-          Even though I walk through the valley of the shadow of death,<br />
-          I will fear no evil, for you are with me;<br />
-          your rod and your staff, they comfort me.<br />
-          You prepare a table before me in the presence of my enemies;<br />
-          you anoint my head with oil; my cup overflows.<br />
-          Surely goodness and mercy shall follow me all the days of my life,<br />
-          and I shall dwell in the house of the Lord forever.
-        </p>
-        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".2em", textTransform: "uppercase", color: "var(--ink-faint)", opacity: 0.6 }}>
-          Psalm 23 · ESV
-        </p>
-        <div style={{ marginTop: 20, display: "flex", justifyContent: "center" }}>
-          <img src="/ds-logo.png" alt="Delight & Savor" style={{ width: 64, height: 64, opacity: 0.12 }} />
-        </div>
-      </div>
+      <p style={{ textAlign: "center", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)" }}>More coming soon...</p>
     </div>
   );
 }
