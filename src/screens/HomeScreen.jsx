@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, BEAUTY_LOOP, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { supabase } from "../lib/supabase";
 
@@ -20,91 +20,81 @@ const Icon = {
   X:       () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
 };
 
-// DAILY OFFSET FEATURE
+// DAILY OFFSET
 const DAILY_OFFSET_KEY = "tend_daily_offset";
 
-function DailyOffsetControl({ offset, onOffsetChange }) {
+// PREMIUM MODAL (needed by PlannerScreen)
+export function PremiumModal({ onClose }) {
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
+      <div style={{ width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 52px", maxHeight: "92dvh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+        <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
+        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 400, color: "var(--ink)" }}>Tend Premium</h2>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontStyle: "italic", color: "var(--ink-lt)", marginBottom: 24, lineHeight: 1.8 }}>Coming soon...</p>
+        <button onClick={onClose} style={{ width: "100%", background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function HomeScreen({ onNavigate, settings }) {
+  const hour       = new Date().getHours();
+  const greeting   = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+  const todayIdx   = new Date().getDay();
+  const today      = todayIdx === 0 ? "Sunday" : todayIdx === 6 ? "Saturday" : DAYS[todayIdx - 1];
+  const name       = settings?.name || "Friend";
+  const cmQuote    = CM_QUOTES[Math.floor(Math.random() * CM_QUOTES.length)];
+  
+  const [dailyOffset, setDailyOffset] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DAILY_OFFSET_KEY) || "{}");
+      const dateKey = new Date().toISOString().slice(0, 10);
+      return saved[dateKey] || 0;
+    } catch {
+      return 0;
+    }
+  });
+
   const updateOffset = (minutes) => {
     const dateKey = new Date().toISOString().slice(0, 10);
     try {
       const saved = JSON.parse(localStorage.getItem(DAILY_OFFSET_KEY) || "{}");
       const updated = { ...saved, [dateKey]: minutes };
       localStorage.setItem(DAILY_OFFSET_KEY, JSON.stringify(updated));
-      onOffsetChange(minutes);
+      setDailyOffset(minutes);
     } catch (e) {
       console.error("Error saving offset:", e);
     }
   };
 
-  const options = [0, 15, 30, 45, 60];
-
   return (
-    <div style={{ padding: "14px 16px", background: offset > 0 ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${offset > 0 ? "#E0CBA8" : "var(--sage-md)"}`, borderRadius: 4, marginBottom: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: offset > 0 ? "var(--gold)" : "var(--sage)", marginBottom: 0 }}>
-          {offset > 0 ? `Started ${offset}m late` : "On Schedule"}
+    <div className="screen">
+      <p className="eyebrow" style={{ marginBottom: 6 }}>
+        {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+      </p>
+      <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
+      
+      <div style={{ padding: "16px", background: "#F5F3F1", border: "2px solid #D4C4B8", borderRadius: 6, marginBottom: 24 }}>
+        <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "#8B8B7E", marginBottom: 12, fontWeight: 600 }}>
+          {dailyOffset > 0 ? `Started ${dailyOffset}m late` : "On Schedule"}
         </p>
-        {offset > 0 && (
-          <button onClick={() => updateOffset(0)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--gold)", textDecoration: "underline" }}>
-            Reset
-          </button>
-        )}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {[0, 15, 30, 45, 60].map((minutes) => (
+            <button key={minutes} onClick={() => updateOffset(minutes)} style={{ padding: "8px 14px", borderRadius: 20, border: `2px solid ${dailyOffset === minutes ? "#A67C52" : "#D4C4B8"}`, background: dailyOffset === minutes ? "#A67C52" : "white", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: dailyOffset === minutes ? "white" : "#8B8B7E", fontWeight: 600, transition: "all .2s" }}>
+              {minutes === 0 ? "On time" : `+${minutes}m`}
+            </button>
+          ))}
+        </div>
       </div>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-        {options.map((minutes) => (
-          <button key={minutes} onClick={() => updateOffset(minutes)} style={{ padding: "7px 12px", borderRadius: 20, border: `1.5px solid ${offset === minutes ? (offset > 0 ? "var(--gold)" : "var(--sage)") : "var(--rule)"}`, background: offset === minutes ? (offset > 0 ? "var(--gold)" : "var(--sage)") : "var(--cream)", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: offset === minutes ? "white" : "var(--ink-faint)", transition: "all .2s" }}>
-            {minutes === 0 ? "On time" : `+${minutes}m`}
-          </button>
-        ))}
+
+      <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
+        <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
+
+      <p style={{ textAlign: "center", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)" }}>More coming soon...</p>
     </div>
   );
 }
-
-function getAdjustedTime(timeString, offset) {
-  if (!timeString || offset === 0) return timeString;
-  const [hours, mins] = timeString.split(":").map(Number);
-  const blockMinutes = hours * 60 + mins + offset;
-  const newHours = Math.floor(blockMinutes / 60);
-  const newMins = blockMinutes % 60;
-  return `${String(newHours).padStart(2, "0")}:${String(newMins).padStart(2, "0")}`;
-}
-
-// REST OF FILE: Copy everything else from your original HomeScreen.jsx
-// MAKE THESE CHANGES ONLY:
-
-// 1. In the TodaySchedule function signature (around line 250), change:
-//    function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week }) {
-// TO:
-//    function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week, dailyOffset = 0 }) {
-
-// 2. In TodaySchedule where times are displayed (around line 380), change:
-//    <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{b.time}</span>
-// TO:
-//    <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{getAdjustedTime(b.time, dailyOffset)}</span>
-
-// 3. In HomeScreen main function, add state after other useState calls (around line 995):
-//    const [dailyOffset, setDailyOffset] = useState(() => {
-//      try {
-//        const saved = JSON.parse(localStorage.getItem(DAILY_OFFSET_KEY) || "{}");
-//        const dateKey = new Date().toISOString().slice(0, 10);
-//        return saved[dateKey] || 0;
-//      } catch {
-//        return 0;
-//      }
-//    });
-
-// 4. In HomeScreen return, add control right after greeting (around line 1035):
-//    <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
-//    <DailyOffsetControl offset={dailyOffset} onOffsetChange={setDailyOffset} />
-
-// 5. Update TodaySchedule call to pass offset (around line 1065):
-//    <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} wovenBeauty={wovenBeauty} week={settings?.week || 1} dailyOffset={dailyOffset} />
-
-// 6. DELETE THE DUPLICATE CHARLOTTE MASON QUOTE (around line 1041-1046)
-//    Keep only ONE copy of:
-//    <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
-//      <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
-//      <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
-//    </div>
-
