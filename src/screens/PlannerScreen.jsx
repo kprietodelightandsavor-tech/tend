@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react"
 import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { PremiumModal } from "./HomeScreen";
 
