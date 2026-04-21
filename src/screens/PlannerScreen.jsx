@@ -1,4 +1,3 @@
-import { BeautyLoopAnchorEditor } from "../components/BeautyLoopAnchorEditor";
 import { useState, useRef } from "react";
 import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { PremiumModal } from "./HomeScreen";
@@ -298,6 +297,7 @@ function WeekGrid({ schedule, onDayTap, todayDay }) {
   );
 }
 
+import { BeautyLoopAnchorEditor } from "../components/BeautyLoopAnchorEditor";
 export default function PlannerScreen({ settings }) {
   const isPaid = settings?.isPaid || false;
   const todayIdx = new Date().getDay();
