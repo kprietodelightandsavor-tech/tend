@@ -17,6 +17,7 @@ import NatureStudyScreen from "./screens/NatureStudyScreen";
 import TeachingLogScreen from "./screens/TeachingLogScreen";
 import AnnualReportScreen from "./screens/AnnualReportScreen";
 import BooksScreen from "./screens/BooksScreen";
+import BibleReadingScreen from "./screens/BibleReadingScreen";
 
 const NAV_SCREENS = ["home", "planner", "narration", "menu"];
 
@@ -208,6 +209,7 @@ const SCREENS = {
   teachinglog:  TeachingLogScreen,
   annualreport: AnnualReportScreen,
   books:        BooksScreen,
+  scripture:    BibleReadingScreen,
 };
 
 const STORAGE_KEY = 'tend_user';
