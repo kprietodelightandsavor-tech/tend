@@ -21,6 +21,7 @@ const Icon = {
 };
 
 // DAILY OFFSET FEATURE
+// DAILY OFFSET FEATURE
 const DAILY_OFFSET_KEY = "tend_daily_offset";
 
 function DailyOffsetControl({ offset, onOffsetChange }) {
@@ -70,16 +71,50 @@ function getAdjustedTime(timeString, offset) {
   return `${String(newHours).padStart(2, "0")}:${String(newMins).padStart(2, "0")}`;
 }
 
+  const options = [0, 15, 30, 45, 60];
+
+  return (
+    <div style={{ padding: "14px 16px", background: offset > 0 ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${offset > 0 ? "#E0CBA8" : "var(--sage-md)"}`, borderRadius: 4, marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: offset > 0 ? "var(--gold)" : "var(--sage)", marginBottom: 0 }}>
+          {offset > 0 ? `Started ${offset}m late` : "On Schedule"}
+        </p>
+        {offset > 0 && (
+          <button onClick={() => updateOffset(0)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--gold)", textDecoration: "underline" }}>
+            Reset
+          </button>
+        )}
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {options.map((minutes) => (
+          <button key={minutes} onClick={() => updateOffset(minutes)} style={{ padding: "7px 12px", borderRadius: 20, border: `1.5px solid ${offset === minutes ? (offset > 0 ? "var(--gold)" : "var(--sage)") : "var(--rule)"}`, background: offset === minutes ? (offset > 0 ? "var(--gold)" : "var(--sage)") : "var(--cream)", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: offset === minutes ? "white" : "var(--ink-faint)", transition: "all .2s" }}>
+            {minutes === 0 ? "On time" : `+${minutes}m`}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function getAdjustedTime(timeString, offset) {
+  if (!timeString || offset === 0) return timeString;
+  const [hours, mins] = timeString.split(":").map(Number);
+  const blockMinutes = hours * 60 + mins + offset;
+  const newHours = Math.floor(blockMinutes / 60);
+  const newMins = blockMinutes % 60;
+  return `${String(newHours).padStart(2, "0")}:${String(newMins).padStart(2, "0")}`;
+}
+
 // REST OF FILE: Copy everything else from your original HomeScreen.jsx
 // MAKE THESE CHANGES ONLY:
 
 // 1. In the TodaySchedule function signature (around line 250), change:
-//    function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week }) {
+//    function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week, dailyOffset = 0 }) {
 // TO:
 //    function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week, dailyOffset = 0 }) {
 
 // 2. In TodaySchedule where times are displayed (around line 380), change:
-//    <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{b.time}</span>
+//    <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{getAdjustedTime(b.time, dailyOffset)}</span>
 // TO:
 //    <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{getAdjustedTime(b.time, dailyOffset)}</span>
 
