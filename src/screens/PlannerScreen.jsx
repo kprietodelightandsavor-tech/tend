@@ -1,3 +1,4 @@
+import { BeautyLoopAnchorEditor } from "../components/BeautyLoopAnchorEditor";
 import { useState, useRef } from "react";
 import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { PremiumModal } from "./HomeScreen";
@@ -473,6 +474,9 @@ export default function PlannerScreen({ settings }) {
                       <Icon.Copy /> Copy {activeDay}
                     </button>
                   </div>
+                  {/* BEAUTY LOOP ANCHOR EDITOR */}
+<BeautyLoopAnchorEditor />
+<div className="rule" style={{ margin: "0 0 20px" }} />
                   <BeautyLoopSection day={activeDay} />
                   <div className="rule" style={{ margin: "0 0 20px" }} />
                   <button onClick={() => setAddingAfterIdx(-1)}
@@ -511,7 +515,7 @@ export default function PlannerScreen({ settings }) {
           )}
         </>
       )}
-
+    
       {editingBlock      && <EditBlockSheet block={editingBlock} onSave={saveBlock} onDelete={deleteBlock} onClose={() => setEditingBlock(null)} />}
       {addingAfterIdx !== null && <AddBlockSheet onSave={addBlock} onClose={() => setAddingAfterIdx(null)} />}
       {copyingDay        && <CopyDaySheet fromDay={activeDay} onCopy={copyDay} onClose={() => setCopyingDay(false)} />}
