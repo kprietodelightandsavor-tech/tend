@@ -297,7 +297,6 @@ function WeekGrid({ schedule, onDayTap, todayDay }) {
   );
 }
 
-import { BeautyLoopAnchorEditor } from "../components/BeautyLoopAnchorEditor";
 export default function PlannerScreen({ settings }) {
   const isPaid = settings?.isPaid || false;
   const todayIdx = new Date().getDay();
@@ -474,9 +473,7 @@ export default function PlannerScreen({ settings }) {
                       <Icon.Copy /> Copy {activeDay}
                     </button>
                   </div>
-                  {/* BEAUTY LOOP ANCHOR EDITOR */}
-<BeautyLoopAnchorEditor />
-<div className="rule" style={{ margin: "0 0 20px" }} />
+                  
                   <BeautyLoopSection day={activeDay} />
                   <div className="rule" style={{ margin: "0 0 20px" }} />
                   <button onClick={() => setAddingAfterIdx(-1)}
