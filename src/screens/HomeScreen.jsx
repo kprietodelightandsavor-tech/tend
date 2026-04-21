@@ -1064,10 +1064,6 @@ export default function HomeScreen({ onNavigate, settings }) {
       <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
       <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
     </div>
-      <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
-        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
-        <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
-      </div>
 
       <NatureOutdoorCard
         onNavigate={onNavigate}
