@@ -1030,7 +1030,7 @@ export default function HomeScreen({ onNavigate, settings }) {
       ) : (
         <>
           <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} wovenBeauty={wovenBeauty} week={settings?.week || 1} />
-          {!wovenBeauty && <BeautyLoopHome today={today} week={settings?.week || 1} />}
+          <BeautyLoopHome today={today} />
           <MotherCulture />
           <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
         </>
