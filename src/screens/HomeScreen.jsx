@@ -152,6 +152,56 @@ export function PremiumModal({ onClose }) {
   );
 }
 
+// ─── DAILY OFFSET ─────────────────────────────────────────────────────────────
+const DAILY_OFFSET_KEY = "tend_daily_offset";
+
+function DailyOffsetControl({ offset, onOffsetChange }) {
+  const updateOffset = (minutes) => {
+    const dateKey = new Date().toISOString().slice(0, 10);
+    try {
+      const saved = JSON.parse(localStorage.getItem(DAILY_OFFSET_KEY) || "{}");
+      const updated = { ...saved, [dateKey]: minutes };
+      localStorage.setItem(DAILY_OFFSET_KEY, JSON.stringify(updated));
+      onOffsetChange(minutes);
+    } catch (e) {
+      console.error("Error saving offset:", e);
+    }
+  };
+
+  const options = [0, 15, 30, 45, 60];
+
+  return (
+    <div style={{ padding: "14px 16px", background: offset > 0 ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${offset > 0 ? "#E0CBA8" : "var(--sage-md)"}`, borderRadius: 4, marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: offset > 0 ? "var(--gold)" : "var(--sage)", marginBottom: 0 }}>
+          {offset > 0 ? `Started ${offset}m late` : "On Schedule"}
+        </p>
+        {offset > 0 && (
+          <button onClick={() => updateOffset(0)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--gold)", textDecoration: "underline" }}>
+            Reset
+          </button>
+        )}
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {options.map((minutes) => (
+          <button key={minutes} onClick={() => updateOffset(minutes)} style={{ padding: "7px 12px", borderRadius: 20, border: `1.5px solid ${offset === minutes ? (offset > 0 ? "var(--gold)" : "var(--sage)") : "var(--rule)"}`, background: offset === minutes ? (offset > 0 ? "var(--gold)" : "var(--sage)") : "var(--cream)", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: offset === minutes ? "white" : "var(--ink-faint)", transition: "all .2s" }}>
+            {minutes === 0 ? "On time" : `+${minutes}m`}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function getAdjustedTime(timeString, offset) {
+  if (!timeString || offset === 0) return timeString;
+  const [hours, mins] = timeString.split(":").map(Number);
+  const blockMinutes = hours * 60 + mins + offset;
+  const newHours = Math.floor(blockMinutes / 60);
+  const newMins = blockMinutes % 60;
+  return `${String(newHours).padStart(2, "0")}:${String(newMins).padStart(2, "0")}`;
+}
+
 // ─── OUTDOOR TRACKER ──────────────────────────────────────────────────────────
 const OUTDOOR_GOAL_HOURS = 15;
 
@@ -480,10 +530,11 @@ async function saveDailyState(userId, date, state) {
 
 // ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
 const SCHEDULE_KEY = "tend_schedule_state";
+const BEAUTY_KEY = "tend_beauty_state";
 
 const SKIP_SUBJECTS = ["Rise & Shine", "Lunch", "Outdoor Break", "Afternoon Pursuits", "House Reset & Animal Chores", "Tuesday Rhythm", "Tennis"];
 
-function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week }) {
+function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week, dailyOffset }) {
   const dateKey = new Date().toISOString().slice(0, 10);
   const userId  = settings?.userId;
 
@@ -710,6 +761,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
         const blockColor = getBlockColor(b.subject);
         const isRise = b.riseShine === true;
         const wovenItem = wovenBeauty ? getBeautyForBlock(b.subject, today, week || 1) : null;
+        const displayTime = getAdjustedTime(b.time, dailyOffset);
         return (
           <div key={b.id}>
             {/* Beauty mini card — woven before anchor subject */}
@@ -726,7 +778,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
               onMouseDown={() => { if (b.status === "pending") startLP(b.id); }} onMouseUp={cancelLP} onMouseLeave={cancelLP}
               style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px", cursor: b.status !== "skipped" ? "pointer" : "default", opacity: isDone ? 0.35 : isSkipped ? 0.45 : 1, transition: "opacity .4s ease" }}>
               <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: isDone || isSkipped ? "var(--rule)" : blockColor, marginRight: 12, flexShrink: 0, transition: "background .3s ease", minHeight: 36 }} />
-              <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{b.time}</span>
+              <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{displayTime}</span>
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: 16, color: isDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease" }}>{b.subject}</p>
                 {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped · tap to restore</p>}
@@ -1047,6 +1099,16 @@ export default function HomeScreen({ onNavigate, settings }) {
     try { return localStorage.getItem(WOVEN_KEY) === "true"; } catch { return false; }
   });
 
+  const [dailyOffset, setDailyOffset] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DAILY_OFFSET_KEY) || "{}");
+      const dateKey = new Date().toISOString().slice(0, 10);
+      return saved[dateKey] || 0;
+    } catch {
+      return 0;
+    }
+  });
+
   const toggleWoven = () => {
     const next = !wovenBeauty;
     setWovenBeauty(next);
@@ -1060,10 +1122,8 @@ export default function HomeScreen({ onNavigate, settings }) {
       </p>
       <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
     
-    <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
-      <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
-      <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
-    </div>
+      <DailyOffsetControl offset={dailyOffset} onOffsetChange={setDailyOffset} />
+
       <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
         <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
@@ -1085,7 +1145,7 @@ export default function HomeScreen({ onNavigate, settings }) {
         <WeekendRhythmHome today={today} week={settings?.week || 1} />
       ) : (
         <>
-          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} wovenBeauty={wovenBeauty} week={settings?.week || 1} />
+          <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} wovenBeauty={wovenBeauty} week={settings?.week || 1} dailyOffset={dailyOffset} />
           <BeautyLoopHome today={today} />
           <MotherCulture />
           <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
