@@ -118,7 +118,28 @@ export default function HomeScreen({ onNavigate, settings }) {
         <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
 
-      <p style={{ textAlign: "center", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)" }}>More coming soon...</p>
+      <div style={{ marginTop: 40, marginBottom: 32, padding: "28px 20px 24px", borderTop: "1px solid var(--rule)", textAlign: "center" }}>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink-faint)", lineHeight: 2, marginBottom: 14 }}>
+          The Lord is my shepherd; I shall not want.<br />
+          He makes me lie down in green pastures.<br />
+          He leads me beside still waters.<br />
+          He restores my soul.<br />
+          He leads me in paths of righteousness for his name's sake.<br />
+          Even though I walk through the valley of the shadow of death,<br />
+          I will fear no evil, for you are with me;<br />
+          your rod and your staff, they comfort me.<br />
+          You prepare a table before me in the presence of my enemies;<br />
+          you anoint my head with oil; my cup overflows.<br />
+          Surely goodness and mercy shall follow me all the days of my life,<br />
+          and I shall dwell in the house of the Lord forever.
+        </p>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".2em", textTransform: "uppercase", color: "var(--ink-faint)", opacity: 0.6 }}>
+          Psalm 23 · ESV
+        </p>
+        <div style={{ marginTop: 20, display: "flex", justifyContent: "center" }}>
+          <img src="/ds-logo.png" alt="Delight & Savor" style={{ width: 64, height: 64, opacity: 0.12 }} />
+        </div>
+      </div>
     </div>
   );
 }
