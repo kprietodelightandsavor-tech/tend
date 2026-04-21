@@ -763,9 +763,55 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
 }
 
 // ─── BEAUTY LOOP HOME ─────────────────────────────────────────────────────────
-// Add this to HomeScreen.jsx to replace the existing BeautyLoopHome function
+// REPLACE THE ENTIRE BeautyLoopHome FUNCTION with this version
+// This has built-in defaults so it always shows, even if localStorage is empty
 
 const BEAUTY_LOOP_STORAGE_KEY = "tend_beauty_loops_custom";
+
+const BEAUTY_LOOP_DEFAULTS = {
+  Monday: {
+    title: "Artist Study",
+    description: "Put one print on the table. Look for 2–3 minutes in silence. Narrate what you see. Done.",
+    rotation: "6-week rotation per artist",
+    note: "",
+  },
+  Tuesday: {
+    title: "Poetry",
+    description: "One poem by your term's poet. Read once slowly. Read again. Don't analyze. Just receive.",
+    rotation: "One per term",
+    note: "",
+  },
+  Wednesday: {
+    title: "Composer / Hymn Study",
+    description: "Play one piece while the kids draw or sip tea. That's the whole lesson.",
+    rotation: "6-week rotation per composer",
+    note: "",
+  },
+  Thursday: {
+    title: "Co-op Day",
+    description: "No beauty loop needed.",
+    rotation: "",
+    note: "",
+  },
+  Friday: {
+    title: "Citizenship / Biography OR Folk Song",
+    description: "Alternate weeks, or pick one per term.",
+    rotation: "",
+    note: "",
+  },
+  Saturday: {
+    title: "Optional",
+    description: "Rest or revisit something from the week.",
+    rotation: "",
+    note: "",
+  },
+  Sunday: {
+    title: "Optional",
+    description: "Sabbath — no school work.",
+    rotation: "",
+    note: "",
+  },
+};
 
 function BeautyLoopHome({ today }) {
   const [loop, setLoop] = useState(null);
@@ -775,17 +821,21 @@ function BeautyLoopHome({ today }) {
   // Load custom loop and completion state on mount
   useEffect(() => {
     try {
-      // Load custom loop for today
+      // Load custom loop for today from localStorage
       const customLoops = JSON.parse(localStorage.getItem(BEAUTY_LOOP_STORAGE_KEY) || "{}");
       const todayLoop = customLoops[today];
-      setLoop(todayLoop || null);
+      
+      // Use custom if it exists, otherwise use default
+      const loopToUse = todayLoop || BEAUTY_LOOP_DEFAULTS[today];
+      setLoop(loopToUse);
 
       // Load completion state
       const completionKey = `tend_beauty_loop_${today}_${dateKey}`;
       const completionState = localStorage.getItem(completionKey) === "true";
       setDone(completionState);
     } catch (e) {
-      setLoop(null);
+      // Fallback to default if any error
+      setLoop(BEAUTY_LOOP_DEFAULTS[today] || null);
       setDone(false);
     }
   }, [today]);
@@ -803,10 +853,11 @@ function BeautyLoopHome({ today }) {
     <div
       onClick={toggle}
       style={{
-        marginBottom: 28,
+        marginBottom: 24,
+        marginTop: 20,
         padding: "16px 18px",
-        background: done ? "var(--sage-bg)" : "var(--cream)",
-        border: `1px solid ${done ? "var(--sage)" : "var(--rule)"}`,
+        background: done ? "var(--sage-bg)" : "#F5F3F1",
+        border: `1px solid ${done ? "var(--sage-md)" : "#E8DCD3"}`,
         borderRadius: 4,
         cursor: "pointer",
         opacity: done ? 0.6 : 1,
@@ -818,7 +869,7 @@ function BeautyLoopHome({ today }) {
             width: 18,
             height: 18,
             borderRadius: "50%",
-            border: `1.5px solid ${done ? "var(--sage)" : "var(--rule)"}`,
+            border: `1.5px solid ${done ? "var(--sage)" : "#D4C4B8"}`,
             background: done ? "var(--sage)" : "none",
             display: "flex",
             alignItems: "center",
@@ -837,9 +888,9 @@ function BeautyLoopHome({ today }) {
           style={{
             marginBottom: 0,
             textDecoration: done ? "line-through" : "none",
-            color: done ? "var(--ink-faint)" : undefined,
+            color: done ? "var(--ink-faint)" : "var(--ink)",
           }}>
-          Beauty · {today}
+          Beauty Loop
         </p>
       </div>
 
