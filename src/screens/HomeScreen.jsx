@@ -94,7 +94,21 @@ export default function HomeScreen({ onNavigate, settings }) {
         <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
 
-      <p style={{ textAlign: "center", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)" }}>More coming soon...</p>
+      <p style={{ marginBottom: 28, padding: "20px", background: "var(--sage-bg)", borderRadius: 4, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.7, textAlign: "center" }}>
+        Rest, nature, books, living literature, beauty, and connection — the rhythm of a Charlotte Mason home awaits you.
+      </p>
+
+      <div style={{ marginTop: 40, marginBottom: 32, padding: "28px 20px 24px", borderTop: "1px solid var(--rule)", textAlign: "center" }}>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink-faint)", lineHeight: 2, marginBottom: 14 }}>
+          The Lord is my shepherd; I shall not want.<br />
+          He makes me lie down in green pastures.<br />
+          He leads me beside still waters.<br />
+          He restores my soul.
+        </p>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".2em", textTransform: "uppercase", color: "var(--ink-faint)", opacity: 0.6 }}>
+          Psalm 23 · ESV
+        </p>
+      </div>
     </div>
   );
 }
