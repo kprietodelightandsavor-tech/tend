@@ -763,51 +763,134 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week 
 }
 
 // ─── BEAUTY LOOP HOME ─────────────────────────────────────────────────────────
-const BEAUTY_KEY = "tend_beauty_state";
+// Add this to HomeScreen.jsx to replace the existing BeautyLoopHome function
 
-function BeautyLoopHome({ today, week }) {
-  const items = getDayBeautyItems(today, week || 1);
+const BEAUTY_LOOP_STORAGE_KEY = "tend_beauty_loops_custom";
+
+function BeautyLoopHome({ today }) {
+  const [loop, setLoop] = useState(null);
+  const [done, setDone] = useState(false);
   const dateKey = new Date().toISOString().slice(0, 10);
-  const [done, setDone] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(BEAUTY_KEY) || "null");
-      if (saved?.date === dateKey && saved?.day === today) return saved.done;
-    } catch {}
-    return {};
-  });
-  if (items.length === 0) return null;
-  const allDone = items.every(l => done[l.id]);
 
-  const toggle = (id) => {
-    const next = { ...done, [id]: !done[id] };
+  // Load custom loop and completion state on mount
+  useEffect(() => {
+    try {
+      // Load custom loop for today
+      const customLoops = JSON.parse(localStorage.getItem(BEAUTY_LOOP_STORAGE_KEY) || "{}");
+      const todayLoop = customLoops[today];
+      setLoop(todayLoop || null);
+
+      // Load completion state
+      const completionKey = `tend_beauty_loop_${today}_${dateKey}`;
+      const completionState = localStorage.getItem(completionKey) === "true";
+      setDone(completionState);
+    } catch (e) {
+      setLoop(null);
+      setDone(false);
+    }
+  }, [today]);
+
+  if (!loop) return null;
+
+  const toggle = () => {
+    const next = !done;
     setDone(next);
-    try { localStorage.setItem(BEAUTY_KEY, JSON.stringify({ date: dateKey, day: today, done: next })); } catch {}
+    const completionKey = `tend_beauty_loop_${today}_${dateKey}`;
+    localStorage.setItem(completionKey, String(next));
   };
+
   return (
-    <div style={{ marginBottom: 28, background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 4, padding: "16px 18px", opacity: allDone ? 0.6 : 1, transition: "opacity .3s" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-        <Icon.Leaf />
-        <p className="eyebrow" style={{ marginBottom: 0, textDecoration: allDone ? "line-through" : "none", color: allDone ? "var(--ink-faint)" : undefined }}>Beauty Loop · {today}</p>
+    <div
+      onClick={toggle}
+      style={{
+        marginBottom: 28,
+        padding: "16px 18px",
+        background: done ? "var(--sage-bg)" : "var(--cream)",
+        border: `1px solid ${done ? "var(--sage)" : "var(--rule)"}`,
+        borderRadius: 4,
+        cursor: "pointer",
+        opacity: done ? 0.6 : 1,
+        transition: "all .3s",
+      }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <div
+          style={{
+            width: 18,
+            height: 18,
+            borderRadius: "50%",
+            border: `1.5px solid ${done ? "var(--sage)" : "var(--rule)"}`,
+            background: done ? "var(--sage)" : "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            transition: "all .2s",
+          }}>
+          {done && (
+            <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+        </div>
+        <p
+          className="eyebrow"
+          style={{
+            marginBottom: 0,
+            textDecoration: done ? "line-through" : "none",
+            color: done ? "var(--ink-faint)" : undefined,
+          }}>
+          Beauty · {today}
+        </p>
       </div>
-      {items.map((l, i) => {
-        const checked = !!done[l.id];
-        return (
-          <div key={l.id} onClick={() => toggle(l.id)}
-            style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 0", borderBottom: i < items.length - 1 ? "1px solid rgba(169,183,134,.25)" : "none", cursor: "pointer", opacity: checked ? 0.45 : 1, transition: "opacity .25s" }}>
-            <div style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${checked ? "var(--sage)" : "var(--sage-md)"}`, background: checked ? "var(--sage)" : "none", flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s" }}>
-              {checked && <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
-            </div>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", textDecoration: checked ? "line-through" : "none", textDecorationColor: "var(--sage-md)", marginBottom: l.note ? 4 : 0 }}>{l.label}</p>
-              {l.note && !checked && <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.65 }}>{l.note}</p>}
-            </div>
-          </div>
-        );
-      })}
+
+      <p
+        style={{
+          fontSize: 14,
+          fontFamily: "'Playfair Display', serif",
+          color: "var(--ink)",
+          margin: "0 0 6px 0",
+          textDecoration: done ? "line-through" : "none",
+          textDecorationColor: "var(--sage-md)",
+        }}>
+        {loop.title}
+      </p>
+
+      {!done && (
+        <>
+          <p
+            style={{
+              fontSize: 13,
+              fontFamily: "'Cormorant Garamond', serif",
+              fontStyle: "italic",
+              color: "var(--ink-faint)",
+              lineHeight: 1.6,
+              margin: "0 0 8px 0",
+            }}>
+            {loop.description}
+          </p>
+
+          {loop.rotation && (
+            <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", color: "var(--sage)", margin: "0 0 6px 0" }}>
+              {loop.rotation}
+            </p>
+          )}
+
+          {loop.note && (
+            <p style={{ fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--sage)" }}>
+              ✦ {loop.note}
+            </p>
+          )}
+        </>
+      )}
+
+      {done && (
+        <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--sage)", marginTop: 2 }}>
+          Done · tap to undo
+        </p>
+      )}
     </div>
   );
 }
-
 // ─── MOTHER CULTURE ───────────────────────────────────────────────────────────
 const MOTHER_KEY = "tend_mother_state";
 
