@@ -1,6 +1,9 @@
+// Add this to your PlannerScreen or Settings area
+// Lets you pick which block gets the beauty loop that day
+
 import { useState, useEffect } from "react";
 
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const BEAUTY_ANCHOR_KEY = "tend_beauty_anchor";
 
 const BEAUTY_LOOP_DEFAULTS = {
   Monday: {
@@ -47,87 +50,73 @@ const BEAUTY_LOOP_DEFAULTS = {
   },
 };
 
-const BEAUTY_LOOP_STORAGE_KEY = "tend_beauty_loops_custom";
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-export default function BeautyLoopEditor() {
+export function BeautyLoopAnchorEditor() {
+  const [anchors, setAnchors] = useState({});
   const [selectedDay, setSelectedDay] = useState("Monday");
-  const [loops, setLoops] = useState({});
+  const [availableSubjects, setAvailableSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load from localStorage on mount
+  // Load anchors from localStorage on mount
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem(BEAUTY_LOOP_STORAGE_KEY) || "{}");
-      // Merge with defaults so all days are always present
-      const merged = { ...BEAUTY_LOOP_DEFAULTS };
-      Object.keys(saved).forEach((day) => {
-        merged[day] = { ...BEAUTY_LOOP_DEFAULTS[day], ...saved[day] };
-      });
-      setLoops(merged);
+      const saved = JSON.parse(localStorage.getItem(BEAUTY_ANCHOR_KEY) || "{}");
+      setAnchors(saved);
     } catch (e) {
-      setLoops(BEAUTY_LOOP_DEFAULTS);
+      setAnchors({});
     }
     setLoading(false);
   }, []);
 
-  // Save to localStorage
-  const saveToStorage = (newLoops) => {
+  // Get available subjects for the selected day from DAY_SCHEDULE
+  useEffect(() => {
+    // Import DAY_SCHEDULE from seed.js
+    // For now, we'll use a simple approach: show common subjects
+    const subjects = [
+      "Rise & Shine",
+      "Living Literature & Language",
+      "Math",
+      "History & Geography",
+      "Science",
+      "Outdoor Break",
+      "Afternoon Pursuits",
+    ];
+    setAvailableSubjects(subjects);
+  }, [selectedDay]);
+
+  // Save anchor to localStorage
+  const saveAnchor = (day, subject) => {
+    const newAnchors = { ...anchors, [day]: subject };
+    setAnchors(newAnchors);
     try {
-      localStorage.setItem(BEAUTY_LOOP_STORAGE_KEY, JSON.stringify(newLoops));
+      localStorage.setItem(BEAUTY_ANCHOR_KEY, JSON.stringify(newAnchors));
     } catch (e) {
-      console.error("Error saving to localStorage:", e);
+      console.error("Error saving anchor:", e);
     }
   };
 
-  const updateDay = (day, field, value) => {
-    const newLoops = {
-      ...loops,
-      [day]: {
-        ...loops[day],
-        [field]: value,
-      },
-    };
-    setLoops(newLoops);
-    saveToStorage(newLoops);
+  // Remove anchor for a day
+  const removeAnchor = (day) => {
+    const newAnchors = { ...anchors };
+    delete newAnchors[day];
+    setAnchors(newAnchors);
+    try {
+      localStorage.setItem(BEAUTY_ANCHOR_KEY, JSON.stringify(newAnchors));
+    } catch (e) {
+      console.error("Error removing anchor:", e);
+    }
   };
 
-  const resetToDefaults = () => {
-    setLoops(BEAUTY_LOOP_DEFAULTS);
-    localStorage.removeItem(BEAUTY_LOOP_STORAGE_KEY);
-  };
+  const currentAnchor = anchors[selectedDay];
 
   if (loading) {
-    return (
-      <div style={{ padding: "20px", textAlign: "center" }}>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)" }}>
-          Loading…
-        </p>
-      </div>
-    );
+    return <p style={{ padding: "20px", textAlign: "center" }}>Loading…</p>;
   }
-
-  const current = loops[selectedDay] || {};
 
   return (
     <div style={{ padding: "0 18px 28px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <p className="eyebrow" style={{ marginBottom: 0 }}>Beauty Loop · Weekly Rhythm</p>
-        <button
-          onClick={resetToDefaults}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            fontSize: 10,
-            fontFamily: "'Lato', sans-serif",
-            letterSpacing: ".08em",
-            textTransform: "uppercase",
-            color: "var(--ink-faint)",
-            textDecoration: "underline",
-          }}>
-          Reset
-        </button>
-      </div>
+      <p className="eyebrow" style={{ marginBottom: 16 }}>Beauty Loop · Where Does It Live?</p>
 
       {/* Day Pills */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
@@ -153,142 +142,100 @@ export default function BeautyLoopEditor() {
         ))}
       </div>
 
-      {/* Current Day Editor */}
-      <div style={{ padding: "16px", background: "var(--sage-bg)", borderRadius: 3, border: "1px solid var(--sage-md)" }}>
-        <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 12 }}>
-          {selectedDay}
-        </p>
-
-        {/* Title */}
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", display: "block", marginBottom: 6 }}>
-            Enrichment Title
-          </label>
-          <input
-            type="text"
-            value={current.title || ""}
-            onChange={(e) => updateDay(selectedDay, "title", e.target.value)}
-            style={{
-              width: "100%",
-              background: "var(--cream)",
-              border: "1px solid var(--rule)",
-              borderRadius: 2,
-              padding: "8px 10px",
-              fontFamily: "'Playfair Display', serif",
-              fontSize: 14,
-              color: "var(--ink)",
-              outline: "none",
-              boxSizing: "border-box",
-            }}
-          />
-        </div>
-
-        {/* Description */}
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", display: "block", marginBottom: 6 }}>
-            How to Do It
-          </label>
-          <textarea
-            value={current.description || ""}
-            onChange={(e) => updateDay(selectedDay, "description", e.target.value)}
-            rows={3}
-            style={{
-              width: "100%",
-              background: "var(--cream)",
-              border: "1px solid var(--rule)",
-              borderRadius: 2,
-              padding: "8px 10px",
-              fontFamily: "'Cormorant Garamond', serif",
-              fontStyle: "italic",
-              fontSize: 13,
-              color: "var(--ink-lt)",
-              outline: "none",
-              boxSizing: "border-box",
-              resize: "vertical",
-            }}
-          />
-        </div>
-
-        {/* Rotation */}
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", display: "block", marginBottom: 6 }}>
-            Rotation / Duration
-          </label>
-          <input
-            type="text"
-            value={current.rotation || ""}
-            onChange={(e) => updateDay(selectedDay, "rotation", e.target.value)}
-            placeholder="e.g., 6-week rotation per artist"
-            style={{
-              width: "100%",
-              background: "var(--cream)",
-              border: "1px solid var(--rule)",
-              borderRadius: 2,
-              padding: "8px 10px",
-              fontFamily: "'Cormorant Garamond', serif",
-              fontStyle: "italic",
-              fontSize: 12,
-              color: "var(--ink-lt)",
-              outline: "none",
-              boxSizing: "border-box",
-            }}
-          />
-        </div>
-
-        {/* Personal Notes */}
-        <div>
-          <label style={{ fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", display: "block", marginBottom: 6 }}>
-            Your Notes (What You're Studying This Week)
-          </label>
-          <textarea
-            value={current.note || ""}
-            onChange={(e) => updateDay(selectedDay, "note", e.target.value)}
-            placeholder="e.g., Monet's water lilies, Mary Oliver poems, Debussy Clair de Lune..."
-            rows={2}
-            style={{
-              width: "100%",
-              background: "var(--cream)",
-              border: "1px solid var(--rule)",
-              borderRadius: 2,
-              padding: "8px 10px",
-              fontFamily: "'Cormorant Garamond', serif",
-              fontStyle: "italic",
-              fontSize: 13,
-              color: "var(--ink)",
-              outline: "none",
-              boxSizing: "border-box",
-              resize: "vertical",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Preview */}
-      <div style={{ marginTop: 20, padding: "14px", background: "var(--cream)", borderRadius: 3, border: "1px solid var(--rule)" }}>
-        <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 10 }}>
-          How It Appears on Home Screen
-        </p>
-        <p style={{ fontSize: 16, fontFamily: "'Playfair Display', serif", color: "var(--ink)", margin: "0 0 6px 0" }}>
-          {current.title}
-        </p>
-        <p style={{ fontSize: 13, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.6, margin: "0 0 8px 0" }}>
-          {current.description}
-        </p>
-        {current.rotation && (
-          <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", color: "var(--sage)", margin: "0 0 6px 0" }}>
-            {current.rotation}
+      {/* Current Selection */}
+      {currentAnchor ? (
+        <div style={{ padding: "14px 16px", background: "var(--sage-bg)", borderRadius: 3, border: "1px solid var(--sage-md)", marginBottom: 20 }}>
+          <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 8 }}>
+            {selectedDay}
           </p>
-        )}
-        {current.note && (
-          <p style={{ fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--sage)", margin: 0 }}>
-            ✦ {current.note}
+          <p style={{ fontSize: 14, fontFamily: "'Playfair Display', serif", color: "var(--ink)", margin: "0 0 10px 0" }}>
+            {BEAUTY_LOOP_DEFAULTS[selectedDay]?.title}
           </p>
-        )}
+          <p style={{ fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", margin: "0 0 10px 0", lineHeight: 1.5 }}>
+            Appears during: <strong>{currentAnchor}</strong>
+          </p>
+          <button
+            onClick={() => removeAnchor(selectedDay)}
+            style={{
+              background: "none",
+              border: "1px solid var(--sage)",
+              borderRadius: 2,
+              padding: "6px 12px",
+              fontSize: 10,
+              fontFamily: "'Lato', sans-serif",
+              letterSpacing: ".08em",
+              textTransform: "uppercase",
+              color: "var(--sage)",
+              cursor: "pointer",
+            }}>
+            Change Placement
+          </button>
+        </div>
+      ) : (
+        <div style={{ padding: "14px 16px", background: "#F5F3F1", borderRadius: 3, border: "1px solid #E8DCD3", marginBottom: 20 }}>
+          <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 8 }}>
+            {selectedDay}
+          </p>
+          <p style={{ fontSize: 14, fontFamily: "'Playfair Display', serif", color: "var(--ink)", margin: "0 0 6px 0" }}>
+            {BEAUTY_LOOP_DEFAULTS[selectedDay]?.title}
+          </p>
+          <p style={{ fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)" }}>
+            Not anchored to a block yet. Choose one below.
+          </p>
+        </div>
+      )}
+
+      {/* Subject Options */}
+      <div>
+        <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 12 }}>
+          Which block gets the beauty loop?
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {availableSubjects.map((subject) => (
+            <button
+              key={subject}
+              onClick={() => saveAnchor(selectedDay, subject)}
+              style={{
+                padding: "10px 12px",
+                background: currentAnchor === subject ? "var(--sage-bg)" : "var(--cream)",
+                border: `1px solid ${currentAnchor === subject ? "var(--sage)" : "var(--rule)"}`,
+                borderRadius: 2,
+                cursor: "pointer",
+                textAlign: "left",
+                fontSize: 13,
+                fontFamily: "'Playfair Display', serif",
+                color: currentAnchor === subject ? "var(--sage)" : "var(--ink)",
+                transition: "all .2s",
+              }}>
+                {currentAnchor === subject && "✓ "}
+                {subject}
+              </button>
+            ))}
+        </div>
       </div>
 
       <p style={{ fontSize: 11, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", marginTop: 16, textAlign: "center" }}>
-        Changes save automatically to your device.
+        The beauty loop card will appear within that block on your home screen.
       </p>
     </div>
   );
+}
+
+// ─── HELPER FUNCTION ────────────────────────────────────────────────────────
+// Use this in TodaySchedule to check if a block should show the beauty loop
+
+export function getBeautyLoopAnchor() {
+  try {
+    return JSON.parse(localStorage.getItem(BEAUTY_ANCHOR_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+export function shouldShowBeautyInBlock(today, blockSubject) {
+  const anchors = getBeautyLoopAnchor();
+  const anchoredBlock = anchors[today];
+  if (!anchoredBlock) return false;
+  // Simple string match
+  return blockSubject.toLowerCase().includes(anchoredBlock.toLowerCase());
 }
