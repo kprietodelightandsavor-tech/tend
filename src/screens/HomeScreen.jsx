@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, BEAUTY_LOOP, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { supabase } from "../lib/supabase";
 
@@ -20,10 +20,57 @@ const Icon = {
   X:       () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
 };
 
-// DAILY OFFSET
+// ─── DAILY OFFSET ─────────────────────────────────────────────────────────────
 const DAILY_OFFSET_KEY = "tend_daily_offset";
 
-// PREMIUM MODAL (needed by PlannerScreen)
+function DailyOffsetControl({ offset, onOffsetChange }) {
+  const updateOffset = (minutes) => {
+    const dateKey = new Date().toISOString().slice(0, 10);
+    try {
+      const saved = JSON.parse(localStorage.getItem(DAILY_OFFSET_KEY) || "{}");
+      const updated = { ...saved, [dateKey]: minutes };
+      localStorage.setItem(DAILY_OFFSET_KEY, JSON.stringify(updated));
+      onOffsetChange(minutes);
+    } catch (e) {
+      console.error("Error saving offset:", e);
+    }
+  };
+
+  const options = [0, 15, 30, 45, 60];
+
+  return (
+    <div style={{ padding: "14px 16px", background: offset > 0 ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${offset > 0 ? "#E0CBA8" : "var(--sage-md)"}`, borderRadius: 4, marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: offset > 0 ? "var(--gold)" : "var(--sage)", marginBottom: 0 }}>
+          {offset > 0 ? `Started ${offset}m late` : "On Schedule"}
+        </p>
+        {offset > 0 && (
+          <button onClick={() => updateOffset(0)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--gold)", textDecoration: "underline" }}>
+            Reset
+          </button>
+        )}
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {options.map((minutes) => (
+          <button key={minutes} onClick={() => updateOffset(minutes)} style={{ padding: "7px 12px", borderRadius: 20, border: `1.5px solid ${offset === minutes ? (offset > 0 ? "var(--gold)" : "var(--sage)") : "var(--rule)"}`, background: offset === minutes ? (offset > 0 ? "var(--gold)" : "var(--sage)") : "var(--cream)", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: offset === minutes ? "white" : "var(--ink-faint)", transition: "all .2s" }}>
+            {minutes === 0 ? "On time" : `+${minutes}m`}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function getAdjustedTime(timeString, offset) {
+  if (!timeString || offset === 0) return timeString;
+  const [hours, mins] = timeString.split(":").map(Number);
+  const blockMinutes = hours * 60 + mins + offset;
+  const newHours = Math.floor(blockMinutes / 60);
+  const newMins = blockMinutes % 60;
+  return `${String(newHours).padStart(2, "0")}:${String(newMins).padStart(2, "0")}`;
+}
+
+// ─── PREMIUM MODAL ────────────────────────────────────────────────────────────
 export function PremiumModal({ onClose }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
@@ -57,58 +104,21 @@ export default function HomeScreen({ onNavigate, settings }) {
     }
   });
 
-  const updateOffset = (minutes) => {
-    const dateKey = new Date().toISOString().slice(0, 10);
-    try {
-      const saved = JSON.parse(localStorage.getItem(DAILY_OFFSET_KEY) || "{}");
-      const updated = { ...saved, [dateKey]: minutes };
-      localStorage.setItem(DAILY_OFFSET_KEY, JSON.stringify(updated));
-      setDailyOffset(minutes);
-    } catch (e) {
-      console.error("Error saving offset:", e);
-    }
-  };
-
   return (
     <div className="screen">
       <p className="eyebrow" style={{ marginBottom: 6 }}>
         {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
       </p>
       <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
-      
-      <div style={{ padding: "16px", background: "#F5F3F1", border: "2px solid #D4C4B8", borderRadius: 6, marginBottom: 24 }}>
-        <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "#8B8B7E", marginBottom: 12, fontWeight: 600 }}>
-          {dailyOffset > 0 ? `Started ${dailyOffset}m late` : "On Schedule"}
-        </p>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {[0, 15, 30, 45, 60].map((minutes) => (
-            <button key={minutes} onClick={() => updateOffset(minutes)} style={{ padding: "8px 14px", borderRadius: 20, border: `2px solid ${dailyOffset === minutes ? "#A67C52" : "#D4C4B8"}`, background: dailyOffset === minutes ? "#A67C52" : "white", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: dailyOffset === minutes ? "white" : "#8B8B7E", fontWeight: 600, transition: "all .2s" }}>
-              {minutes === 0 ? "On time" : `+${minutes}m`}
-            </button>
-          ))}
-        </div>
-      </div>
+
+      <DailyOffsetControl offset={dailyOffset} onOffsetChange={setDailyOffset} />
 
       <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
         <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
 
-      <p style={{ marginBottom: 28, padding: "20px", background: "var(--sage-bg)", borderRadius: 4, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.7, textAlign: "center" }}>
-        Rest, nature, books, living literature, beauty, and connection — the rhythm of a Charlotte Mason home awaits you.
-      </p>
-
-      <div style={{ marginTop: 40, marginBottom: 32, padding: "28px 20px 24px", borderTop: "1px solid var(--rule)", textAlign: "center" }}>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink-faint)", lineHeight: 2, marginBottom: 14 }}>
-          The Lord is my shepherd; I shall not want.<br />
-          He makes me lie down in green pastures.<br />
-          He leads me beside still waters.<br />
-          He restores my soul.
-        </p>
-        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".2em", textTransform: "uppercase", color: "var(--ink-faint)", opacity: 0.6 }}>
-          Psalm 23 · ESV
-        </p>
-      </div>
+      <p style={{ textAlign: "center", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)" }}>More coming soon...</p>
     </div>
   );
 }
