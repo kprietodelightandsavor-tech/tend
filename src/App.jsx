@@ -18,6 +18,8 @@ import TeachingLogScreen from "./screens/TeachingLogScreen";
 import AnnualReportScreen from "./screens/AnnualReportScreen";
 import BooksScreen from "./screens/BooksScreen";
 import BibleReadingScreen from "./screens/BibleReadingScreen";
+import BeautyLoopEditorScreen from "./screens/BeautyLoopEditorScreen";
+import MemoryBookScreen from "./screens/MemoryBookScreen";
 
 const NAV_SCREENS = ["home", "planner", "narration", "menu"];
 
