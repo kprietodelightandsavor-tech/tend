@@ -93,6 +93,30 @@ export default function MenuScreen({ onNavigate }) {
           <span className="chapter-arrow">→</span>
         </div>
 
+        {/* Beauty Loop Editor row */}
+        <div className="chapter-row" onClick={() => onNavigate("beauty-loop-editor")}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
+            <span className="chapter-num" style={{ fontStyle: "normal", fontSize: 11 }}>✦</span>
+            <div>
+              <p className="chapter-title">Beauty Loop</p>
+              <p className="chapter-sub">Edit & customize your daily beauty moments</p>
+            </div>
+          </div>
+          <span className="chapter-arrow">→</span>
+        </div>
+
+        {/* Memory Book row */}
+        <div className="chapter-row" onClick={() => onNavigate("memory-book")}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
+            <span className="chapter-num" style={{ fontStyle: "normal", fontSize: 11 }}>✦</span>
+            <div>
+              <p className="chapter-title">Memory Book</p>
+              <p className="chapter-sub">Recall the year in images and moments</p>
+            </div>
+          </div>
+          <span className="chapter-arrow">→</span>
+        </div>
+
         {/* Settings row */}
         <div className="chapter-row" onClick={() => onNavigate("settings")}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
