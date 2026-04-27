@@ -35,7 +35,7 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
 
   useEffect(() => {
     if (userId) {
-      loadBook();
+       loadMemoryBook();
     }
   }, [userId]);
 
