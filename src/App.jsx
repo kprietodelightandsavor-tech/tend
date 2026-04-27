@@ -212,6 +212,8 @@ const SCREENS = {
   annualreport: AnnualReportScreen,
   books:        BooksScreen,
   scripture:    BibleReadingScreen,
+    "beauty-loop-editor": BeautyLoopEditorScreen,
+  "memory-book":        MemoryBookScreen,
 };
 
 const STORAGE_KEY = 'tend_user';
