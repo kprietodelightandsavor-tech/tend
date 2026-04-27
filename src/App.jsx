@@ -212,10 +212,6 @@ const SCREENS = {
   annualreport: AnnualReportScreen,
   books:        BooksScreen,
   scripture:    BibleReadingScreen,
-  case "beauty-loop-editor":
-        return <BeautyLoopEditorScreen settings={settings} onNavigate={onNavigate} />;
-      case "memory-book":
-        return <MemoryBookScreen settings={settings} onNavigate={onNavigate} />;
 };
 
 const STORAGE_KEY = 'tend_user';
