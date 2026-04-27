@@ -131,7 +131,7 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
       // Convert base64 to base64 without data URL prefix
       const base64Image = previewUrl.split(",")[1];
 
-      const response = await fetch("/.netlify/functions/anthropic-api", {
+      const response = await fetch("https://tend-ds.netlify.app/.netlify/functions/anthropic-api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
