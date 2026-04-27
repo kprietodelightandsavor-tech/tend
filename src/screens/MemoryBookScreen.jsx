@@ -35,14 +35,15 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
 
   useEffect(() => {
     if (userId) {
-      loadMemoryBook();
+      loadBook();
     }
   }, [userId]);
 
-  const loadMemoryBook = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
+const loadMemoryBook = async () => {
+  try {
+    setLoading(true);
+    console.log("Loading memory book for user:", userId);
+    const { data, error } = await supabase
         .from("memory_book")
         .select("*")
         .eq("user_id", userId)
