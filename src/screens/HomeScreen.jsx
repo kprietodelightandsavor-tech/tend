@@ -292,3 +292,6 @@ const startLP  = (id) => { lpt.current = setTimeout(() => { clearTimeout(lpt.cur
 )}
 
               <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap ☐ to complete · Tap row to add note · Hold to skip</p>
+    </div>
+  );
+}
