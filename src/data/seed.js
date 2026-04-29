@@ -1,7 +1,6 @@
 // ─── SEED DATA ────────────────────────────────────────────────────────────────
 
-export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-
+export const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 // ─── BEAUTY LOOP (per day) ────────────────────────────────────────────────────
 // ─── UPDATED DAY_SCHEDULE and BEAUTY_LOOP for seed.js ────────────────────────
 // Replace the existing DAY_SCHEDULE and BEAUTY_LOOP exports in src/data/seed.js
