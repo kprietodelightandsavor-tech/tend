@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, BEAUTY_LOOP, getSaturdayRhythm, getSundayRhythm, NATURE_DAYS, NATURE_LOOP_STEPS, getNatureLoopStep, advanceNatureLoop, getBeautyForBlock } from "../data/seed";
 import { supabase } from "../lib/supabase";
 
@@ -245,7 +244,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
     try {
       const { error } = await supabase
         .from("subject_notes")
-        .upsert([
+        .upsert(
           {
             user_id: userId,
             date: dateKey,
@@ -253,7 +252,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
             notes: text || null,
             updated_at: new Date().toISOString(),
           },
-        ], { onConflict: "user_id,date,subject" });
+        , { onConflict: "user_id,date,subject" });
 
       if (error) throw error;
 
