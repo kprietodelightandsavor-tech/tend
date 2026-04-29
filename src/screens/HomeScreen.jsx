@@ -542,17 +542,13 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
               {isExpanded && !isDone && !isSkipped && (
                 <div style={{ paddingLeft: 51, paddingBottom: 12, paddingTop: 8 }}>
                   {/* Pencil icon + notes */}
-                  <div
-                    onClick={e => e.stopPropagation()}
-                    style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, cursor: "pointer" }}>
-                    <span
-                      onClick={() => {
-                        setEditingNotes(b.id);
-                        setNotesText(subjectNotes[b.subject] || "");
-                      }}
-                      style={{ fontSize: 14, color: "var(--sage)" }}>
-                      ✏️
-                    </span>
+                  <svg onClick={() => {
+  setEditingNotes(b.id);
+  setNotesText(subjectNotes[b.subject] || "");
+}} width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--sage)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ cursor: "pointer", transition: "stroke .2s" }}>
+  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+</svg>
                     <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", margin: 0 }}>
                       {subjectNotes[b.subject] ? "Edit notes" : "Add notes"}
                     </p>
