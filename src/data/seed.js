@@ -294,8 +294,7 @@ export const NARRATION_STAGE_PROMPTS = {
 // Add these exports to your existing src/data/seed.js file
 // (paste at the bottom, before the last line)
 
-// Update DAYS to include weekend:
-// export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+/export const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 // 6 rotating Saturday rhythms — cycles by week number
 export const SATURDAY_RHYTHMS = [
