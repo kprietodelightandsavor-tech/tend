@@ -1292,4 +1292,3 @@ const WOVEN_KEY = "tend_beauty_woven";
       </div>
     </div>
   );
-}
