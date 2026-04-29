@@ -528,7 +528,9 @@ async function saveDailyState(userId, date, state) {
   } catch {}
 }
 
-// ─── TODAY'S SCHEDULE ─────────────────────────────────────────────────────────
+import { useState, useRef, useEffect } from "react";
+import { supabase } from "../lib/supabase";
+
 const SCHEDULE_KEY = "tend_schedule_state";
 const BEAUTY_KEY = "tend_beauty_state";
 
@@ -536,10 +538,9 @@ const SKIP_SUBJECTS = ["Rise & Shine", "Lunch", "Outdoor Break", "Afternoon Purs
 
 function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week, dailyOffset }) {
   const dateKey = new Date().toISOString().slice(0, 10);
-  const userId  = settings?.userId;
+  const userId = settings?.userId;
 
   const [synced, setSynced] = useState(false);
-
   const [beautyDone, setBeautyDone] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(BEAUTY_KEY) || "null");
@@ -548,16 +549,76 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
     return {};
   });
 
+  const [subjectNotes, setSubjectNotes] = useState({});
+  const [expandedBlock, setExpandedBlock] = useState(null);
+  const [editingNotes, setEditingNotes] = useState(null);
+  const [notesText, setNotesText] = useState("");
+
   const toggleBeauty = (id) => {
     const next = { ...beautyDone, [id]: !beautyDone[id] };
     setBeautyDone(next);
     try { localStorage.setItem(BEAUTY_KEY, JSON.stringify({ date: dateKey, day: today, done: next })); } catch {}
-    // Sync to Supabase with current items
     if (userId) {
       saveDailyState(userId, dateKey, { day: today, items, beautyDone: next });
     }
   };
 
+  // Load subject notes from Supabase
+  useEffect(() => {
+    if (!userId) return;
+    loadSubjectNotes();
+  }, [userId]);
+
+  const loadSubjectNotes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("subject_notes")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("date", dateKey);
+
+      if (error) throw error;
+
+      const notesMap = {};
+      (data || []).forEach(note => {
+        notesMap[note.subject] = note.notes;
+      });
+      setSubjectNotes(notesMap);
+    } catch (err) {
+      console.error("Error loading notes:", err);
+    }
+  };
+
+  const saveSubjectNote = async (subject, text) => {
+    if (!userId) return;
+
+    try {
+      const { error } = await supabase
+        .from("subject_notes")
+        .upsert([
+          {
+            user_id: userId,
+            date: dateKey,
+            subject,
+            notes: text || null,
+            updated_at: new Date().toISOString(),
+          },
+        ], { onConflict: "user_id,date,subject" });
+
+      if (error) throw error;
+
+      setSubjectNotes(prev => ({
+        ...prev,
+        [subject]: text,
+      }));
+      setEditingNotes(null);
+    } catch (err) {
+      console.error("Error saving note:", err);
+      alert("Error saving note. Please try again.");
+    }
+  };
+
+  // ... rest of the component (load daily state, etc.) ...
   const getSchoolYear = () => {
     const y = new Date().getFullYear(), m = new Date().getMonth();
     return m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
@@ -573,12 +634,12 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        method:     "upsert",
+        method: "upsert",
         userId,
-        date:       dateKey,
-        subject:    block.subject,
-        timeBlock:  block.time || null,
-        note:       block.note || null,
+        date: dateKey,
+        subject: block.subject,
+        timeBlock: block.time || null,
+        note: block.note || null,
         status,
         schoolYear,
       }),
@@ -595,14 +656,12 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
     return defaultItems();
   });
 
-  // Load from Supabase on mount — overwrites localStorage if Supabase is newer
   useEffect(() => {
     if (!userId || synced) return;
     loadDailyState(userId, dateKey).then(remote => {
       if (remote?.items && remote?.day === today) {
         setItems(remote.items);
         if (remote.beautyDone) setBeautyDone(remote.beautyDone);
-        // Also update localStorage
         try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify({ date: dateKey, day: today, items: remote.items })); } catch {}
         try { localStorage.setItem(BEAUTY_KEY, JSON.stringify({ date: dateKey, day: today, done: remote.beautyDone || {} })); } catch {}
       }
@@ -611,9 +670,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
   }, [userId]);
 
   const persist = (newItems, newBeauty) => {
-    // Save to localStorage immediately
     try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify({ date: dateKey, day: today, items: newItems })); } catch {}
-    // Save to Supabase for cross-device sync
     if (userId) {
       saveDailyState(userId, dateKey, {
         day: today,
@@ -631,7 +688,6 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
       if (t.status === "skipped" || t.status === "done") {
         next = prev.map(b => b.id === id ? { ...b, status: "pending" } : b)
           .sort((a, b) => blocks.findIndex(x => x.id === a.id) - blocks.findIndex(x => x.id === b.id));
-        // Remove from teaching log when un-completing
         if (userId) {
           fetch("/.netlify/functions/teaching-log", {
             method: "POST",
@@ -670,149 +726,250 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
 
   const [editingNote, setEditingNote] = useState(null);
   const lpt = useRef(null);
-  const riseShineItems = RISE_SHINE_ITEMS[today] || [];
 
   const saveNote = (id, note) => { setItems(prev => prev.map(b => b.id === id ? { ...b, motherNote: note } : b)); setEditingNote(null); };
-  const startLP  = (id) => { lpt.current = setTimeout(() => { clearTimeout(lpt.current); markSkipped(id); }, 600); };
+  const startLP = (id) => { lpt.current = setTimeout(() => { clearTimeout(lpt.current); markSkipped(id); }, 1000); };
   const cancelLP = () => clearTimeout(lpt.current);
 
-  const isNatureDay = NATURE_DAYS[today] === true;
-  const [loopStep, setLoopStep] = useState(getNatureLoopStep);
-  const [natureCurrent] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("tend_nature_current") || "null");
-      if (saved?.subject) return saved;
-    } catch {}
-    return { subject: "The Story of the Tadpole", read: "The Year Round by C.J. Hylander · Spring section", observe: "Go outside and look near ponds or puddles for frogs or tadpoles." };
-  });
-  const [natureDone, setNatureDone] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("tend_nature_done") || "null");
-      return saved?.date === dateKey ? saved.done : false;
-    } catch { return false; }
-  });
-
-  const markNatureDone = () => {
-    setNatureDone(true);
-    try { localStorage.setItem("tend_nature_done", JSON.stringify({ date: dateKey, done: true })); } catch {}
-    const next = advanceNatureLoop();
-    setLoopStep(next);
+  const getAdjustedTime = (timeString, offset) => {
+    if (!timeString || offset === 0) return timeString;
+    const [hours, mins] = timeString.split(":").map(Number);
+    const blockMinutes = hours * 60 + mins + offset;
+    const newHours = Math.floor(blockMinutes / 60);
+    const newMins = blockMinutes % 60;
+    return `${String(newHours).padStart(2, "0")}:${String(newMins).padStart(2, "0")}`;
   };
 
-  const undoNatureDone = () => {
-    setNatureDone(false);
-    try { localStorage.setItem("tend_nature_done", JSON.stringify({ date: dateKey, done: false })); } catch {}
+  const getBlockColor = (subject) => {
+    const s = subject.toLowerCase();
+    if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("living literature") || s.includes("hymn")) return "var(--block-morning)";
+    if (s.includes("math") || s.includes("language") || s.includes("writing") || s.includes("copywork") || s.includes("history") || s.includes("science") || s.includes("geography") || s.includes("spanish") || s.includes("reading") || s.includes("commonplace")) return "var(--block-academic)";
+    if (s.includes("nature") || s.includes("outdoor") || s.includes("artist") || s.includes("composer") || s.includes("beauty") || s.includes("poet") || s.includes("biography")) return "var(--block-nature)";
+    if (s.includes("co-op") || s.includes("bach") || s.includes("chispa") || s.includes("tennis")) return "var(--block-coop)";
+    if (s.includes("lunch") || s.includes("free") || s.includes("rest") || s.includes("afternoon") || s.includes("break") || s.includes("pursuits") || s.includes("reset")) return "var(--block-free)";
+    return "var(--rule)";
   };
 
   return (
     <div style={{ marginBottom: 28 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Icon.Sun />
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
           <p className="eyebrow" style={{ marginBottom: 0 }}>Today · {today}</p>
         </div>
         <button onClick={() => onNavigate("planner")}
           style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase" }}>
-          Full week <Icon.Arrow />
+          Full week →
         </button>
       </div>
 
-      {/* Nature loop block — Monday and Friday only */}
-      {isNatureDay && (() => {
-        const step = NATURE_LOOP_STEPS[loopStep];
-        return (
-          <div onClick={natureDone ? undoNatureDone : markNatureDone}
-            style={{ borderBottom: "1px solid var(--rule)", opacity: natureDone ? 0.35 : 1, transition: "opacity .3s", cursor: "pointer" }}>
-            <div style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px" }}>
-              <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: natureDone ? "var(--rule)" : "var(--sage)", marginRight: 12, flexShrink: 0, minHeight: 36 }} />
-              <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}></span>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 16, color: natureDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: natureDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)" }}>
-                  Nature Study · {step.label}
-                </p>
-                <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>
-                  {natureCurrent.subject} · {step.icon} {step.step}
-                </p>
-                {!natureDone && (
-                  <p style={{ fontSize: 12, color: "var(--sage)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 4, lineHeight: 1.5 }}>
-                    {step.getInstruction(natureCurrent)}
-                  </p>
-                )}
-                {natureDone && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
-              </div>
-            </div>
-            {/* Loop dots */}
-            {!natureDone && (
-              <div style={{ display: "flex", gap: 5, alignItems: "center", paddingLeft: 51, paddingBottom: 8 }}>
-                {NATURE_LOOP_STEPS.map((s, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: i === loopStep ? "var(--sage)" : "var(--rule)" }} />
-                    <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 7, letterSpacing: ".08em", color: i === loopStep ? "var(--sage)" : "var(--ink-faint)", textTransform: "uppercase" }}>{s.step}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })()}
       {items.map(b => {
         const isDone = b.status === "done", isSkipped = b.status === "skipped";
-        const showMother = isFreeBlock(b.subject) && !isSkipped;
         const blockColor = getBlockColor(b.subject);
-        const isRise = b.riseShine === true;
-        const wovenItem = wovenBeauty ? getBeautyForBlock(b.subject, today, week || 1) : null;
         const displayTime = getAdjustedTime(b.time, dailyOffset);
+        const isExpanded = expandedBlock === b.id;
+        const hasNotes = subjectNotes[b.subject];
+
         return (
-          <div key={b.id}>
-            {/* Beauty mini card — woven before anchor subject */}
-            {wovenItem && (
-              <WovenBeautyCard
-                item={wovenItem}
-                checked={!!beautyDone[wovenItem.id]}
-                onToggle={() => toggleBeauty(wovenItem.id)}
+          <div key={b.id} style={{ borderBottom: "1px solid var(--rule)", paddingBottom: isExpanded ? 16 : 0 }}>
+            {/* Subject Block Header */}
+            <div
+              onClick={() => setExpandedBlock(isExpanded ? null : b.id)}
+              onTouchStart={() => { if (b.status === "pending") startLP(b.id); }}
+              onTouchEnd={cancelLP}
+              onMouseDown={() => { if (b.status === "pending") startLP(b.id); }}
+              onMouseUp={cancelLP}
+              onMouseLeave={cancelLP}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "12px 0 6px",
+                cursor: "pointer",
+                opacity: isDone ? 0.35 : isSkipped ? 0.45 : 1,
+                transition: "opacity .4s ease",
+              }}>
+              {/* Color bar */}
+              <div
+                style={{
+                  width: 3,
+                  height: 36,
+                  borderRadius: 2,
+                  background: isDone || isSkipped ? "var(--rule)" : blockColor,
+                  transition: "background .3s ease",
+                  flexShrink: 0,
+                }}
               />
-            )}
-            <div style={{ borderBottom: "1px solid var(--rule)" }}>
-            <div onClick={() => toggleDone(b.id)}
-              onTouchStart={() => { if (b.status === "pending") startLP(b.id); }} onTouchEnd={cancelLP}
-              onMouseDown={() => { if (b.status === "pending") startLP(b.id); }} onMouseUp={cancelLP} onMouseLeave={cancelLP}
-              style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px", cursor: b.status !== "skipped" ? "pointer" : "default", opacity: isDone ? 0.35 : isSkipped ? 0.45 : 1, transition: "opacity .4s ease" }}>
-              <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: isDone || isSkipped ? "var(--rule)" : blockColor, marginRight: 12, flexShrink: 0, transition: "background .3s ease", minHeight: 36 }} />
-              <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}>{displayTime}</span>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 16, color: isDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease" }}>{b.subject}</p>
-                {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped · tap to restore</p>}
-                {b.note && !isSkipped && !isDone && <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
-                {isDone && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
-              </div>
-            </div>
-            {isRise && !isDone && !isSkipped && riseShineItems.length > 0 && (
-              <div style={{ paddingLeft: 53, paddingBottom: 10 }} onClick={e => e.stopPropagation()}>
-                <MemoryVerseBlock items={riseShineItems} blockId={b.id} subChecked={b.subChecked} onToggle={(idx) => toggleSub(b.id, idx)} />
-              </div>
-            )}
-            {showMother && (
-              <div style={{ paddingLeft: 53, paddingBottom: 8 }} onClick={e => e.stopPropagation()}>
-                {editingNote === b.id ? (
-                  <input autoFocus defaultValue={b.motherNote} placeholder="What will you tend during this time?"
-                    onBlur={e => saveNote(b.id, e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveNote(b.id, e.target.value); }}
-                    style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--rule)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)", outline: "none", padding: "4px 0" }} />
-                ) : (
-                  <button onClick={() => setEditingNote(b.id)}
-                    style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", padding: 0, textAlign: "left", opacity: b.motherNote ? 1 : 0.5 }}>
-                    {b.motherNote ? `✦ ${b.motherNote}` : "your time · what will you tend?"}
-                  </button>
+
+              {/* Checkbox */}
+              <div
+                onClick={e => {
+                  e.stopPropagation();
+                  toggleDone(b.id);
+                }}
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: 2,
+                  border: `1.5px solid ${isDone ? "var(--sage)" : "var(--rule)"}`,
+                  background: isDone ? "var(--sage)" : "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  transition: "all .2s",
+                }}>
+                {isDone && (
+                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 13l4 4L19 7" />
+                  </svg>
                 )}
               </div>
+
+              {/* Subject name + time */}
+              <div style={{ flex: 1 }}>
+                <p
+                  style={{
+                    fontSize: 16,
+                    color: isDone ? "var(--ink-faint)" : "var(--ink)",
+                    fontFamily: "'Playfair Display', serif",
+                    textDecoration: isDone ? "line-through" : "none",
+                    textDecorationColor: "var(--sage-md)",
+                    transition: "all .3s ease",
+                    marginBottom: 0,
+                  }}>
+                  {b.subject} <span style={{ fontSize: 12, color: "var(--ink-faint)" }}>{displayTime}</span>
+                </p>
+              </div>
+
+              {/* Status indicator */}
+              {isSkipped && <p style={{ fontSize: 10, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", margin: 0 }}>skipped</p>}
+              {isDone && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", margin: 0 }}>done</p>}
+            </div>
+
+            {/* Expanded content */}
+            {isExpanded && !isDone && !isSkipped && (
+              <div style={{ paddingLeft: 31, paddingBottom: 12, paddingTop: 8 }}>
+                {/* Pencil icon + notes */}
+                <div
+                  onClick={e => e.stopPropagation()}
+                  style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, cursor: "pointer" }}>
+                  <span
+                    onClick={() => {
+                      setEditingNotes(b.id);
+                      setNotesText(subjectNotes[b.subject] || "");
+                    }}
+                    style={{ fontSize: 14, color: "var(--sage)" }}>
+                    ✏️
+                  </span>
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", margin: 0 }}>
+                    {subjectNotes[b.subject] ? "Edit notes" : "Add notes"}
+                  </p>
+                </div>
+
+                {/* Notes display or edit mode */}
+                {editingNotes === b.id ? (
+                  <div style={{ paddingLeft: 22, marginBottom: 10 }}>
+                    <textarea
+                      autoFocus
+                      value={notesText}
+                      onChange={e => setNotesText(e.target.value)}
+                      placeholder="Add notes for today..."
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        border: "1px solid var(--rule)",
+                        borderRadius: 3,
+                        fontFamily: "'Cormorant Garamond', serif",
+                        fontSize: 13,
+                        minHeight: 60,
+                        outline: "none",
+                        resize: "vertical",
+                      }}
+                    />
+                    <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                      <button
+                        onClick={() => {
+                          saveSubjectNote(b.subject, notesText);
+                          setEditingNotes(null);
+                        }}
+                        style={{
+                          flex: 1,
+                          background: "var(--sage)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: 2,
+                          padding: "6px",
+                          cursor: "pointer",
+                          fontSize: 10,
+                          fontFamily: "'Lato', sans-serif",
+                          letterSpacing: ".08em",
+                          textTransform: "uppercase",
+                        }}>
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingNotes(null)}
+                        style={{
+                          flex: 1,
+                          background: "none",
+                          border: "1px solid var(--rule)",
+                          borderRadius: 2,
+                          padding: "6px",
+                          cursor: "pointer",
+                          fontSize: 10,
+                          fontFamily: "'Lato', sans-serif",
+                          letterSpacing: ".08em",
+                          textTransform: "uppercase",
+                          color: "var(--ink-faint)",
+                        }}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : hasNotes ? (
+                  <p style={{ paddingLeft: 22, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-lt)", lineHeight: 1.6, margin: 0, marginBottom: 10 }}>
+                    {subjectNotes[b.subject]}
+                  </p>
+                ) : null}
+              </div>
             )}
-          </div>
           </div>
         );
       })}
-      <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap to complete · Tap again to undo · Hold to skip</p>
+
+      <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>
+        Tap checkbox to complete · Long press to skip · Tap to expand for notes
+      </p>
     </div>
   );
 }
+
+// Helper functions (from original component)
+async function loadDailyState(userId, date) {
+  try {
+    const res = await fetch("/.netlify/functions/daily-state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ method: "get", userId, date }),
+    });
+    const data = await res.json();
+    return data.state || null;
+  } catch { return null; }
+}
+
+async function saveDailyState(userId, date, state) {
+  try {
+    await fetch("/.netlify/functions/daily-state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ method: "set", userId, date, state }),
+    });
+  } catch {}
+}
+
+export default TodaySchedule;
 
 // ─── BEAUTY LOOP HOME ─────────────────────────────────────────────────────────
 // REPLACE THE ENTIRE BeautyLoopHome FUNCTION with this version
