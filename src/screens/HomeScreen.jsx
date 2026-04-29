@@ -238,21 +238,19 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
     }
   };
 
-  const saveSubjectNote = async (subject, text) => {
-    if (!userId) return;
+ const saveSubjectNote = async (subject, text) => {
+  if (!userId) return;
 
-    try {
-      const { error } = await supabase
-        .from("subject_notes")
-        .upsert(
-          {
-            user_id: userId,
-            date: dateKey,
-            subject,
-            notes: text || null,
-            updated_at: new Date().toISOString(),
-          },
-        , { onConflict: "user_id,date,subject" });
+  try {
+    const { error } = await supabase
+      .from("subject_notes")
+      .upsert({
+        user_id: userId,
+        date: dateKey,
+        subject,
+        notes: text || null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id,date,subject" });
 
       if (error) throw error;
 
