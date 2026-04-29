@@ -528,9 +528,6 @@ async function saveDailyState(userId, date, state) {
   } catch {}
 }
 
-import { useState, useRef, useEffect } from "react";
-import { supabase } from "../lib/supabase";
-
 const SCHEDULE_KEY = "tend_schedule_state";
 const BEAUTY_KEY = "tend_beauty_state";
 
@@ -946,29 +943,6 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
   );
 }
 
-// Helper functions (from original component)
-async function loadDailyState(userId, date) {
-  try {
-    const res = await fetch("/.netlify/functions/daily-state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ method: "get", userId, date }),
-    });
-    const data = await res.json();
-    return data.state || null;
-  } catch { return null; }
-}
-
-async function saveDailyState(userId, date, state) {
-  try {
-    await fetch("/.netlify/functions/daily-state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ method: "set", userId, date, state }),
-    });
-  } catch {}
-}
-
 export default TodaySchedule;
 
 // ─── BEAUTY LOOP HOME ─────────────────────────────────────────────────────────
@@ -1239,22 +1213,6 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
 
 // ─── HOME SCREEN ──────────────────────────────────────────────────────────────
 const WOVEN_KEY = "tend_beauty_woven";
-
-export default function HomeScreen({ onNavigate, settings }) {
-  const hour       = new Date().getHours();
-  const greeting   = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
-  const todayIdx   = new Date().getDay();
-  const today      = todayIdx === 0 ? "Sunday" : todayIdx === 6 ? "Saturday" : DAYS[todayIdx - 1];
-  const todayBlocks = DAY_SCHEDULE[today] || [];
-  const name       = settings?.name || "Friend";
-  const activeHabit = settings?.activeHabit || "attention";
-  const isRestWeek  = settings?.isRestWeek || false;
-  const dayOfYear  = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-  const cmQuote    = CM_QUOTES[dayOfYear % CM_QUOTES.length];
-  const isWeekend  = today === "Saturday" || today === "Sunday";
-  const [wovenBeauty, setWovenBeauty] = useState(() => {
-    try { return localStorage.getItem(WOVEN_KEY) === "true"; } catch { return false; }
-  });
 
   const [dailyOffset, setDailyOffset] = useState(() => {
     try {
