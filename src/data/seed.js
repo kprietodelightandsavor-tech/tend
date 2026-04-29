@@ -412,3 +412,59 @@ export const getSaturdayRhythm = (week = 1) =>
 
 export const getSundayRhythm = (week = 1) =>
   SUNDAY_RHYTHMS[(week - 1) % SUNDAY_RHYTHMS.length];
+
+// ─── NATURE STUDY ─────────────────────────────────────────────────────────────
+export const NATURE_DAYS = {
+  Monday:  true,
+  Friday:  true,
+};
+
+export const NATURE_LOOP_STEPS = [
+  { step: "Read",    label: "Nature Lore Reading",   icon: "📖", getInstruction: (t) => t ? `Read aloud from ${t.read}. This week: ${t.subject}.` : "Read aloud from The Year Round by C.J. Hylander." },
+  { step: "Walk",    label: "Nature Walk",            icon: "🌿", getInstruction: (t) => t?.observe || "Go outside and observe nature with fresh eyes. No agenda — just notice." },
+  { step: "Journal", label: "Nature Journal",         icon: "✏️", getInstruction: ()  => "Sketch, paint, or write. A pressed leaf, a careful drawing, a sentence about what you noticed. Let the page be a living record." },
+];
+
+export function getNatureLoopStep() {
+  try { return parseInt(localStorage.getItem("tend_nature_loop_step") || "0", 10) % 3; } catch { return 0; }
+}
+
+export function advanceNatureLoop() {
+  const next = (getNatureLoopStep() + 1) % 3;
+  try { localStorage.setItem("tend_nature_loop_step", String(next)); } catch {}
+  return next;
+}
+
+export const BEAUTY_ROTATION = {
+  Monday: {
+    morning: {
+      anchors: ["language", "using language", "math"],
+      items: [
+        { id: "bl-m-bio",  label: "Biography Study",   note: "A life worth knowing. Read a chapter and narrate — what made this person who they were?" },
+        { id: "bl-m-cit",  label: "Citizenship Study", note: "Stories of virtue and civic life. What does it mean to be a good neighbor, citizen, steward?" },
+      ],
+    },
+    afternoon: {
+      anchors: ["science", "artist", "beauty"],
+      items: [
+        { id: "bl-m-art",  label: "Artist Study",          note: "Picture study — observe quietly, narrate, then sketch from memory." },
+        { id: "bl-m-poet", label: "Poet & Poetry Study",   note: "Read the poem aloud twice. What image stayed with you?" },
+      ],
+    },
+  },
+};
+
+export function getBeautyForBlock(subject, today, week) {
+  const dayRotations = BEAUTY_ROTATION[today];
+  if (!dayRotations) return null;
+  const s = subject.toLowerCase();
+  for (const slot of Object.values(dayRotations)) {
+    if (slot.anchors.some(a => s.includes(a))) {
+      const items = slot.items;
+      if (!items.length) return null;
+      if (items.length === 1) return items[0];
+      return items[week % 2 === 1 ? 0 : 1];
+    }
+  }
+  return null;
+}
