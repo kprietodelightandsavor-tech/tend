@@ -279,19 +279,28 @@ const startLP  = (id) => { lpt.current = setTimeout(() => { clearTimeout(lpt.cur
   )}
 </div>
 
-{editingNote === b.id && !isSkipped && (
-  <div style={{ paddingLeft: 77, paddingBottom: 8, paddingRight: 10 }} onClick={e => e.stopPropagation()}>
-    <input autoFocus defaultValue={b.motherNote} placeholder="add a note for this subject…"
-      onBlur={e => saveNote(b.id, e.target.value)}
-      onKeyDown={e => {
-        if (e.key === "Enter") saveNote(b.id, e.target.value);
-        if (e.key === "Escape") setEditingNote(null);
-      }}
-      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--rule)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)", outline: "none", padding: "4px 0" }} />
-  </div>
-)}
-
-              <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap ☐ to complete · Tap row to add note · Hold to skip</p>
+</div>
+            {isRise && !isDone && !isSkipped && riseShineItems.length > 0 && (
+              <div style={{ paddingLeft: 53, paddingBottom: 10 }} onClick={e => e.stopPropagation()}>
+                <MemoryVerseBlock items={riseShineItems} blockId={b.id} subChecked={b.subChecked} onToggle={(idx) => toggleSub(b.id, idx)} />
+              </div>
+            )}
+            {editingNote === b.id && !isSkipped && (
+              <div style={{ paddingLeft: 77, paddingBottom: 8, paddingRight: 10 }} onClick={e => e.stopPropagation()}>
+                <input autoFocus defaultValue={b.motherNote} placeholder="add a note for this subject…"
+                  onBlur={e => saveNote(b.id, e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === "Enter") saveNote(b.id, e.target.value);
+                    if (e.key === "Escape") setEditingNote(null);
+                  }}
+                  style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--rule)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)", outline: "none", padding: "4px 0" }} />
+              </div>
+            )}
+            </div>
+          </div>
+        );
+      })}
+      <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap ☐ to complete · Tap row to add note · Hold to skip</p>
     </div>
   );
 }
