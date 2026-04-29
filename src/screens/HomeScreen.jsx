@@ -1228,7 +1228,6 @@ const WOVEN_KEY = "tend_beauty_woven";
     const next = !wovenBeauty;
     setWovenBeauty(next);
     try { localStorage.setItem(WOVEN_KEY, String(next)); } catch {}
-  };
 
   return (
     <div className="screen">
