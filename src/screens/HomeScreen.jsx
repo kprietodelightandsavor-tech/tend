@@ -71,7 +71,70 @@ function getAdjustedTime(timeString, offset) {
   const newMins = blockMinutes % 60;
   return `${String(newHours).padStart(2, "0")}:${String(newMins).padStart(2, "0")}`;
 }
-
+export function PremiumModal({ onClose }) {
+  const FREE_FEATURES = [
+    "Daily schedule — one repeating template",
+    "Outdoor time tracker toward your weekly goal",
+    "Consider the Lilies — up to 3 journal entries",
+    "One habit focus (Attention) with today's ideas",
+    "5 free narration sessions",
+    "One student profile",
+    "Daily Mother Culture prompt",
+    "CM quote of the day",
+  ];
+  const PREMIUM_FEATURES = [
+    "Full weekly planner — different schedule per day, editable blocks",
+    "Week grid view — see your whole week at a glance",
+    "Beauty Loop anchored to your daily subjects",
+    "Term counter with rest week gentle rhythm",
+    "All five Charlotte Mason habits with 12-week reflection",
+    "Unlimited Consider the Lilies entries for every family member",
+    "Unlimited narration sessions with AI coaching",
+    "Unlimited student profiles with narration history",
+    "Full rotating Mother Culture prompt bank",
+  ];
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
+      <div style={{ width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 52px", maxHeight: "92dvh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+        <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
+          <div>
+            <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 4 }}>Delight & Savor</p>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 400, color: "var(--ink)" }}>Tend Premium</h2>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)", marginTop: 4 }}>✕</button>
+        </div>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontStyle: "italic", color: "var(--ink-lt)", marginBottom: 24, lineHeight: 1.8 }}>Beauty. Meaning. Connection.</p>
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 12 }}>Free — always</p>
+          {FREE_FEATURES.map((f, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
+              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>✓</span>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.5 }}>{f}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, padding: "18px", marginBottom: 28 }}>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 14 }}>Premium — everything above, plus</p>
+          {PREMIUM_FEATURES.map((f, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
+              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>✦</span>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.5 }}>{f}</p>
+            </div>
+          ))}
+        </div>
+        <a href="https://delightnsavor.gumroad.com/l/qrxxi" target="_blank" rel="noopener noreferrer"
+          style={{ display: "block", background: "var(--sage)", borderRadius: 2, padding: "14px 0", width: "100%", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "white", textAlign: "center", textDecoration: "none", marginBottom: 12 }}>
+          Join Tend Premium →
+        </a>
+        <button onClick={onClose}
+          style={{ width: "100%", background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
+          Maybe later
+        </button>
+      </div>
+    </div>
+  );
+}
 export default function HomeScreen({ onNavigate, settings }) {
   const hour       = new Date().getHours();
   const greeting   = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
