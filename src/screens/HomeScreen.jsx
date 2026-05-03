@@ -1,5 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, BEAUTY_LOOP, getSaturdayRhythm, getSundayRhythm, NATURE_DAYS, NATURE_LOOP_STEPS, getNatureLoopStep, advanceNatureLoop, getBeautyForBlock } from "../data/seed";
+import {
+  SUMMER_DAILY_ANCHORS,
+  SUMMER_PERSONAL_MORNING,
+  SUMMER_WEEKEND_CATEGORIES,
+  getSummerDayBlocks,
+  getActivityChoices,
+  getTomorrowActivity,
+  isEveningSetupTime,
+} from "../data/summer-seed";
 import { supabase } from "../lib/supabase";
 
 const HABIT_ICONS = {
@@ -22,15 +31,15 @@ const Icon = {
 
 const getBlockColor = (subject) => {
   const s = subject.toLowerCase();
-  if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("living literature") || s.includes("hymn")) return "var(--block-morning)";
-  if (s.includes("math") || s.includes("language") || s.includes("writing") || s.includes("copywork") || s.includes("history") || s.includes("science") || s.includes("geography") || s.includes("spanish") || s.includes("reading") || s.includes("commonplace")) return "var(--block-academic)";
-  if (s.includes("nature") || s.includes("outdoor") || s.includes("artist") || s.includes("composer") || s.includes("beauty") || s.includes("poet") || s.includes("biography")) return "var(--block-nature)";
-  if (s.includes("co-op") || s.includes("bach") || s.includes("chispa") || s.includes("tennis")) return "var(--block-coop)";
-  if (s.includes("lunch") || s.includes("free") || s.includes("rest") || s.includes("afternoon") || s.includes("break") || s.includes("pursuits") || s.includes("reset")) return "var(--block-free)";
+  if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("living literature") || s.includes("hymn") || s.includes("read-aloud") || s.includes("read aloud")) return "var(--block-morning)";
+  if (s.includes("math") || s.includes("language") || s.includes("writing") || s.includes("copywork") || s.includes("history") || s.includes("science") || s.includes("geography") || s.includes("spanish") || s.includes("reading") || s.includes("commonplace") || s.includes("rotation")) return "var(--block-academic)";
+  if (s.includes("nature") || s.includes("outdoor") || s.includes("artist") || s.includes("composer") || s.includes("beauty") || s.includes("poet") || s.includes("biography") || s.includes("folk song")) return "var(--block-nature)";
+  if (s.includes("co-op") || s.includes("bach") || s.includes("chispa") || s.includes("tennis") || s.includes("volunteer") || s.includes("swim") || s.includes("river")) return "var(--block-coop)";
+  if (s.includes("lunch") || s.includes("free") || s.includes("rest") || s.includes("afternoon") || s.includes("break") || s.includes("pursuits") || s.includes("reset") || s.includes("flex")) return "var(--block-free)";
   return "var(--rule)";
 };
 
-const FREE_KEYWORDS = ["rise", "chores", "piano", "free", "rest", "independent", "lunch", "outdoor", "nature", "afternoon", "pursuits", "break", "reset"];
+const FREE_KEYWORDS = ["rise", "chores", "piano", "free", "rest", "independent", "lunch", "outdoor", "nature", "afternoon", "pursuits", "break", "reset", "flex"];
 const isFreeBlock = (subject) => FREE_KEYWORDS.some(k => subject.toLowerCase().includes(k));
 
 export function PremiumModal({ onClose }) {
@@ -174,7 +183,213 @@ async function saveDailyState(userId, date, state) {
 const SCHEDULE_KEY = "tend_schedule_state";
 const BEAUTY_KEY = "tend_beauty_state";
 const DAILY_OFFSET_KEY = "tend_daily_offset";
+const ANCHORS_KEY = "tend_summer_anchors";
 const SKIP_SUBJECTS = ["Rise & Shine", "Lunch", "Outdoor Break", "Afternoon Pursuits", "House Reset & Animal Chores", "Tuesday Rhythm", "Tennis"];
+
+// ─────────────────────────────────────────────────────────────────
+// SUMMER MODE COMPONENTS
+// ─────────────────────────────────────────────────────────────────
+
+function ScreensBanner() {
+  return (
+    <div className="screens-banner">
+      <strong>Phones</strong>
+      <span>on the counter from 8:30 — yours included — until 2:00.</span>
+    </div>
+  );
+}
+
+function PersonalMorning() {
+  return (
+    <div className="personal-morning">
+      <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 8 }}>
+        Your morning
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {SUMMER_PERSONAL_MORNING.map((item, i) => (
+          <div key={i} style={{ display: "flex", gap: 12, alignItems: "baseline" }}>
+            <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 11, color: "var(--ink-faint)", minWidth: 90 }}>{item.time}</span>
+            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)" }}>{item.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DailyAnchors() {
+  const dateKey = new Date().toISOString().slice(0, 10);
+  const [done, setDone] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(ANCHORS_KEY) || "null");
+      if (saved?.date === dateKey) return saved.done;
+    } catch {}
+    return {};
+  });
+
+  const toggle = (id) => {
+    const next = { ...done, [id]: !done[id] };
+    setDone(next);
+    try { localStorage.setItem(ANCHORS_KEY, JSON.stringify({ date: dateKey, done: next })); } catch {}
+  };
+
+  return (
+    <div className="daily-anchors">
+      <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 12 }}>
+        Daily Anchors
+      </p>
+      {SUMMER_DAILY_ANCHORS.map(anchor => {
+        const isDone = !!done[anchor.id];
+        return (
+          <div key={anchor.id} onClick={() => toggle(anchor.id)} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "6px 0", cursor: "pointer", opacity: isDone ? 0.5 : 1, transition: "opacity .2s" }}>
+            <div style={{ width: 16, height: 16, borderRadius: 2, border: `1.5px solid ${isDone ? "var(--sage)" : "var(--rule)"}`, background: isDone ? "var(--sage)" : "none", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+              {isDone && <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 14, fontFamily: "'Playfair Display', serif", color: isDone ? "var(--ink-faint)" : "var(--ink)", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)" }}>
+                {anchor.label}
+              </p>
+              {anchor.note && !isDone && (
+                <p style={{ fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.5, marginTop: 2 }}>
+                  {anchor.note}
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function MorningActivityCard() {
+  const evening = isEveningSetupTime();
+  const choices = getActivityChoices(new Date(), 3);
+  const tomorrow = getTomorrowActivity();
+  const [selected, setSelected] = useState(() => {
+    const dateKey = new Date().toISOString().slice(0, 10);
+    try {
+      const saved = JSON.parse(localStorage.getItem(`tend_morning_pick_${dateKey}`) || "null");
+      return saved;
+    } catch { return null; }
+  });
+
+  const pickActivity = (activity) => {
+    const dateKey = new Date().toISOString().slice(0, 10);
+    setSelected(activity);
+    try { localStorage.setItem(`tend_morning_pick_${dateKey}`, JSON.stringify(activity)); } catch {}
+  };
+
+  // Evening view: setting up for tomorrow
+  if (evening) {
+    return (
+      <div className="morning-activity morning-activity-evening">
+        <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 8 }}>
+          Set up for tomorrow morning
+        </p>
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 6 }}>
+          {tomorrow.label}
+        </p>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-lt)", lineHeight: 1.6, marginBottom: 4 }}>
+          <strong style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, fontStyle: "normal", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", fontWeight: 400 }}>Tonight: </strong>
+          {tomorrow.setup}
+        </p>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", lineHeight: 1.6 }}>
+          <strong style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, fontStyle: "normal", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", fontWeight: 400 }}>They'll need: </strong>
+          {tomorrow.kidsNeed}
+        </p>
+      </div>
+    );
+  }
+
+  // Morning view: pick today's activity (or show what was picked)
+  if (selected) {
+    return (
+      <div className="morning-activity">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+          <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--gold)" }}>
+            Today's Morning Activity
+          </p>
+          <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", color: "var(--ink-faint)", cursor: "pointer", textTransform: "uppercase" }}>
+            Change
+          </button>
+        </div>
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 6 }}>
+          {selected.label}
+        </p>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-lt)", lineHeight: 1.6 }}>
+          {selected.kidsNeed}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="morning-activity">
+      <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 10 }}>
+        Pick a morning activity
+      </p>
+      {choices.map(choice => (
+        <div key={choice.id} onClick={() => pickActivity(choice)} style={{ borderTop: "1px solid var(--rule)", padding: "10px 0", cursor: "pointer" }}>
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", marginBottom: 2 }}>{choice.label}</p>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", lineHeight: 1.5 }}>
+            {choice.kidsNeed}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WeekendCategoryPicker({ dayName }) {
+  const dateKey = new Date().toISOString().slice(0, 10);
+  const [selected, setSelected] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(`tend_weekend_${dateKey}`) || "[]");
+      return saved;
+    } catch { return []; }
+  });
+
+  const toggle = (id) => {
+    const next = selected.includes(id) ? selected.filter(s => s !== id) : [...selected, id];
+    setSelected(next);
+    try { localStorage.setItem(`tend_weekend_${dateKey}`, JSON.stringify(next)); } catch {}
+  };
+
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 8 }}>
+        Today's Rhythm — {dayName}
+      </p>
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 400, color: "var(--ink)", marginBottom: 8 }}>
+        Pick one or two
+      </h2>
+      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.6, marginBottom: 18 }}>
+        Whatever the day asks for. Rain, rest, or rhythm — it's all welcome.
+      </p>
+
+      {SUMMER_WEEKEND_CATEGORIES.map(cat => {
+        const isSelected = selected.includes(cat.id);
+        return (
+          <div key={cat.id} onClick={() => toggle(cat.id)} className={`weekend-category${isSelected ? " selected" : ""}`}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 22 }}>{cat.icon}</span>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 2 }}>{cat.label}</p>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", lineHeight: 1.5 }}>
+                  {cat.note}
+                </p>
+              </div>
+              <div style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${isSelected ? "var(--sage)" : "var(--rule)"}`, background: isSelected ? "var(--sage)" : "none", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {isSelected && <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week, dailyOffset }) {
   const dateKey = new Date().toISOString().slice(0, 10);
@@ -254,11 +469,6 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
       console.error("Error saving note:", err);
       alert("Error saving note. Please try again.");
     }
-  };
-
-  const getSchoolYear = () => {
-    const y = new Date().getFullYear(), m = new Date().getMonth();
-    return m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
   };
 
   const logToTeachingRecord = async (block, status) => {
@@ -399,6 +609,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
 
   const getAdjustedTime = (timeString, offset) => {
     if (!timeString || offset === 0) return timeString;
+    if (!/^\d{1,2}:\d{2}/.test(timeString)) return timeString;
     const [hours, mins] = timeString.split(":").map(Number);
     const blockMinutes = hours * 60 + mins + offset;
     const newHours = Math.floor(blockMinutes / 60);
@@ -677,11 +888,14 @@ export default function HomeScreen({ onNavigate, settings }) {
   const day = now.getDay();
   const dayName = DAYS[day];
   const today = dayName;
-  const todayBlocks = DAY_SCHEDULE[dayName] || [];
   const cmQuote = CM_QUOTES[day];
 
   const week = settings?.week || 1;
   const isWeekend = dayName === "Saturday" || dayName === "Sunday";
+  const isSummer = settings?.mode === "summer";
+
+  // Pick the right schedule blocks based on mode
+  const todayBlocks = isSummer ? getSummerDayBlocks(dayName, now) : (DAY_SCHEDULE[dayName] || []);
 
   const [dailyOffset, setDailyOffset] = useState(() => {
     try {
@@ -706,44 +920,66 @@ export default function HomeScreen({ onNavigate, settings }) {
   };
 
   const [showPremium, setShowPremium] = useState(false);
-  const weekendRhythm = dayName === "Saturday" ? getSaturdayRhythm(week) : getSundayRhythm(week);
+  const weekendRhythm = !isSummer && isWeekend
+    ? (dayName === "Saturday" ? getSaturdayRhythm(week) : getSundayRhythm(week))
+    : null;
 
   return (
-    <div className="screen">
+    <div className={`screen${isSummer ? " summer" : ""}`}>
       <p className="eyebrow" style={{ marginBottom: 6 }}>
         {now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+        {isSummer && <span style={{ marginLeft: 8, color: "var(--sage)" }}>· summer rhythm</span>}
       </p>
       <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
 
-      <div style={{ padding: "14px 16px", background: dailyOffset > 0 ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${dailyOffset > 0 ? "#E0CBA8" : "var(--sage-md)"}`, borderRadius: 4, marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: dailyOffset > 0 ? "var(--gold)" : "var(--sage)", marginBottom: 0 }}>
-            {dailyOffset > 0 ? `Started ${dailyOffset}m late` : "On Schedule"}
-          </p>
-          {dailyOffset > 0 && (
-            <button onClick={() => updateOffset(0)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--gold)", textDecoration: "underline" }}>
-              Reset
-            </button>
-          )}
-        </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {[0, 15, 30, 45, 60].map((minutes) => (
-            <button key={minutes} onClick={() => updateOffset(minutes)} style={{ padding: "7px 12px", borderRadius: 20, border: `1.5px solid ${dailyOffset === minutes ? (dailyOffset > 0 ? "var(--gold)" : "var(--sage)") : "var(--rule)"}`, background: dailyOffset === minutes ? (dailyOffset > 0 ? "var(--gold)" : "var(--sage)") : "var(--cream)", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: dailyOffset === minutes ? "white" : "var(--ink-faint)", transition: "all .2s" }}>
-              {minutes === 0 ? "On time" : `+${minutes}m`}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Summer-only banner: phones rule */}
+      {isSummer && <ScreensBanner />}
 
+      {/* School-year only: daily offset card */}
+      {!isSummer && (
+        <div style={{ padding: "14px 16px", background: dailyOffset > 0 ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${dailyOffset > 0 ? "#E0CBA8" : "var(--sage-md)"}`, borderRadius: 4, marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: dailyOffset > 0 ? "var(--gold)" : "var(--sage)", marginBottom: 0 }}>
+              {dailyOffset > 0 ? `Started ${dailyOffset}m late` : "On Schedule"}
+            </p>
+            {dailyOffset > 0 && (
+              <button onClick={() => updateOffset(0)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--gold)", textDecoration: "underline" }}>
+                Reset
+              </button>
+            )}
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {[0, 15, 30, 45, 60].map((minutes) => (
+              <button key={minutes} onClick={() => updateOffset(minutes)} style={{ padding: "7px 12px", borderRadius: 20, border: `1.5px solid ${dailyOffset === minutes ? (dailyOffset > 0 ? "var(--gold)" : "var(--sage)") : "var(--rule)"}`, background: dailyOffset === minutes ? (dailyOffset > 0 ? "var(--gold)" : "var(--sage)") : "var(--cream)", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: dailyOffset === minutes ? "white" : "var(--ink-faint)", transition: "all .2s" }}>
+                {minutes === 0 ? "On time" : `+${minutes}m`}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Summer-only: personal morning + daily anchors + morning activity */}
+      {isSummer && !isWeekend && (
+        <>
+          <PersonalMorning />
+          <DailyAnchors />
+          <MorningActivityCard />
+        </>
+      )}
+
+      {/* CM quote — same in both modes */}
       <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
         <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
 
-      {isWeekend ? (
+      {/* SCHEDULE / WEEKEND — varies by mode */}
+      {isSummer && isWeekend ? (
+        <WeekendCategoryPicker dayName={dayName} />
+      ) : !isSummer && isWeekend ? (
         <WeekendRhythm rhythm={weekendRhythm} dayName={dayName} />
       ) : (
-        <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} wovenBeauty={false} week={week} dailyOffset={dailyOffset} />
+        <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} wovenBeauty={!isSummer} week={week} dailyOffset={dailyOffset} />
       )}
 
       {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
