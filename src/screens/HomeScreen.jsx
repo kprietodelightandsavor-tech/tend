@@ -24,10 +24,76 @@ const Icon = {
   Feather: () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5l6.74-6.76z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>),
   Sun:     () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>),
   Arrow:   () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>),
+  ChevL:   ({ color = "var(--ink-faint)" }) => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>),
+  ChevR:   ({ color = "var(--ink-faint)" }) => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>),
   Sprout:  () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 20h10"/><path d="M12 20V10"/><path d="M12 10C12 10 8 9 7 5c3 0 5 2 5 5z"/><path d="M12 10C12 10 16 9 17 5c-3 0-5 2-5 5z"/></svg>),
   Moon:    () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#B8935A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>),
   X:       () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
 };
+
+// Line-art icons for the weekend invitations
+const WeekendIcon = {
+  Family: () => (<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 11h16"/><path d="M5 11v8"/><path d="M19 11v8"/><circle cx="8" cy="14" r="0.6" fill="currentColor"/><circle cx="12" cy="14" r="0.6" fill="currentColor"/><circle cx="16" cy="14" r="0.6" fill="currentColor"/><path d="M3 19h18"/></svg>),
+  Creativity: () => (<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20l5-5"/><path d="M9 15l4-4 5 5-4 4z"/><path d="M14 10l3-3a2 2 0 012.8 2.8l-3 3"/></svg>),
+  Body: () => (<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M2 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg>),
+  Horses: () => (<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M7 21V11c0-3 2-5 5-5s5 2 5 5v10"/><path d="M7 21h10"/><path d="M9 14h6"/></svg>),
+  Ranch: () => (<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v18"/><path d="M9 7c1 0 2 1 3 2 1-1 2-2 3-2"/><path d="M9 11c1 0 2 1 3 2 1-1 2-2 3-2"/><path d="M9 15c1 0 2 1 3 2 1-1 2-2 3-2"/></svg>),
+};
+
+// Refined invitation prompts
+const WEEKEND_INVITATIONS = {
+  family: {
+    label: "Family",
+    icon: WeekendIcon.Family,
+    prompts: [
+      "Who haven't you looked at lately?",
+      "Is there a meal worth slowing down for?",
+      "Anyone owed a long conversation?",
+    ],
+  },
+  creativity: {
+    label: "Creativity",
+    icon: WeekendIcon.Creativity,
+    prompts: [
+      "What's been sitting half-finished?",
+      "Is there something you've been wanting to try?",
+      "Old project or new one?",
+    ],
+  },
+  body: {
+    label: "Body",
+    icon: WeekendIcon.Body,
+    prompts: [
+      "Walk, ride, swim, or sit?",
+      "Strength training today?",
+      "Stretch or yoga session?",
+      "Where would the water be good today?",
+      "What kind of tired do you want to be tonight?",
+    ],
+  },
+  horses: {
+    label: "Horses",
+    icon: WeekendIcon.Horses,
+    prompts: [
+      "Saddle one up?",
+      "Round pen work today?",
+      "Who hasn't been brushed in a while?",
+      "Is anyone limping or favoring something?",
+      "Just go say hello?",
+    ],
+  },
+  ranch: {
+    label: "Ranch",
+    icon: WeekendIcon.Ranch,
+    prompts: [
+      "What have you been ignoring?",
+      "Anything broken that's nagging at you?",
+      "Is there a corner that needs ten minutes?",
+    ],
+  },
+};
+
+const WEEKEND_ORDER = ["family", "creativity", "body", "horses", "ranch"];
 
 const getBlockColor = (subject) => {
   const s = subject.toLowerCase();
@@ -41,6 +107,24 @@ const getBlockColor = (subject) => {
 
 const FREE_KEYWORDS = ["rise", "chores", "piano", "free", "rest", "independent", "lunch", "outdoor", "nature", "afternoon", "pursuits", "break", "reset", "flex"];
 const isFreeBlock = (subject) => FREE_KEYWORDS.some(k => subject.toLowerCase().includes(k));
+
+// ─── DATE HELPERS ─────────────────────────────────────────────────────────
+function isSameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+function dayOffset(date) {
+  // returns positive int = days from today (ignoring time of day)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return Math.round((d - today) / (1000 * 60 * 60 * 24));
+}
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
 
 export function PremiumModal({ onClose }) {
   const FREE_FEATURES = [
@@ -119,7 +203,7 @@ function WovenBeautyCard({ item, checked, onToggle }) {
   );
 }
 
-function MemoryVerseBlock({ items, blockId, subChecked, onToggle }) {
+function MemoryVerseBlock({ items, blockId, subChecked, onToggle, viewOnly }) {
   const [expanded, setExpanded] = useState(false);
   const memoryIdx = items.findIndex(i => typeof i === "string" && i.toLowerCase().includes("memory"));
 
@@ -139,9 +223,11 @@ function MemoryVerseBlock({ items, blockId, subChecked, onToggle }) {
               {expanded && (
                 <div style={{ padding: "4px 10px 10px" }}>
                   <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.7, marginBottom: 8 }}>{item}</p>
-                  <button onClick={() => onToggle(idx)} style={{ background: checked ? "var(--sage-bg)" : "none", border: `1px solid ${checked ? "var(--sage)" : "var(--rule)"}`, borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontSize: 11, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: checked ? "var(--sage)" : "var(--ink-faint)", textDecoration: checked ? "line-through" : "none" }}>
-                    {checked ? "recited ✦" : "mark recited"}
-                  </button>
+                  {!viewOnly && (
+                    <button onClick={() => onToggle(idx)} style={{ background: checked ? "var(--sage-bg)" : "none", border: `1px solid ${checked ? "var(--sage)" : "var(--rule)"}`, borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontSize: 11, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: checked ? "var(--sage)" : "var(--ink-faint)", textDecoration: checked ? "line-through" : "none" }}>
+                      {checked ? "recited ✦" : "mark recited"}
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -149,7 +235,7 @@ function MemoryVerseBlock({ items, blockId, subChecked, onToggle }) {
         }
 
         return (
-          <button key={idx} onClick={() => onToggle(idx)} style={{ background: checked ? "var(--sage-bg)" : "none", border: `1px solid ${checked ? "var(--sage)" : "var(--rule)"}`, borderRadius: 20, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: checked ? "var(--sage)" : "var(--ink-faint)", transition: "all .2s", textDecoration: checked ? "line-through" : "none", alignSelf: "flex-start" }}>
+          <button key={idx} onClick={() => !viewOnly && onToggle(idx)} disabled={viewOnly} style={{ background: checked ? "var(--sage-bg)" : "none", border: `1px solid ${checked ? "var(--sage)" : "var(--rule)"}`, borderRadius: 20, padding: "4px 10px", cursor: viewOnly ? "default" : "pointer", fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: checked ? "var(--sage)" : "var(--ink-faint)", transition: "all .2s", textDecoration: checked ? "line-through" : "none", alignSelf: "flex-start" }}>
             {item}
           </button>
         );
@@ -280,7 +366,6 @@ function MorningActivityCard() {
     try { localStorage.setItem(`tend_morning_pick_${dateKey}`, JSON.stringify(activity)); } catch {}
   };
 
-  // Evening view: setting up for tomorrow
   if (evening) {
     return (
       <div className="morning-activity morning-activity-evening">
@@ -302,7 +387,6 @@ function MorningActivityCard() {
     );
   }
 
-  // Morning view: pick today's activity (or show what was picked)
   if (selected) {
     return (
       <div className="morning-activity">
@@ -341,63 +425,80 @@ function MorningActivityCard() {
   );
 }
 
-function WeekendCategoryPicker({ dayName }) {
-  const dateKey = new Date().toISOString().slice(0, 10);
-  const [selected, setSelected] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(`tend_weekend_${dateKey}`) || "[]");
-      return saved;
-    } catch { return []; }
-  });
-
-  const toggle = (id) => {
-    const next = selected.includes(id) ? selected.filter(s => s !== id) : [...selected, id];
-    setSelected(next);
-    try { localStorage.setItem(`tend_weekend_${dateKey}`, JSON.stringify(next)); } catch {}
-  };
+// ─── REFINED WEEKEND INVITATIONS ────────────────────────────────────────
+function WeekendInvitations({ dayName }) {
+  const [openId, setOpenId] = useState(null);
 
   return (
     <div style={{ marginBottom: 28 }}>
-      <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 8 }}>
-        Today's Rhythm — {dayName}
+      <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 14 }}>
+        {dayName}
       </p>
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 400, color: "var(--ink)", marginBottom: 8 }}>
-        Pick one or two
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 400, color: "var(--ink)", marginBottom: 6, lineHeight: 1.2 }}>
+        This day is yours.
       </h2>
-      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.6, marginBottom: 18 }}>
-        Whatever the day asks for. Rain, rest, or rhythm — it's all welcome.
+      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "var(--ink-faint)", lineHeight: 1.6, marginBottom: 28 }}>
+        What does it want to hold?
       </p>
 
-      {SUMMER_WEEKEND_CATEGORIES.map(cat => {
-        const isSelected = selected.includes(cat.id);
-        return (
-          <div key={cat.id} onClick={() => toggle(cat.id)} className={`weekend-category${isSelected ? " selected" : ""}`}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ fontSize: 22 }}>{cat.icon}</span>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 2 }}>{cat.label}</p>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", lineHeight: 1.5 }}>
-                  {cat.note}
+      <div>
+        {WEEKEND_ORDER.map((id, idx) => {
+          const inv = WEEKEND_INVITATIONS[id];
+          const IconComp = inv.icon;
+          const isOpen = openId === id;
+          const isLast = idx === WEEKEND_ORDER.length - 1;
+
+          return (
+            <div key={id} style={{ borderBottom: isLast ? "none" : "1px solid var(--rule)" }}>
+              <div onClick={() => setOpenId(isOpen ? null : id)}
+                style={{ display: "flex", alignItems: "center", gap: 16, padding: "18px 4px", cursor: "pointer" }}>
+                <div style={{ color: isOpen ? "var(--sage)" : "var(--ink-faint)", transition: "color .2s", flexShrink: 0 }}>
+                  <IconComp />
+                </div>
+                <p style={{
+                  flex: 1,
+                  fontFamily: "'Playfair Display', serif",
+                  fontSize: 18,
+                  color: "var(--ink)",
+                  fontWeight: 400,
+                }}>
+                  {inv.label}
                 </p>
               </div>
-              <div style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${isSelected ? "var(--sage)" : "var(--rule)"}`, background: isSelected ? "var(--sage)" : "none", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                {isSelected && <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
-              </div>
+
+              {isOpen && (
+                <div style={{ paddingLeft: 36, paddingBottom: 18, paddingTop: 0, borderLeft: "2px solid var(--sage)", marginLeft: 9, marginBottom: 4 }}>
+                  {inv.prompts.map((prompt, i) => (
+                    <p key={i} style={{
+                      fontFamily: "'Cormorant Garamond', serif",
+                      fontStyle: "italic",
+                      fontSize: 15,
+                      color: "var(--ink-lt)",
+                      lineHeight: 1.7,
+                      marginBottom: i === inv.prompts.length - 1 ? 0 : 8,
+                    }}>
+                      {prompt}
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week, dailyOffset }) {
-  const dateKey = new Date().toISOString().slice(0, 10);
+// ─── TODAY SCHEDULE — now supports view-only days ──────────────────────
+function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week, dailyOffset, viewDate, isToday, isViewOnly }) {
+  const dateKey = viewDate.toISOString().slice(0, 10);
   const userId  = settings?.userId;
 
   const [synced, setSynced] = useState(false);
 
   const [beautyDone, setBeautyDone] = useState(() => {
+    if (!isToday) return {};
     try {
       const saved = JSON.parse(localStorage.getItem(BEAUTY_KEY) || "null");
       if (saved?.date === dateKey && saved?.day === today) return saved.done;
@@ -411,6 +512,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
   const [notesText, setNotesText] = useState("");
 
   const toggleBeauty = (id) => {
+    if (isViewOnly) return;
     const next = { ...beautyDone, [id]: !beautyDone[id] };
     setBeautyDone(next);
     try { localStorage.setItem(BEAUTY_KEY, JSON.stringify({ date: dateKey, day: today, done: next })); } catch {}
@@ -422,7 +524,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
   useEffect(() => {
     if (!userId) return;
     loadSubjectNotes();
-  }, [userId]);
+  }, [userId, dateKey]);
 
   const loadSubjectNotes = async () => {
     try {
@@ -496,6 +598,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
   const defaultItems = () => blocks.map(b => ({ ...b, status: "pending", motherNote: "", subChecked: {} }));
 
   const [items, setItems] = useState(() => {
+    if (!isToday) return defaultItems();
     try {
       const saved = JSON.parse(localStorage.getItem(SCHEDULE_KEY) || "null");
       if (saved && saved.date === dateKey && saved.day === today) return saved.items;
@@ -503,8 +606,24 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
     return defaultItems();
   });
 
+  // Reset items when navigating to a different day
   useEffect(() => {
-    if (!userId || synced) return;
+    if (!isToday) {
+      setItems(defaultItems());
+      return;
+    }
+    try {
+      const saved = JSON.parse(localStorage.getItem(SCHEDULE_KEY) || "null");
+      if (saved && saved.date === dateKey && saved.day === today) {
+        setItems(saved.items);
+        return;
+      }
+    } catch {}
+    setItems(defaultItems());
+  }, [dateKey, today, isToday]);
+
+  useEffect(() => {
+    if (!userId || synced || !isToday) return;
     loadDailyState(userId, dateKey).then(remote => {
       if (remote?.items && remote?.day === today) {
         setItems(remote.items);
@@ -514,9 +633,10 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
       }
       setSynced(true);
     });
-  }, [userId]);
+  }, [userId, isToday]);
 
   const persist = (newItems, newBeauty) => {
+    if (isViewOnly) return;
     try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify({ date: dateKey, day: today, items: newItems })); } catch {}
     if (userId) {
       saveDailyState(userId, dateKey, {
@@ -528,6 +648,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
   };
 
   const toggleDone = (id) => {
+    if (isViewOnly) return;
     setItems(prev => {
       const t = prev.find(b => b.id === id);
       if (!t) return prev;
@@ -553,6 +674,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
   };
 
   const markSkipped = (id) => {
+    if (isViewOnly) return;
     setItems(prev => {
       const t = prev.find(b => b.id === id);
       const u = prev.map(b => b.id === id ? { ...b, status: "skipped" } : b);
@@ -564,6 +686,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
   };
 
   const toggleSub = (blockId, subIdx) => {
+    if (isViewOnly) return;
     setItems(prev => {
       const next = prev.map(b => b.id === blockId ? { ...b, subChecked: { ...b.subChecked, [subIdx]: !b.subChecked[subIdx] } } : b);
       persist(next);
@@ -575,8 +698,12 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
   const lpt = useRef(null);
   const riseShineItems = RISE_SHINE_ITEMS[today] || [];
 
-  const saveNote = (id, note) => { setItems(prev => prev.map(b => b.id === id ? { ...b, motherNote: note } : b)); setEditingNote(null); };
-  const startLP  = (id) => { lpt.current = setTimeout(() => { clearTimeout(lpt.current); markSkipped(id); }, 1000); };
+  const saveNote = (id, note) => {
+    if (isViewOnly) return;
+    setItems(prev => prev.map(b => b.id === id ? { ...b, motherNote: note } : b));
+    setEditingNote(null);
+  };
+  const startLP  = (id) => { if (isViewOnly) return; lpt.current = setTimeout(() => { clearTimeout(lpt.current); markSkipped(id); }, 1000); };
   const cancelLP = () => clearTimeout(lpt.current);
 
   const isNatureDay = NATURE_DAYS[today] === true;
@@ -589,6 +716,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
     return { subject: "The Story of the Tadpole", read: "The Year Round by C.J. Hylander · Spring section", observe: "Go outside and look near ponds or puddles for frogs or tadpoles." };
   });
   const [natureDone, setNatureDone] = useState(() => {
+    if (!isToday) return false;
     try {
       const saved = JSON.parse(localStorage.getItem("tend_nature_done") || "null");
       return saved?.date === dateKey ? saved.done : false;
@@ -596,6 +724,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
   });
 
   const markNatureDone = () => {
+    if (isViewOnly) return;
     setNatureDone(true);
     try { localStorage.setItem("tend_nature_done", JSON.stringify({ date: dateKey, done: true })); } catch {}
     const next = advanceNatureLoop();
@@ -603,6 +732,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
   };
 
   const undoNatureDone = () => {
+    if (isViewOnly) return;
     setNatureDone(false);
     try { localStorage.setItem("tend_nature_done", JSON.stringify({ date: dateKey, done: false })); } catch {}
   };
@@ -617,12 +747,14 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
     return `${String(newHours).padStart(2, "0")}:${String(newMins).padStart(2, "0")}`;
   };
 
+  const screenOpacity = isViewOnly ? 0.7 : 1;
+
   return (
-    <div style={{ marginBottom: 28 }}>
+    <div style={{ marginBottom: 28, opacity: screenOpacity, transition: "opacity .3s" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Icon.Sun />
-          <p className="eyebrow" style={{ marginBottom: 0 }}>Today · {today}</p>
+          <p className="eyebrow" style={{ marginBottom: 0 }}>{isToday ? "Today" : "Day"} · {today}</p>
         </div>
         <button onClick={() => onNavigate("planner")}
           style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase" }}>
@@ -630,11 +762,11 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
         </button>
       </div>
 
-      {isNatureDay && (() => {
+      {isNatureDay && isToday && (() => {
         const step = NATURE_LOOP_STEPS[loopStep];
         return (
           <div onClick={natureDone ? undoNatureDone : markNatureDone}
-            style={{ borderBottom: "1px solid var(--rule)", opacity: natureDone ? 0.35 : 1, transition: "opacity .3s", cursor: "pointer" }}>
+            style={{ borderBottom: "1px solid var(--rule)", opacity: natureDone ? 0.35 : 1, transition: "opacity .3s", cursor: isViewOnly ? "default" : "pointer" }}>
             <div style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px" }}>
               <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: natureDone ? "var(--rule)" : "var(--sage)", marginRight: 12, flexShrink: 0, minHeight: 36 }} />
               <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}></span>
@@ -653,26 +785,16 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
                 {natureDone && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
               </div>
             </div>
-            {!natureDone && (
-              <div style={{ display: "flex", gap: 5, alignItems: "center", paddingLeft: 51, paddingBottom: 8 }}>
-                {NATURE_LOOP_STEPS.map((s, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: i === loopStep ? "var(--sage)" : "var(--rule)" }} />
-                    <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 7, letterSpacing: ".08em", color: i === loopStep ? "var(--sage)" : "var(--ink-faint)", textTransform: "uppercase" }}>{s.step}</span>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         );
       })()}
 
       {items.map(b => {
         const isDone = b.status === "done", isSkipped = b.status === "skipped";
-        const showMother = isFreeBlock(b.subject) && !isSkipped;
+        const showMother = isFreeBlock(b.subject) && !isSkipped && isToday;
         const blockColor = getBlockColor(b.subject);
         const isRise = b.riseShine === true;
-        const wovenItem = wovenBeauty ? getBeautyForBlock(b.subject, today, week || 1) : null;
+        const wovenItem = wovenBeauty && isToday ? getBeautyForBlock(b.subject, today, week || 1) : null;
         const displayTime = getAdjustedTime(b.time, dailyOffset);
         const isExpanded = expandedBlock === b.id;
         const hasNotes = subjectNotes[b.subject];
@@ -689,9 +811,9 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
             <div style={{ borderBottom: "1px solid var(--rule)" }}>
               <div 
                 onClick={() => setExpandedBlock(isExpanded ? null : b.id)}
-                onTouchStart={() => { if (b.status === "pending") startLP(b.id); }} 
+                onTouchStart={() => { if (b.status === "pending" && !isViewOnly) startLP(b.id); }} 
                 onTouchEnd={cancelLP}
-                onMouseDown={() => { if (b.status === "pending") startLP(b.id); }} 
+                onMouseDown={() => { if (b.status === "pending" && !isViewOnly) startLP(b.id); }} 
                 onMouseUp={cancelLP} 
                 onMouseLeave={cancelLP}
                 style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px", cursor: "pointer", opacity: isDone ? 0.35 : isSkipped ? 0.45 : 1, transition: "opacity .4s ease" }}>
@@ -700,7 +822,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
                 <div
                   onClick={e => {
                     e.stopPropagation();
-                    toggleDone(b.id);
+                    if (!isViewOnly) toggleDone(b.id);
                   }}
                   style={{
                     width: 18,
@@ -711,10 +833,11 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    cursor: "pointer",
+                    cursor: isViewOnly ? "default" : "pointer",
                     flexShrink: 0,
                     transition: "all .2s",
                     marginRight: 10,
+                    opacity: isViewOnly ? 0.5 : 1,
                   }}>
                   {isDone && (
                     <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -729,12 +852,12 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
                   </p>
                   {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped · tap to restore</p>}
                   {b.note && !isSkipped && !isDone && <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
-                  {isDone && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
+                  {isDone && isToday && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
                 </div>
               </div>
 
               {isExpanded && !isDone && !isSkipped && (
-                <div style={{ paddingLeft: 51, paddingBottom: 12, paddingTop: 8 }} onClick={e => e.stopPropagation()}>
+                <div style={{ paddingLeft: 51, paddingBottom: 12, paddingTop: 8, opacity: 1 }} onClick={e => e.stopPropagation()}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, cursor: "pointer" }}>
                     <svg 
                       onClick={() => {
@@ -819,10 +942,10 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
               )}
               {isRise && !isDone && !isSkipped && riseShineItems.length > 0 && (
                 <div style={{ paddingLeft: 53, paddingBottom: 10 }} onClick={e => e.stopPropagation()}>
-                  <MemoryVerseBlock items={riseShineItems} blockId={b.id} subChecked={b.subChecked} onToggle={(idx) => toggleSub(b.id, idx)} />
+                  <MemoryVerseBlock items={riseShineItems} blockId={b.id} subChecked={b.subChecked} onToggle={(idx) => toggleSub(b.id, idx)} viewOnly={isViewOnly} />
                 </div>
               )}
-              {showMother && (
+              {showMother && !isViewOnly && (
                 <div style={{ paddingLeft: 53, paddingBottom: 8 }} onClick={e => e.stopPropagation()}>
                   {editingNote === b.id ? (
                     <input autoFocus defaultValue={b.motherNote} placeholder="What will you tend during this time?"
@@ -840,7 +963,14 @@ function TodaySchedule({ today, blocks, onNavigate, settings, wovenBeauty, week,
           </div>
         );
       })}
-      <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap checkbox to complete · Long press to skip · Tap to expand for notes</p>
+      {isToday && (
+        <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap checkbox to complete · Long press to skip · Tap to expand for notes</p>
+      )}
+      {isViewOnly && (
+        <p className="caption italic" style={{ marginTop: 12, textAlign: "center", color: "var(--ink-faint)" }}>
+          Viewing another day · tap a block to add or edit notes
+        </p>
+      )}
     </div>
   );
 }
@@ -879,13 +1009,97 @@ function WeekendRhythm({ rhythm, dayName }) {
   );
 }
 
+// ─── DAY NAVIGATOR ──────────────────────────────────────────────────────
+function DayNavigator({ viewDate, onChange, onSnapToday }) {
+  const offset = dayOffset(viewDate);
+  const isToday = offset === 0;
+  const canGoBack = offset > -7;
+  const canGoForward = offset < 7;
+
+  const dateLabel = viewDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6, gap: 8 }}>
+      <button
+        onClick={() => canGoBack && onChange(addDays(viewDate, -1))}
+        disabled={!canGoBack}
+        style={{
+          background: "none",
+          border: "none",
+          cursor: canGoBack ? "pointer" : "default",
+          opacity: canGoBack ? 1 : 0.25,
+          padding: "4px 8px",
+          display: "flex",
+          alignItems: "center",
+          flexShrink: 0,
+        }}
+        aria-label="Previous day"
+      >
+        <Icon.ChevL />
+      </button>
+
+      <div style={{ flex: 1, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        <p className="eyebrow" style={{ marginBottom: 0 }}>{dateLabel}</p>
+        {!isToday && (
+          <button
+            onClick={onSnapToday}
+            style={{
+              background: "var(--sage-bg)",
+              border: "1px solid var(--sage-md)",
+              borderRadius: 20,
+              padding: "2px 10px",
+              cursor: "pointer",
+              fontSize: 9,
+              fontFamily: "'Lato', sans-serif",
+              letterSpacing: ".1em",
+              textTransform: "uppercase",
+              color: "var(--sage)",
+            }}
+          >
+            Today
+          </button>
+        )}
+      </div>
+
+      <button
+        onClick={() => canGoForward && onChange(addDays(viewDate, 1))}
+        disabled={!canGoForward}
+        style={{
+          background: "none",
+          border: "none",
+          cursor: canGoForward ? "pointer" : "default",
+          opacity: canGoForward ? 1 : 0.25,
+          padding: "4px 8px",
+          display: "flex",
+          alignItems: "center",
+          flexShrink: 0,
+        }}
+        aria-label="Next day"
+      >
+        <Icon.ChevR />
+      </button>
+    </div>
+  );
+}
+
+// ─── MAIN HOMESCREEN ────────────────────────────────────────────────────
 export default function HomeScreen({ onNavigate, settings }) {
+  const [viewDate, setViewDate] = useState(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
+
   const now = new Date();
   const hour = now.getHours();
   const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
   const name = settings?.name || "Friend";
 
-  const day = now.getDay();
+  const offset = dayOffset(viewDate);
+  const isToday = offset === 0;
+  const isViewOnly = !isToday;
+
+  const day = viewDate.getDay();
   const dayName = DAYS[day];
   const today = dayName;
   const cmQuote = CM_QUOTES[day];
@@ -894,8 +1108,7 @@ export default function HomeScreen({ onNavigate, settings }) {
   const isWeekend = dayName === "Saturday" || dayName === "Sunday";
   const isSummer = settings?.mode === "summer";
 
-  // Pick the right schedule blocks based on mode
-  const todayBlocks = isSummer ? getSummerDayBlocks(dayName, now) : (DAY_SCHEDULE[dayName] || []);
+  const todayBlocks = isSummer ? getSummerDayBlocks(dayName, viewDate) : (DAY_SCHEDULE[dayName] || []);
 
   const [dailyOffset, setDailyOffset] = useState(() => {
     try {
@@ -924,19 +1137,29 @@ export default function HomeScreen({ onNavigate, settings }) {
     ? (dayName === "Saturday" ? getSaturdayRhythm(week) : getSundayRhythm(week))
     : null;
 
+  const snapToToday = () => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    setViewDate(d);
+  };
+
   return (
     <div className={`screen${isSummer ? " summer" : ""}`}>
-      <p className="eyebrow" style={{ marginBottom: 6 }}>
-        {now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-        {isSummer && <span style={{ marginLeft: 8, color: "var(--sage)" }}>· summer rhythm</span>}
-      </p>
-      <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
+      <DayNavigator viewDate={viewDate} onChange={setViewDate} onSnapToday={snapToToday} />
+      {isToday && (
+        <h1 className="display serif" style={{ marginBottom: 4, marginTop: 8 }}>{greeting},<br />{name}.</h1>
+      )}
+      {!isToday && (
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", marginBottom: 18, marginTop: 8 }}>
+          {offset < 0 ? `${Math.abs(offset)} day${Math.abs(offset) === 1 ? "" : "s"} ago` : `In ${offset} day${offset === 1 ? "" : "s"}`}
+        </p>
+      )}
 
-      {/* Summer-only banner: phones rule */}
-      {isSummer && <ScreensBanner />}
+      {/* Summer-only banner — only on today */}
+      {isSummer && isToday && <ScreensBanner />}
 
-      {/* School-year only: daily offset card */}
-      {!isSummer && (
+      {/* School-year only: daily offset card — only on today */}
+      {!isSummer && isToday && (
         <div style={{ padding: "14px 16px", background: dailyOffset > 0 ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${dailyOffset > 0 ? "#E0CBA8" : "var(--sage-md)"}`, borderRadius: 4, marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: dailyOffset > 0 ? "var(--gold)" : "var(--sage)", marginBottom: 0 }}>
@@ -958,8 +1181,8 @@ export default function HomeScreen({ onNavigate, settings }) {
         </div>
       )}
 
-      {/* Summer-only: personal morning + daily anchors + morning activity */}
-      {isSummer && !isWeekend && (
+      {/* Summer-only: personal morning + daily anchors + morning activity (only on today, not weekends) */}
+      {isSummer && isToday && !isWeekend && (
         <>
           <PersonalMorning />
           <DailyAnchors />
@@ -967,19 +1190,32 @@ export default function HomeScreen({ onNavigate, settings }) {
         </>
       )}
 
-      {/* CM quote — same in both modes */}
-      <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
-        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
-        <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
-      </div>
+      {/* CM quote — same in both modes, only on today */}
+      {isToday && (
+        <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
+          <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
+          <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
+        </div>
+      )}
 
       {/* SCHEDULE / WEEKEND — varies by mode */}
       {isSummer && isWeekend ? (
-        <WeekendCategoryPicker dayName={dayName} />
+        <WeekendInvitations dayName={dayName} />
       ) : !isSummer && isWeekend ? (
         <WeekendRhythm rhythm={weekendRhythm} dayName={dayName} />
       ) : (
-        <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} wovenBeauty={!isSummer} week={week} dailyOffset={dailyOffset} />
+        <TodaySchedule
+          today={today}
+          blocks={todayBlocks}
+          onNavigate={onNavigate}
+          settings={settings}
+          wovenBeauty={!isSummer}
+          week={week}
+          dailyOffset={dailyOffset}
+          viewDate={viewDate}
+          isToday={isToday}
+          isViewOnly={isViewOnly}
+        />
       )}
 
       {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
