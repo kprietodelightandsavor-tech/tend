@@ -19,17 +19,15 @@ function getSchoolYear() {
 
 export default function MemoryBookScreen({ settings, onNavigate }) {
   const userId = settings?.userId;
-  const [view, setView] = useState("grid"); // grid or timeline
+  const [view, setView] = useState("grid");
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
-  // Filters
   const [selectedSeason, setSelectedSeason] = useState(getSeason());
   const [selectedYear, setSelectedYear] = useState(getSchoolYear());
   const [years, setYears] = useState([getSchoolYear()]);
 
-  // Upload state
   const [uploadCaption, setUploadCaption] = useState("");
   const [previewFile, setPreviewFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -59,8 +57,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
       if (error) throw error;
 
       setImages(data || []);
-
-      // Collect unique school years for filter dropdown
       const uniqueYears = [...new Set((data || []).map(img => img.school_year))];
       setYears(uniqueYears.length > 0 ? uniqueYears : [getSchoolYear()]);
     } catch (err) {
@@ -104,7 +100,7 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
     canvas.height = cameraRef.current.videoHeight;
     const ctx = canvas.getContext("2d");
     ctx.drawImage(cameraRef.current, 0, 0);
-    
+
     canvas.toBlob((blob) => {
       const file = new File([blob], `photo-${Date.now()}.jpg`, { type: "image/jpeg" });
       setPreviewFile(file);
@@ -123,91 +119,82 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
   };
 
   const generateCaption = async () => {
-  if (!previewUrl) return;
+    if (!previewUrl) return;
 
-  try {
-    setGeneratingCaption(true);
+    try {
+      setGeneratingCaption(true);
 
-    // Compress image to stay under Claude's 5 MB limit
-    const compressedDataUrl = await new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const maxDimension = 1568; // Claude's recommended max
-        let { width, height } = img;
-        if (width > height && width > maxDimension) {
-          height = (height * maxDimension) / width;
-          width = maxDimension;
-        } else if (height > maxDimension) {
-          width = (width * maxDimension) / height;
-          height = maxDimension;
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.85));
-      };
-      img.onerror = reject;
-      img.src = previewUrl;
-    });
+      // Compress image to stay under Claude's 5 MB limit
+      const compressedDataUrl = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const maxDimension = 1568;
+          let { width, height } = img;
+          if (width > height && width > maxDimension) {
+            height = (height * maxDimension) / width;
+            width = maxDimension;
+          } else if (height > maxDimension) {
+            width = (width * maxDimension) / height;
+            height = maxDimension;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", 0.85));
+        };
+        img.onerror = reject;
+        img.src = previewUrl;
+      });
 
-    const base64Image = compressedDataUrl.split(",")[1];
+      const base64Image = compressedDataUrl.split(",")[1];
 
-    const response = await fetch("https://tend-ds.netlify.app/.netlify/functions/anthropic-api", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-opus-4-6",
-        max_tokens: 150,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: "image/jpeg",
-                  data: base64Image,
+      const response = await fetch("https://tend-ds.netlify.app/.netlify/functions/anthropic-api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-opus-4-6",
+          max_tokens: 150,
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "image",
+                  source: {
+                    type: "base64",
+                    media_type: "image/jpeg",
+                    data: base64Image,
+                  },
                 },
-              },
-              {
-                type: "text",
-                text: "Write a beautiful, poetic one-sentence caption for this memory from a Charlotte Mason homeschool year. Focus on the moment, the beauty, or what was learned. Keep it under 20 words.",
-              },
-            ],
-          },
-        ],
-      }),
-    });
+                {
+                  type: "text",
+                  text: "Write a beautiful, poetic one-sentence caption for this memory from a Charlotte Mason homeschool year. Focus on the moment, the beauty, or what was learned. Keep it under 20 words.",
+                },
+              ],
+            },
+          ],
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok || data.error) {
-      console.error("Caption API error:", data);
-      alert(`Caption error: ${data.error || response.statusText}`);
-      return;
+      if (!response.ok || data.error) {
+        console.error("Caption API error:", data);
+        alert(`Caption error: ${data.error || response.statusText}`);
+        return;
+      }
+
+      const caption = data.content?.[0]?.text || "";
+      setUploadCaption(caption);
+    } catch (err) {
+      console.error("Error generating caption:", err);
+      alert(`Could not generate caption: ${err.message}`);
+    } finally {
+      setGeneratingCaption(false);
     }
-
-    const caption = data.content?.[0]?.text || "";
-    setUploadCaption(caption);
-  } catch (err) {
-    console.error("Error generating caption:", err);
-    alert(`Could not generate caption: ${err.message}`);
-  } finally {
-    setGeneratingCaption(false);
-  }
-};
-    const data = await response.json();
-
-    // Surface the real error so we can see what's actually wrong
-    if (!response.ok || data.error) {
-      console.error("Caption API error:", data);
-      alert(`Caption error: ${data.error || response.statusText}`);
-      return;
-    }
-    
+  };
 
   const handleUpload = async () => {
     if (!userId || !previewFile) return;
@@ -215,7 +202,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
     try {
       setUploading(true);
 
-      // Upload image to Supabase Storage
       const fileName = `${userId}/${Date.now()}-${previewFile.name}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("memory-book-images")
@@ -223,12 +209,10 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: publicUrl } = supabase.storage
         .from("memory-book-images")
         .getPublicUrl(fileName);
 
-      // Save record to database
       const { error: dbError } = await supabase.from("memory_book").insert([
         {
           user_id: userId,
@@ -242,7 +226,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
 
       if (dbError) throw dbError;
 
-      // Reload and reset form
       await loadMemoryBook();
       setPreviewFile(null);
       setPreviewUrl(null);
@@ -270,7 +253,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
     }
   };
 
-  // Filter images
   const filteredImages = images.filter(
     img => img.season === selectedSeason && img.school_year === selectedYear
   );
@@ -283,7 +265,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
         Recall the year in images. A visual journal of beauty and growth.
       </p>
 
-      {/* Upload Section */}
       {!showUploadForm && !showCamera && (
         <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 4, padding: "16px", marginBottom: 28 }}>
           <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 12 }}>
@@ -337,7 +318,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
         </div>
       )}
 
-      {/* Camera View */}
       {showCamera && (
         <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 4, padding: "16px", marginBottom: 28 }}>
           <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 12 }}>
@@ -393,7 +373,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
         </div>
       )}
 
-      {/* Upload Form */}
       {showUploadForm && previewUrl && (
         <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 4, padding: "16px", marginBottom: 28 }}>
           <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 12 }}>
@@ -531,7 +510,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
         </div>
       )}
 
-      {/* Filters & View Toggle */}
       <div style={{ display: "flex", gap: 8, marginBottom: 20, alignItems: "center" }}>
         <select
           value={selectedSeason}
@@ -607,7 +585,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
         </div>
       </div>
 
-      {/* Content */}
       {loading ? (
         <p style={{ textAlign: "center", color: "var(--ink-faint)" }}>Loading memories...</p>
       ) : filteredImages.length === 0 ? (
@@ -616,7 +593,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
           <p style={{ fontSize: 12, marginTop: 8 }}>Upload or take your first photo above to begin.</p>
         </div>
       ) : view === "grid" ? (
-        // Grid View
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12, marginBottom: 32 }}>
           {filteredImages.map(img => (
             <div
@@ -684,7 +660,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
           ))}
         </div>
       ) : (
-        // Timeline View
         <div style={{ marginBottom: 32 }}>
           {filteredImages.map((img, idx) => {
             const date = new Date(img.created_at);
@@ -692,7 +667,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
 
             return (
               <div key={img.id} style={{ display: "flex", gap: 16, marginBottom: 24 }}>
-                {/* Timeline dot & line */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 4 }}>
                   <div
                     style={{
@@ -715,7 +689,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
                   )}
                 </div>
 
-                {/* Content */}
                 <div style={{ flex: 1, paddingBottom: idx < filteredImages.length - 1 ? 24 : 0 }}>
                   <p style={{ fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 8 }}>
                     {dateStr}
@@ -759,7 +732,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
         </div>
       )}
 
-      {/* Back Button */}
       <div style={{ borderTop: "1px solid var(--rule)", paddingTop: 20 }}>
         <button
           onClick={() => onNavigate("home")}
