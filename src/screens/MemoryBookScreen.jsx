@@ -123,42 +123,62 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
   };
 
   const generateCaption = async () => {
-    if (!previewUrl) return;
+  if (!previewUrl) return;
 
-    try {
-      setGeneratingCaption(true);
+  try {
+    setGeneratingCaption(true);
 
-      // Convert base64 to base64 without data URL prefix
-      const base64Image = previewUrl.split(",")[1];
+    // Auto-detect image type from data URL (handles PNG, JPEG, WebP, etc.)
+    const mimeMatch = previewUrl.match(/^data:(image\/[a-zA-Z+]+);base64,/);
+    const mediaType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+    const base64Image = previewUrl.split(",")[1];
 
-      const response = await fetch("https://tend-ds.netlify.app/.netlify/functions/anthropic-api", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-opus-4-6",
-          max_tokens: 150,
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "image",
-                  source: {
-                    type: "base64",
-                    media_type: "image/jpeg",
-                    data: base64Image,
-                  },
+    const response = await fetch("https://tend-ds.netlify.app/.netlify/functions/anthropic-api", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-opus-4-6",
+        max_tokens: 150,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image",
+                source: {
+                  type: "base64",
+                  media_type: mediaType,
+                  data: base64Image,
                 },
-                {
-                  type: "text",
-                  text: "Write a beautiful, poetic one-sentence caption for this memory from a Charlotte Mason homeschool year. Focus on the moment, the beauty, or what was learned. Keep it under 20 words.",
-                },
-              ],
-            },
-          ],
-        }),
-      });
+              },
+              {
+                type: "text",
+                text: "Write a beautiful, poetic one-sentence caption for this memory from a Charlotte Mason homeschool year. Focus on the moment, the beauty, or what was learned. Keep it under 20 words.",
+              },
+            ],
+          },
+        ],
+      }),
+    });
 
+    const data = await response.json();
+
+    // Surface the real error so we can see what's actually wrong
+    if (!response.ok || data.error) {
+      console.error("Caption API error:", data);
+      alert(`Caption error: ${data.error || response.statusText}`);
+      return;
+    }
+
+    const caption = data.content?.[0]?.text || "";
+    setUploadCaption(caption);
+  } catch (err) {
+    console.error("Error generating caption:", err);
+    alert(`Could not generate caption: ${err.message}`);
+  } finally {
+    setGeneratingCaption(false);
+  }
+};
       const data = await response.json();
       const caption = data.content?.[0]?.text || "";
       setUploadCaption(caption);
