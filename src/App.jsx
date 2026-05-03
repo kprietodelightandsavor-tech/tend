@@ -23,7 +23,6 @@ import MemoryBookScreen from "./screens/MemoryBookScreen";
 
 const NAV_SCREENS = ["home", "planner", "narration", "menu"];
 
-// ─── QUICK NOTES ─────────────────────────────────────────────────────────────
 const NOTES_KEY = "tend_quick_notes";
 const SUBJECTS  = ["General", "Math", "Language Arts", "History", "Science", "Geography", "Nature Study", "Read Aloud", "Spanish", "Co-op", "Other"];
 
@@ -52,7 +51,6 @@ function QuickNotesSheet({ onClose, students, userId }) {
     return res.json();
   };
 
-  // Load notes on open
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
     callNotes({ method: "list", userId })
@@ -99,8 +97,6 @@ function QuickNotesSheet({ onClose, students, userId }) {
       <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "24px 24px 52px", maxHeight: "88dvh", overflowY: "auto" }}
         onClick={e => e.stopPropagation()}>
         <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 20px" }} />
-
-        {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <p className="serif" style={{ fontSize: 20 }}>Quick Notes</p>
           <div style={{ display: "flex", gap: 8 }}>
@@ -113,10 +109,8 @@ function QuickNotesSheet({ onClose, students, userId }) {
           </div>
         </div>
 
-        {/* ADD VIEW */}
         {view === "add" && (
           <>
-            {/* Tags */}
             <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
               <div style={{ flex: 1 }}>
                 <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 6 }}>Subject</p>
@@ -136,12 +130,10 @@ function QuickNotesSheet({ onClose, students, userId }) {
               )}
             </div>
 
-            {/* Text area */}
             <textarea className="textarea" placeholder="What do you want to remember?"
               value={text} onChange={e => setText(e.target.value)} rows={4}
               style={{ marginBottom: 14 }} />
 
-            {/* Voice + Save */}
             <div style={{ display: "flex", gap: 10 }}>
               {voiceOk && (
                 <button onClick={listening ? stopListening : startListening}
@@ -165,7 +157,6 @@ function QuickNotesSheet({ onClose, students, userId }) {
           </>
         )}
 
-        {/* LIST VIEW */}
         {view === "list" && (
           <>
             {loading ? (
@@ -212,7 +203,7 @@ const SCREENS = {
   annualreport: AnnualReportScreen,
   books:        BooksScreen,
   scripture:    BibleReadingScreen,
-    "beauty-loop-editor": BeautyLoopEditorScreen,
+  "beauty-loop-editor": BeautyLoopEditorScreen,
   "memory-book":        MemoryBookScreen,
 };
 
@@ -229,7 +220,6 @@ function loadLocal() {
   } catch(e) { return null; }
 }
 
-// ─── AUTH SCREEN ─────────────────────────────────────────────────────────────
 function AuthScreen() {
   const [mode, setMode]         = useState("signin");
   const [email, setEmail]       = useState("");
@@ -308,15 +298,14 @@ function AuthScreen() {
   );
 }
 
-// ─── APP ─────────────────────────────────────────────────────────────────────
 export default function App() {
   const [session, setSession]   = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading]   = useState(true);
   const [screen, setScreen]     = useState("home");
   const [showNotes, setShowNotes] = useState(false);
+  const [navIntent, setNavIntent] = useState(null);
 
-  // ── Save to both localStorage and Supabase metadata ──────────────────────
   const persistData = async (data) => {
     saveLocal(data);
     setUserData(data);
@@ -327,13 +316,11 @@ export default function App() {
     }
   };
 
-  // ── Load user data fresh from Supabase ────────────────────────────────────
   const loadUserData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const meta   = user?.user_metadata || {};
       const cached = loadLocal();
-      // Supabase wins on conflicts so is_paid always comes through
       const merged = { ...cached, ...meta };
       if (merged.onboarded) {
         saveLocal(merged);
@@ -342,7 +329,6 @@ export default function App() {
         setUserData(meta);
       }
     } catch(e) {
-      // Fall back to cache if Supabase unreachable
       const cached = loadLocal();
       if (cached) setUserData(cached);
     } finally {
@@ -350,7 +336,6 @@ export default function App() {
     }
   };
 
-  // ── Load on mount ─────────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -376,7 +361,6 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Onboarding complete ───────────────────────────────────────────────────
   const completeOnboarding = async ({ name, activeHabit, term, week }) => {
     const data = {
       name,
@@ -392,7 +376,6 @@ export default function App() {
     setScreen("home");
   };
 
-  // ── Save settings ─────────────────────────────────────────────────────────
   const saveSettings = async (updated) => {
     const newData = {
       ...userData,
@@ -405,13 +388,17 @@ export default function App() {
     await persistData(newData);
   };
 
-  // ── Save to meta (used by HomeScreen for outdoor minutes) ─────────────────
   const saveToMeta = async (updates) => {
     const newData = { ...userData, ...updates };
     await persistData(newData);
   };
 
-  // ── Loading ───────────────────────────────────────────────────────────────
+  // Navigate with optional intent (e.g. "camera" to auto-launch camera in Memory Book)
+  const handleNavigate = (id, intent = null) => {
+    setNavIntent(intent);
+    setScreen(id);
+  };
+
   if (loading) {
     return (
       <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--cream)" }}>
@@ -420,15 +407,12 @@ export default function App() {
     );
   }
 
-  // ── Not logged in ─────────────────────────────────────────────────────────
   if (!session) return <AuthScreen />;
 
-  // ── Onboarding ────────────────────────────────────────────────────────────
   if (!userData?.onboarded) {
     return <OnboardingScreen onComplete={completeOnboarding} />;
   }
 
-  // ── Main app ──────────────────────────────────────────────────────────────
   const ScreenComponent = SCREENS[screen] || HomeScreen;
   const showNav = NAV_SCREENS.includes(screen);
 
@@ -447,16 +431,25 @@ export default function App() {
     mode:           userData?.mode         || "school",
   };
 
+  const screenProps = {
+    onNavigate: handleNavigate,
+    settings,
+    onSave: saveSettings,
+  };
+
+  if (screen === "memory-book" && navIntent === "camera") {
+    screenProps.autoOpenCamera = true;
+  }
+
   return (
     <div className="shell">
       <div key={screen} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
-        <ScreenComponent onNavigate={id => setScreen(id)} settings={settings} onSave={saveSettings} />
+        <ScreenComponent {...screenProps} />
       </div>
       <div style={{ position: "fixed", bottom: showNav ? 90 : 22, right: 16, opacity: .06, pointerEvents: "none", userSelect: "none" }}>
         <img src="/ds-logo.png" alt="" style={{ width: 52, height: 52 }} />
       </div>
 
-      {/* Floating Quick Notes button */}
       <button onClick={() => setShowNotes(true)}
         style={{ position: "fixed", bottom: showNav ? 104 : 24, left: 22, width: 44, height: 44, borderRadius: "50%", background: "var(--cream)", border: "1.5px solid var(--sage-md)", boxShadow: "0 2px 12px rgba(0,0,0,.1)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, transition: "all .2s" }}>
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--sage)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -465,7 +458,7 @@ export default function App() {
         </svg>
       </button>
 
-      {showNav && <BottomNav active={screen} onNavigate={id => setScreen(id)} />}
+      {showNav && <BottomNav active={screen} onNavigate={handleNavigate} />}
       {showNotes && <QuickNotesSheet onClose={() => setShowNotes(false)} students={userData?.children || []} userId={session?.user?.id} />}
     </div>
   );
