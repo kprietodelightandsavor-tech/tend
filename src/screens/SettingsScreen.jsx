@@ -1,3 +1,4 @@
+import SummerModeToggle from "../components/SummerModeToggle";
 import { useState } from "react";
 
 const Icon = {
