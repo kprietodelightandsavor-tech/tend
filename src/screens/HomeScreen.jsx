@@ -1181,14 +1181,14 @@ export default function HomeScreen({ onNavigate, settings }) {
         </div>
       )}
 
-      {/* Summer-only: personal morning + daily anchors + morning activity (only on today, not weekends) */}
-      {isSummer && isToday && !isWeekend && (
-        <>
-          <PersonalMorning />
-          <DailyAnchors />
-          <MorningActivityCard />
-        </>
-      )}
+      {/* Summer-only: personal morning + daily anchors + morning activity (every day in summer) */}
+{isSummer && isToday && (
+  <>
+    <PersonalMorning />
+    <DailyAnchors />
+    <MorningActivityCard />
+  </>
+)}
 
       {/* CM quote — same in both modes, only on today */}
       {isToday && (
