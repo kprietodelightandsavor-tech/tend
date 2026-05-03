@@ -23,6 +23,24 @@ import MemoryBookScreen from "./screens/MemoryBookScreen";
 
 const NAV_SCREENS = ["home", "planner", "narration", "menu"];
 
+const [settings, setSettings] = useState({ /* ...existing fields... */ });
+
+useEffect(() => {
+  if (!userId) return;
+  
+  // Existing settings fetch...
+  
+  // Add this: fetch mode from user_settings
+  supabase
+    .from("user_settings")
+    .select("mode")
+    .eq("user_id", userId)
+    .maybeSingle()
+    .then(({ data }) => {
+      setSettings(prev => ({ ...prev, mode: data?.mode || "school" }));
+    });
+}, [userId]);
+
 // ─── QUICK NOTES ─────────────────────────────────────────────────────────────
 const NOTES_KEY = "tend_quick_notes";
 const SUBJECTS  = ["General", "Math", "Language Arts", "History", "Science", "Geography", "Nature Study", "Read Aloud", "Spanish", "Co-op", "Other"];
