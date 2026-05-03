@@ -1,6 +1,15 @@
 import SummerModeToggle from "../components/SummerModeToggle";
 import { useState } from "react";
 
+<SummerModeToggle 
+  userId={settings?.userId} 
+  onModeChange={(newMode) => {
+    // Optional: trigger a settings refetch in your parent
+    // so HomeScreen picks up the change immediately
+    if (onSettingsRefresh) onSettingsRefresh();
+  }}
+/>
+
 const Icon = {
   User: () => (
     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
