@@ -1,37 +1,11 @@
 // src/components/SummerModeToggle.jsx
-// Drop this into your SettingsScreen — usually near the top of the
-// settings list. It's a self-contained toggle that reads/writes to
-// the user_settings table (which you'll create with summer-mode.sql).
+// Reads from settings.mode, saves via settings.saveToMeta.
 
-import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase";
+import { useState } from "react";
 
-export default function SummerModeToggle({ userId, onModeChange }) {
-  const [mode, setMode] = useState("school");
-  const [loading, setLoading] = useState(true);
+export default function SummerModeToggle({ settings }) {
+  const [mode, setMode] = useState(settings?.mode || "school");
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (!userId) return;
-    loadMode();
-  }, [userId]);
-
-  const loadMode = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("user_settings")
-        .select("mode")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (error) throw error;
-      if (data?.mode) setMode(data.mode);
-    } catch (err) {
-      console.error("Error loading mode:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const toggleMode = async () => {
     if (saving) return;
@@ -39,18 +13,10 @@ export default function SummerModeToggle({ userId, onModeChange }) {
     setSaving(true);
 
     try {
-      const { error } = await supabase
-        .from("user_settings")
-        .upsert({
-          user_id: userId,
-          mode: newMode,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (error) throw error;
-
+      if (settings?.saveToMeta) {
+        await settings.saveToMeta({ mode: newMode });
+      }
       setMode(newMode);
-      if (onModeChange) onModeChange(newMode);
     } catch (err) {
       console.error("Error saving mode:", err);
       alert("Couldn't save. Please try again.");
@@ -58,8 +24,6 @@ export default function SummerModeToggle({ userId, onModeChange }) {
       setSaving(false);
     }
   };
-
-  if (loading) return null;
 
   const isSummer = mode === "summer";
 
