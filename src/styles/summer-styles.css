@@ -1,0 +1,81 @@
+/* ─────────────────────────────────────────────────────────────────
+   SUMMER MODE PALETTE
+   Append to your existing src/styles/globals.css.
+   Apply by adding className="summer" to the .screen wrapper.
+   ───────────────────────────────────────────────────────────────── */
+
+.summer {
+  /* Cornflower as primary accent (replacing sage) */
+  --sage: #7A95B5;
+  --sage-md: #A8BCD3;
+  --sage-bg: #EEF2F7;
+
+  /* Background warms — cream takes a hint of sun */
+  --cream: #FBF7EF;
+
+  /* Eyebrow / accent text shifts to warm gold */
+  --gold: #B8935A;
+  --gold-bg: #F7EFE0;
+
+  /* Block colors */
+  --block-morning: #B8935A;
+  --block-academic: #7A95B5;
+  --block-nature: #A9B786;
+  --block-coop: #8B9DB5;
+  --block-free: #C9B89A;
+}
+
+/* The "no screens until 2pm" banner — same style as anchor cards */
+.summer .screens-banner {
+  background: var(--sage-bg);
+  border: 1px solid var(--sage-md);
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--sage);
+  line-height: 1.6;
+}
+
+.summer .screens-banner strong {
+  font-style: normal;
+  font-family: 'Lato', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 400;
+  margin-right: 6px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Morning anchors checklist card (matches phones banner) */
+.summer .anchors-card {
+  background: var(--sage-bg);
+  border: 1px solid var(--sage-md);
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+
+/* Weekend category invitation rows — quiet, no borders by default */
+.summer .weekend-row {
+  cursor: pointer;
+}
+
+/* Morning activity card — quiet parchment with thin cornflower outline */
+.summer .morning-activity {
+  background: var(--cream);
+  border: 1px solid var(--sage-md);
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  margin-top: 24px;
+}
+
+.summer .morning-activity-evening {
+  background: var(--cream);
+  border-color: var(--sage-md);
+}
