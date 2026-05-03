@@ -179,16 +179,7 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
     setGeneratingCaption(false);
   }
 };
-      const data = await response.json();
-      const caption = data.content?.[0]?.text || "";
-      setUploadCaption(caption);
-    } catch (err) {
-      console.error("Error generating caption:", err);
-      alert("Could not generate caption. Try writing one yourself.");
-    } finally {
-      setGeneratingCaption(false);
-    }
-  };
+    
 
   const handleUpload = async () => {
     if (!userId || !previewFile) return;
