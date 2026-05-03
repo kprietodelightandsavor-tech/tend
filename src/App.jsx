@@ -23,23 +23,6 @@ import MemoryBookScreen from "./screens/MemoryBookScreen";
 
 const NAV_SCREENS = ["home", "planner", "narration", "menu"];
 
-const [settings, setSettings] = useState({ /* ...existing fields... */ });
-
-useEffect(() => {
-  if (!userId) return;
-  
-  // Existing settings fetch...
-  
-  // Add this: fetch mode from user_settings
-  supabase
-    .from("user_settings")
-    .select("mode")
-    .eq("user_id", userId)
-    .maybeSingle()
-    .then(({ data }) => {
-      setSettings(prev => ({ ...prev, mode: data?.mode || "school" }));
-    });
-}, [userId]);
 
 // ─── QUICK NOTES ─────────────────────────────────────────────────────────────
 const NOTES_KEY = "tend_quick_notes";
@@ -345,6 +328,20 @@ export default function App() {
     }
   };
 
+  const settings = {
+  name:           userData?.name         || "Friend",
+  activeHabit:    userData?.active_habit || "attention",
+  term:           userData?.term         || 1,
+  week:           userData?.week         || 1,
+  isRestWeek:     userData?.is_rest_week || false,
+  outdoorGoal:    15,
+  userId:         session.user.id,
+  outdoorMinutes: userData?.outdoor_minutes || 0,
+  saveToMeta,
+  isPaid:         userData?.is_paid      || false,
+  students:       userData?.children     || [],
+};
+  
   // ── Load user data fresh from Supabase ────────────────────────────────────
   const loadUserData = async () => {
     try {
@@ -486,4 +483,18 @@ export default function App() {
       {showNotes && <QuickNotesSheet onClose={() => setShowNotes(false)} students={userData?.children || []} userId={session?.user?.id} />}
     </div>
   );
+  const settings = {
+  name:           userData?.name         || "Friend",
+  activeHabit:    userData?.active_habit || "attention",
+  term:           userData?.term         || 1,
+  week:           userData?.week         || 1,
+  isRestWeek:     userData?.is_rest_week || false,
+  outdoorGoal:    15,
+  userId:         session.user.id,
+  outdoorMinutes: userData?.outdoor_minutes || 0,
+  saveToMeta,
+  isPaid:         userData?.is_paid      || false,
+  students:       userData?.children     || [],
+  mode:           userData?.mode         || "school",
+};
 }
