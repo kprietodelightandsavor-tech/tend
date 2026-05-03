@@ -1,14 +1,5 @@
-import SummerModeToggle from "../components/SummerModeToggle";
 import { useState } from "react";
-
-<SummerModeToggle 
-  userId={settings?.userId} 
-  onModeChange={(newMode) => {
-    // Optional: trigger a settings refetch in your parent
-    // so HomeScreen picks up the change immediately
-    if (onSettingsRefresh) onSettingsRefresh();
-  }}
-/>
+import SummerModeToggle from "../components/SummerModeToggle";
 
 const Icon = {
   User: () => (
@@ -46,6 +37,19 @@ const Icon = {
       <path d="M8 22h8"/>
     </svg>
   ),
+  Sun: () => (
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#7A95B5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  ),
 };
 
 const HABITS = [
@@ -74,6 +78,17 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
     <div className="screen">
       <p className="eyebrow" style={{ marginBottom: 6 }}>Preferences</p>
       <h1 className="display serif" style={{ marginBottom: 28 }}>Settings</h1>
+
+      {/* Summer Mode Toggle */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <Icon.Sun />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Rhythm</p>
+        </div>
+        <SummerModeToggle settings={settings} />
+      </div>
+
+      <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
 
       {/* Name */}
       <div style={{ marginBottom: 32 }}>
@@ -148,7 +163,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <button onClick={() => setGoal(g => Math.max(1, g - 1))}
             style={{ width: 36, height: 36, borderRadius: "50%", border: "1px solid var(--rule)", background: "none", cursor: "pointer", fontSize: 20, color: "var(--ink-faint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            \u2212
+            −
           </button>
           <div style={{ textAlign: "center", flex: 1 }}>
             <span className="serif" style={{ fontSize: 36, color: "var(--sage)" }}>{outdoorGoal}</span>
@@ -218,7 +233,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.7, marginBottom: 8 }}>
           Tend is a daily rhythm app for Charlotte Mason homeschool families.
         </p>
-        <p className="caption">Version 1.0 \u00b7 Delight & Savor</p>
+        <p className="caption">Version 1.0 · Delight & Savor</p>
         <a href="https://delightandsavor.com" target="_blank" rel="noopener noreferrer"
           style={{ display: "block", marginTop: 4, fontSize: 12, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".06em" }}>
           delightandsavor.com
@@ -227,7 +242,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
 
       {/* Save */}
       <button className="btn-sage" style={{ width: "100%" }} onClick={save}>
-        {saved ? "Saved \u2726" : "Save Settings"}
+        {saved ? "Saved ✦" : "Save Settings"}
       </button>
 
       <button onClick={() => onNavigate("home")}
