@@ -128,10 +128,31 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
   try {
     setGeneratingCaption(true);
 
-    // Auto-detect image type from data URL (handles PNG, JPEG, WebP, etc.)
-    const mimeMatch = previewUrl.match(/^data:(image\/[a-zA-Z+]+);base64,/);
-    const mediaType = mimeMatch ? mimeMatch[1] : "image/jpeg";
-    const base64Image = previewUrl.split(",")[1];
+    // Compress image to stay under Claude's 5 MB limit
+    const compressedDataUrl = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxDimension = 1568; // Claude's recommended max
+        let { width, height } = img;
+        if (width > height && width > maxDimension) {
+          height = (height * maxDimension) / width;
+          width = maxDimension;
+        } else if (height > maxDimension) {
+          width = (width * maxDimension) / height;
+          height = maxDimension;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = reject;
+      img.src = previewUrl;
+    });
+
+    const base64Image = compressedDataUrl.split(",")[1];
 
     const response = await fetch("https://tend-ds.netlify.app/.netlify/functions/anthropic-api", {
       method: "POST",
@@ -147,7 +168,7 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
                 type: "image",
                 source: {
                   type: "base64",
-                  media_type: mediaType,
+                  media_type: "image/jpeg",
                   data: base64Image,
                 },
               },
@@ -161,6 +182,23 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
       }),
     });
 
+    const data = await response.json();
+
+    if (!response.ok || data.error) {
+      console.error("Caption API error:", data);
+      alert(`Caption error: ${data.error || response.statusText}`);
+      return;
+    }
+
+    const caption = data.content?.[0]?.text || "";
+    setUploadCaption(caption);
+  } catch (err) {
+    console.error("Error generating caption:", err);
+    alert(`Could not generate caption: ${err.message}`);
+  } finally {
+    setGeneratingCaption(false);
+  }
+};
     const data = await response.json();
 
     // Surface the real error so we can see what's actually wrong
