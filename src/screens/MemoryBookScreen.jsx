@@ -207,16 +207,6 @@ export default function MemoryBookScreen({ settings, onNavigate }) {
       alert(`Caption error: ${data.error || response.statusText}`);
       return;
     }
-
-    const caption = data.content?.[0]?.text || "";
-    setUploadCaption(caption);
-  } catch (err) {
-    console.error("Error generating caption:", err);
-    alert(`Could not generate caption: ${err.message}`);
-  } finally {
-    setGeneratingCaption(false);
-  }
-};
     
 
   const handleUpload = async () => {
