@@ -16,53 +16,13 @@ import {
   markStreamComplete,
   undoStreamComplete,
 } from "../data/family-bible-seed";
+import {
+  getTodayBeauty,
+  isVolunteerTuesday,
+  loadBeautyProgress,
+  toggleBeautyComplete,
+} from "../data/beauty-seed";
 import { supabase } from "../lib/supabase";
-
-// ─── BEAUTY LOOP ───────────────────────────────────────────────────────
-// Anchor: Monday May 4, 2026 = Week A (Artist / Biography / Composer)
-// Week B: Poet / Folk Song / Hymn
-// Recitation is on EVERY Wednesday (no rotation), Biography and Folk Song alternate.
-const BEAUTY_ANCHOR = new Date("2026-05-04T00:00:00");
-
-function getBeautyWeekParity(date = new Date()) {
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-  const weeksSince = Math.floor((date - BEAUTY_ANCHOR) / msPerWeek);
-  return weeksSince % 2 === 0 ? "A" : "B";
-}
-
-function getTodayBeauty(dayName, isSummer = false) {
-  const week = getBeautyWeekParity();
-
-  if (dayName === "Monday") {
-    return week === "A"
-      ? [{ label: "Artist Study", scheduled: true }, { label: "Poet Study", scheduled: false }]
-      : [{ label: "Poet Study", scheduled: true }, { label: "Artist Study", scheduled: false }];
-  }
-
-  if (dayName === "Tuesday") {
-    return [{ label: "Natural History", scheduled: true }];
-  }
-
-  if (dayName === "Wednesday") {
-    if (isSummer) {
-      // Summer: Folk Song only (no Recitation, no Biography)
-      return [{ label: "Folk Song", scheduled: true }];
-    }
-    // School year: Recitation always + alternating Biography ↔ Folk Song
-    const rotating = week === "A"
-      ? [{ label: "Biography", scheduled: true }, { label: "Folk Song", scheduled: false }]
-      : [{ label: "Folk Song", scheduled: true }, { label: "Biography", scheduled: false }];
-    return [{ label: "Recitation", scheduled: true }, ...rotating];
-  }
-
-  if (dayName === "Friday") {
-    return week === "A"
-      ? [{ label: "Composer Study", scheduled: true }, { label: "Hymn Study", scheduled: false }]
-      : [{ label: "Hymn Study", scheduled: true }, { label: "Composer Study", scheduled: false }];
-  }
-
-  return null;
-}
 
 const Icon = {
   Leaf:    () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>),
@@ -72,6 +32,16 @@ const Icon = {
   ChevR:   ({ color = "var(--ink-faint)" }) => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>),
   Camera:  ({ color = "var(--sage)" }) => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>),
   X:       () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
+  // Small line-art flower for Beauty subjects
+  Flower:  ({ size = 13, color = "var(--sage)" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="2"/>
+      <path d="M12 5c-1.5 0-2.5 1.5-2.5 3s1 2.5 2.5 2.5 2.5-1 2.5-2.5S13.5 5 12 5z"/>
+      <path d="M12 13.5c-1.5 0-2.5 1-2.5 2.5s1 3 2.5 3 2.5-1.5 2.5-3-1-2.5-2.5-2.5z"/>
+      <path d="M5 12c0-1.5 1.5-2.5 3-2.5s2.5 1 2.5 2.5-1 2.5-2.5 2.5S5 13.5 5 12z"/>
+      <path d="M13.5 12c0-1.5 1-2.5 2.5-2.5s3 1 3 2.5-1.5 2.5-3 2.5-2.5-1-2.5-2.5z"/>
+    </svg>
+  ),
 };
 
 const WeekendIcon = {
@@ -96,7 +66,7 @@ const getBlockColor = (subject) => {
   if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("living literature") || s.includes("hymn") || s.includes("read-aloud") || s.includes("read aloud")) return "var(--block-morning)";
   if (s.includes("math") || s.includes("language") || s.includes("writing") || s.includes("copywork") || s.includes("history") || s.includes("science") || s.includes("geography") || s.includes("spanish") || s.includes("reading") || s.includes("commonplace") || s.includes("rotation")) return "var(--block-academic)";
   if (s.includes("nature") || s.includes("outdoor") || s.includes("artist") || s.includes("composer") || s.includes("beauty") || s.includes("poet") || s.includes("biography") || s.includes("folk song")) return "var(--block-nature)";
-  if (s.includes("co-op") || s.includes("bach") || s.includes("chispa") || s.includes("tennis") || s.includes("volunteer") || s.includes("swim") || s.includes("river")) return "var(--block-coop)";
+  if (s.includes("co-op") || s.includes("bach") || s.includes("chispa") || s.includes("tennis") || s.includes("volunteer") || s.includes("swim") || s.includes("river") || s.includes("cibolo")) return "var(--block-coop)";
   if (s.includes("lunch") || s.includes("free") || s.includes("rest") || s.includes("afternoon") || s.includes("break") || s.includes("pursuits") || s.includes("reset") || s.includes("flex")) return "var(--block-free)";
   return "var(--rule)";
 };
@@ -204,71 +174,66 @@ const EVE_ANCHORS_KEY = "tend_summer_evening_anchors";
 const FB_EXPANDED_KEY = "tend_fb_expanded";
 const SKIP_SUBJECTS = ["Rise & Shine", "Lunch", "Outdoor Break", "Afternoon Pursuits", "House Reset & Animal Chores", "Tuesday Rhythm", "Tennis"];
 
-// ─── BEAUTY CARD ────────────────────────────────────────────────────────
-function BeautyCard({ dayName, isSummer }) {
-  const items = getTodayBeauty(dayName, isSummer);
+// ─── BEAUTY BLOCK (replaces Beauty Loop schedule blocks inline) ────────
+// Renders inside a schedule block when the block subject contains "Beauty Loop"
+function BeautyBlockContent({ dayName, viewDate, userId, beautyProgress, onToggle }) {
+  const items = getTodayBeauty(dayName, viewDate);
   if (!items || items.length === 0) return null;
 
   return (
-    <div style={{
-      background: "var(--cream)",
-      border: "1px solid var(--rule)",
-      borderLeft: "3px solid var(--sage)",
-      borderRadius: 3,
-      padding: "12px 14px 14px",
-      marginBottom: 24,
-    }}>
-      <p style={{
-        fontSize: 9,
-        fontFamily: "'Lato', sans-serif",
-        letterSpacing: ".14em",
-        textTransform: "uppercase",
-        color: "var(--sage)",
-        marginBottom: 10,
-      }}>
-        Today's Beauty
-      </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {items.map((item, idx) => (
-          <div key={idx} style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-            {item.scheduled ? (
-              <>
-                <span style={{ color: "var(--sage)", fontSize: 11, lineHeight: 1, flexShrink: 0 }}>✦</span>
-                <p style={{
-                  fontFamily: "'Playfair Display', serif",
-                  fontSize: 15,
-                  color: "var(--sage)",
-                  fontWeight: 500,
-                  margin: 0,
-                  lineHeight: 1.4,
-                }}>
-                  {item.label}
-                </p>
-              </>
-            ) : (
-              <>
-                <span style={{ width: 11, flexShrink: 0 }} />
-                <p style={{
-                  fontFamily: "'Playfair Display', serif",
-                  fontSize: 14,
-                  color: "var(--ink-faint)",
-                  fontWeight: 400,
-                  margin: 0,
-                  lineHeight: 1.4,
-                  opacity: 0.7,
-                }}>
-                  {item.label}
-                </p>
-              </>
-            )}
+    <div style={{ paddingLeft: 53, paddingRight: 6, paddingBottom: 10, paddingTop: 4 }}>
+      {items.map((item) => {
+        const isDone = !!beautyProgress[item.id];
+        const isScheduled = item.scheduled;
+
+        return (
+          <div
+            key={item.id}
+            onClick={(e) => { e.stopPropagation(); onToggle(item.id); }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "5px 0",
+              cursor: "pointer",
+              opacity: isDone ? 0.45 : 1,
+              transition: "opacity .2s",
+            }}>
+            <div style={{
+              width: 14,
+              height: 14,
+              borderRadius: 2,
+              border: `1.5px solid ${isDone ? "var(--sage)" : "var(--rule)"}`,
+              background: isDone ? "var(--sage)" : "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              {isDone && <svg width="8" height="8" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
+            </div>
+            {isScheduled && <Icon.Flower size={12} color="var(--sage)" />}
+            {!isScheduled && <span style={{ width: 12, flexShrink: 0 }} />}
+            <p style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: isScheduled ? 14 : 13,
+              fontWeight: isScheduled ? 500 : 400,
+              color: isDone ? "var(--ink-faint)" : (isScheduled ? "var(--sage)" : "var(--ink-faint)"),
+              opacity: isScheduled ? 1 : 0.7,
+              margin: 0,
+              textDecoration: isDone ? "line-through" : "none",
+              textDecorationColor: "var(--sage-md)",
+            }}>
+              {item.label}
+            </p>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }
 
-// ─── FAMILY BIBLE STUDY CARD (Supabase-backed, async) ──────────────────
+// ─── FAMILY BIBLE STUDY CARD (Supabase-backed) ─────────────────────────
 function FamilyBibleStudy({ userId }) {
   const [expanded, setExpanded] = useState(() => {
     try {
@@ -281,16 +246,14 @@ function FamilyBibleStudy({ userId }) {
 
   const [streamStates, setStreamStates] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState({}); // per-stream busy flag
+  const [busy, setBusy] = useState({});
 
-  // Load all stream states from Supabase on mount
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
     let cancelled = false;
     (async () => {
       const states = await loadAllStreamStates(userId);
       if (cancelled) return;
-      // Apply Monday shift if needed
       const finalStates = await applyMondayShifts(userId, states);
       if (!cancelled) {
         setStreamStates(finalStates);
@@ -313,9 +276,7 @@ function FamilyBibleStudy({ userId }) {
     if (busy[streamId]) return;
     setBusy(prev => ({ ...prev, [streamId]: true }));
     const newState = await markStreamComplete(userId, streamId);
-    if (newState) {
-      setStreamStates(prev => ({ ...prev, [streamId]: newState }));
-    }
+    if (newState) setStreamStates(prev => ({ ...prev, [streamId]: newState }));
     setBusy(prev => ({ ...prev, [streamId]: false }));
   };
 
@@ -323,13 +284,10 @@ function FamilyBibleStudy({ userId }) {
     if (busy[streamId]) return;
     setBusy(prev => ({ ...prev, [streamId]: true }));
     const newState = await undoStreamComplete(userId, streamId);
-    if (newState) {
-      setStreamStates(prev => ({ ...prev, [streamId]: newState }));
-    }
+    if (newState) setStreamStates(prev => ({ ...prev, [streamId]: newState }));
     setBusy(prev => ({ ...prev, [streamId]: false }));
   };
 
-  // Build the dot row — one dot per stream, filled if any reading was completed this week
   const streamProgress = FAMILY_BIBLE_STREAMS.map(stream => {
     const state = streamStates?.[stream.id];
     const completedCount = state?.completedThisWeek?.length || 0;
@@ -686,6 +644,30 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
   const [editingNotes, setEditingNotes] = useState(null);
   const [notesText, setNotesText] = useState("");
 
+  // Beauty progress (Supabase-backed, weekly Mon-to-Mon)
+  const [beautyProgress, setBeautyProgress] = useState({});
+  useEffect(() => {
+    if (!userId || !isToday) return;
+    let cancelled = false;
+    (async () => {
+      const progress = await loadBeautyProgress(userId);
+      if (!cancelled) setBeautyProgress(progress);
+    })();
+    return () => { cancelled = true; };
+  }, [userId, isToday]);
+
+  const handleBeautyToggle = async (beautyId) => {
+    if (isViewOnly || !userId) return;
+    const currentValue = !!beautyProgress[beautyId];
+    // Optimistic update
+    setBeautyProgress(prev => ({ ...prev, [beautyId]: !currentValue }));
+    const newValue = await toggleBeautyComplete(userId, beautyId, currentValue);
+    if (newValue === null) {
+      // Revert on error
+      setBeautyProgress(prev => ({ ...prev, [beautyId]: currentValue }));
+    }
+  };
+
   useEffect(() => { if (userId) loadSubjectNotes(); }, [userId, dateKey]);
 
   const loadSubjectNotes = async () => {
@@ -889,6 +871,11 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
         const isRise = b.riseShine === true;
         const displayTime = getAdjustedTime(b.time, dailyOffset);
         const isExpanded = expandedBlock === b.id;
+
+        // Detect Beauty Loop block — render Beauty checkboxes inline
+        const isBeautyBlock = b.subject.toLowerCase().includes("beauty loop") && !b.subject.toLowerCase().includes("volunteer");
+        const beautyItems = isBeautyBlock && isToday ? getTodayBeauty(today, viewDate) : null;
+
         return (
           <div key={b.id}>
             <div style={{ borderBottom: "1px solid var(--rule)" }}>
@@ -901,16 +888,28 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
                   {isDone && <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 16, color: isDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease" }}>
-                    {b.subject} <span style={{ fontSize: 12, color: "var(--ink-faint)" }}>{displayTime}</span>
+                  <p style={{ fontSize: 16, color: isDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease", display: "flex", alignItems: "center", gap: 8 }}>
+                    {isBeautyBlock && <Icon.Flower size={14} color={isDone ? "var(--ink-faint)" : "var(--sage)"} />}
+                    <span>{b.subject} <span style={{ fontSize: 12, color: "var(--ink-faint)", fontWeight: 400 }}>{displayTime}</span></span>
                   </p>
                   {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped · tap to restore</p>}
-                  {b.note && !isSkipped && !isDone && <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
+                  {b.note && !isSkipped && !isDone && !isBeautyBlock && <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
                   {isDone && isToday && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
                 </div>
               </div>
 
-              {isExpanded && !isDone && !isSkipped && (
+              {/* Beauty Loop sub-checkboxes — always visible inside the block */}
+              {isBeautyBlock && beautyItems && beautyItems.length > 0 && !isDone && !isSkipped && (
+                <BeautyBlockContent
+                  dayName={today}
+                  viewDate={viewDate}
+                  userId={userId}
+                  beautyProgress={beautyProgress}
+                  onToggle={handleBeautyToggle}
+                />
+              )}
+
+              {isExpanded && !isDone && !isSkipped && !isBeautyBlock && (
                 <div style={{ paddingLeft: 51, paddingBottom: 12, paddingTop: 8 }} onClick={e => e.stopPropagation()}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, cursor: "pointer" }}>
                     <svg onClick={() => { setEditingNotes(b.id); setNotesText(subjectNotes[b.subject] || ""); }} width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--sage)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ cursor: "pointer" }}>
@@ -1031,7 +1030,32 @@ export default function HomeScreen({ onNavigate, settings }) {
   const isWeekend = dayName === "Saturday" || dayName === "Sunday";
   const isSummer = settings?.mode === "summer";
 
-  const todayBlocks = isSummer ? getSummerDayBlocks(dayName, viewDate) : (DAY_SCHEDULE[dayName] || []);
+  // Tuesday volunteer-week schedule swap (school year only)
+  let todayBlocks;
+  if (isSummer) {
+    todayBlocks = getSummerDayBlocks(dayName, viewDate);
+  } else {
+    const baseBlocks = DAY_SCHEDULE[dayName] || [];
+    if (dayName === "Tuesday" && isVolunteerTuesday(viewDate)) {
+      // Volunteer Tuesday — replace Beauty Loop OR Volunteer block with Cibolo block
+      todayBlocks = baseBlocks.map(b => {
+        if (b.subject.includes("Beauty Loop OR Volunteer")) {
+          return { ...b, subject: "Cibolo Rehab Center", note: "Volunteer with Chispa · 10:30—12:00" };
+        }
+        return b;
+      });
+    } else if (dayName === "Tuesday") {
+      // Non-volunteer Tuesday — change "Beauty Loop OR Volunteer" to just "Beauty Loop"
+      todayBlocks = baseBlocks.map(b => {
+        if (b.subject.includes("Beauty Loop OR Volunteer")) {
+          return { ...b, subject: "Beauty Loop", note: "" };
+        }
+        return b;
+      });
+    } else {
+      todayBlocks = baseBlocks;
+    }
+  }
 
   const [dailyOffset, setDailyOffset] = useState(() => {
     try {
@@ -1100,9 +1124,6 @@ export default function HomeScreen({ onNavigate, settings }) {
           <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
         </div>
       )}
-
-      {/* Today's Beauty card — both modes, weekdays only */}
-      {isToday && !isWeekend && <BeautyCard dayName={dayName} isSummer={isSummer} />}
 
       {/* Family Bible Study card — every day on today */}
       {isToday && <FamilyBibleStudy userId={settings?.userId} />}
