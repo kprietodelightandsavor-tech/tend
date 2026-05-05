@@ -11,13 +11,17 @@ import {
 import {
   FAMILY_BIBLE_STREAMS,
   getStreamView,
+  loadAllStreamStates,
+  applyMondayShifts,
   markStreamComplete,
   undoStreamComplete,
 } from "../data/family-bible-seed";
 import { supabase } from "../lib/supabase";
 
-// ─── BEAUTY LOOP — simple weekly rotation ──────────────────────────────
-// Anchor: Monday May 4, 2026 = Week A (Artist / Folk Song / Composer)
+// ─── BEAUTY LOOP ───────────────────────────────────────────────────────
+// Anchor: Monday May 4, 2026 = Week A (Artist / Biography / Composer)
+// Week B: Poet / Folk Song / Hymn
+// Recitation is on EVERY Wednesday (no rotation), Biography and Folk Song alternate.
 const BEAUTY_ANCHOR = new Date("2026-05-04T00:00:00");
 
 function getBeautyWeekParity(date = new Date()) {
@@ -26,10 +30,6 @@ function getBeautyWeekParity(date = new Date()) {
   return weeksSince % 2 === 0 ? "A" : "B";
 }
 
-// Get today's beauty subjects
-// Returns array of { label, scheduled: bool, isPrimary: bool }
-// scheduled = the one currently in rotation this week
-// isPrimary = always shown (Biography on Wed)
 function getTodayBeauty(dayName, isSummer = false) {
   const week = getBeautyWeekParity();
 
@@ -45,14 +45,14 @@ function getTodayBeauty(dayName, isSummer = false) {
 
   if (dayName === "Wednesday") {
     if (isSummer) {
-      // Summer: just Folk Song (no Biography, no Recitation)
+      // Summer: Folk Song only (no Recitation, no Biography)
       return [{ label: "Folk Song", scheduled: true }];
     }
-    // School year: Biography always + rotating Folk Song / Recitation
+    // School year: Recitation always + alternating Biography ↔ Folk Song
     const rotating = week === "A"
-      ? [{ label: "Folk Song", scheduled: true }, { label: "Recitation", scheduled: false }]
-      : [{ label: "Recitation", scheduled: true }, { label: "Folk Song", scheduled: false }];
-    return [{ label: "Biography", scheduled: true, isPrimary: true }, ...rotating];
+      ? [{ label: "Biography", scheduled: true }, { label: "Folk Song", scheduled: false }]
+      : [{ label: "Folk Song", scheduled: true }, { label: "Biography", scheduled: false }];
+    return [{ label: "Recitation", scheduled: true }, ...rotating];
   }
 
   if (dayName === "Friday") {
@@ -61,7 +61,7 @@ function getTodayBeauty(dayName, isSummer = false) {
       : [{ label: "Hymn Study", scheduled: true }, { label: "Composer Study", scheduled: false }];
   }
 
-  return null; // Thursday, Saturday, Sunday — no beauty card
+  return null;
 }
 
 const Icon = {
@@ -268,8 +268,8 @@ function BeautyCard({ dayName, isSummer }) {
   );
 }
 
-// ─── FAMILY BIBLE STUDY CARD (collapsible) ─────────────────────────────
-function FamilyBibleStudy() {
+// ─── FAMILY BIBLE STUDY CARD (Supabase-backed, async) ──────────────────
+function FamilyBibleStudy({ userId }) {
   const [expanded, setExpanded] = useState(() => {
     try {
       const dateKey = new Date().toISOString().slice(0, 10);
@@ -278,6 +278,27 @@ function FamilyBibleStudy() {
     } catch {}
     return false;
   });
+
+  const [streamStates, setStreamStates] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState({}); // per-stream busy flag
+
+  // Load all stream states from Supabase on mount
+  useEffect(() => {
+    if (!userId) { setLoading(false); return; }
+    let cancelled = false;
+    (async () => {
+      const states = await loadAllStreamStates(userId);
+      if (cancelled) return;
+      // Apply Monday shift if needed
+      const finalStates = await applyMondayShifts(userId, states);
+      if (!cancelled) {
+        setStreamStates(finalStates);
+        setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [userId]);
 
   const toggleExpanded = () => {
     const next = !expanded;
@@ -288,15 +309,31 @@ function FamilyBibleStudy() {
     } catch {}
   };
 
-  const [, forceUpdate] = useState(0);
-  const refresh = () => forceUpdate(n => n + 1);
+  const handleComplete = async (streamId) => {
+    if (busy[streamId]) return;
+    setBusy(prev => ({ ...prev, [streamId]: true }));
+    const newState = await markStreamComplete(userId, streamId);
+    if (newState) {
+      setStreamStates(prev => ({ ...prev, [streamId]: newState }));
+    }
+    setBusy(prev => ({ ...prev, [streamId]: false }));
+  };
 
-  const handleComplete = (stream) => { markStreamComplete(stream); refresh(); };
-  const handleUndo = (stream) => { undoStreamComplete(stream); refresh(); };
+  const handleUndo = async (streamId) => {
+    if (busy[streamId]) return;
+    setBusy(prev => ({ ...prev, [streamId]: true }));
+    const newState = await undoStreamComplete(userId, streamId);
+    if (newState) {
+      setStreamStates(prev => ({ ...prev, [streamId]: newState }));
+    }
+    setBusy(prev => ({ ...prev, [streamId]: false }));
+  };
 
+  // Build the dot row — one dot per stream, filled if any reading was completed this week
   const streamProgress = FAMILY_BIBLE_STREAMS.map(stream => {
-    const view = getStreamView(stream);
-    return { id: stream.id, hasCompleted: view.completed.length > 0 };
+    const state = streamStates?.[stream.id];
+    const completedCount = state?.completedThisWeek?.length || 0;
+    return { id: stream.id, hasCompleted: completedCount > 0 };
   });
 
   return (
@@ -330,69 +367,77 @@ function FamilyBibleStudy() {
             Read what fits the day. Tap to mark complete.
           </p>
 
-          {FAMILY_BIBLE_STREAMS.map((stream, idx) => {
-            const view = getStreamView(stream);
-            const isLast = idx === FAMILY_BIBLE_STREAMS.length - 1;
+          {loading ? (
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", padding: "16px 0", textAlign: "center" }}>
+              Loading…
+            </p>
+          ) : (
+            FAMILY_BIBLE_STREAMS.map((stream, idx) => {
+              const state = streamStates?.[stream.id];
+              const view = getStreamView(stream, state);
+              const isLast = idx === FAMILY_BIBLE_STREAMS.length - 1;
+              const isBusy = !!busy[stream.id];
 
-            if (!view.active && view.completed.length === 0) {
+              if (!view.active && view.completed.length === 0) {
+                return (
+                  <div key={stream.id} style={{ padding: "10px 0", borderBottom: isLast ? "none" : "1px solid var(--rule)", opacity: 0.5 }}>
+                    <p style={{ fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 2 }}>
+                      {stream.label}
+                    </p>
+                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)" }}>
+                      Complete · add more readings in settings
+                    </p>
+                  </div>
+                );
+              }
+
               return (
-                <div key={stream.id} style={{ padding: "10px 0", borderBottom: isLast ? "none" : "1px solid var(--rule)", opacity: 0.5 }}>
-                  <p style={{ fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 2 }}>
+                <div key={stream.id} style={{ padding: "10px 0", borderBottom: isLast ? "none" : "1px solid var(--rule)", opacity: isBusy ? 0.6 : 1, transition: "opacity .2s" }}>
+                  <p style={{ fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 6 }}>
                     {stream.label}
                   </p>
-                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)" }}>
-                    Complete · add more readings in settings
-                  </p>
+
+                  {view.active && (
+                    <div onClick={() => !isBusy && handleComplete(stream.id)} style={{ display: "flex", gap: 10, alignItems: "flex-start", cursor: isBusy ? "wait" : "pointer", padding: "4px 0" }}>
+                      <div style={{ width: 16, height: 16, borderRadius: 2, border: "1.5px solid var(--rule)", background: "none", flexShrink: 0, marginTop: 2 }} />
+                      <div style={{ flex: 1 }}>
+                        {view.active.label && (
+                          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", marginBottom: 2 }}>
+                            {view.active.label}
+                          </p>
+                        )}
+                        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: view.active.label ? 13 : 14, color: view.active.label ? "var(--ink-lt)" : "var(--ink)", lineHeight: 1.5 }}>
+                          {view.active.reference}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {view.completed.length > 0 && (
+                    <div style={{ marginTop: view.active ? 8 : 0 }}>
+                      {view.completed.map((reading, i) => (
+                        <div key={reading.id} onClick={() => i === view.completed.length - 1 && !isBusy && handleUndo(stream.id)} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "3px 0", opacity: 0.45, cursor: i === view.completed.length - 1 ? (isBusy ? "wait" : "pointer") : "default" }}>
+                          <div style={{ width: 16, height: 16, borderRadius: 2, border: "1.5px solid var(--sage)", background: "var(--sage)", flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            {reading.label && (
+                              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 13, color: "var(--ink-faint)", textDecoration: "line-through", textDecorationColor: "var(--sage-md)", marginBottom: 1 }}>
+                                {reading.label}
+                              </p>
+                            )}
+                            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: reading.label ? 12 : 13, color: "var(--ink-faint)", textDecoration: "line-through", textDecorationColor: "var(--sage-md)", lineHeight: 1.4 }}>
+                              {reading.reference}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
-            }
-
-            return (
-              <div key={stream.id} style={{ padding: "10px 0", borderBottom: isLast ? "none" : "1px solid var(--rule)" }}>
-                <p style={{ fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 6 }}>
-                  {stream.label}
-                </p>
-
-                {view.active && (
-                  <div onClick={() => handleComplete(stream)} style={{ display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", padding: "4px 0" }}>
-                    <div style={{ width: 16, height: 16, borderRadius: 2, border: "1.5px solid var(--rule)", background: "none", flexShrink: 0, marginTop: 2 }} />
-                    <div style={{ flex: 1 }}>
-                      {view.active.label && (
-                        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", marginBottom: 2 }}>
-                          {view.active.label}
-                        </p>
-                      )}
-                      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: view.active.label ? 13 : 14, color: view.active.label ? "var(--ink-lt)" : "var(--ink)", lineHeight: 1.5 }}>
-                        {view.active.reference}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {view.completed.length > 0 && (
-                  <div style={{ marginTop: view.active ? 8 : 0 }}>
-                    {view.completed.map((reading, i) => (
-                      <div key={reading.id} onClick={() => i === view.completed.length - 1 && handleUndo(stream)} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "3px 0", opacity: 0.45, cursor: i === view.completed.length - 1 ? "pointer" : "default" }}>
-                        <div style={{ width: 16, height: 16, borderRadius: 2, border: "1.5px solid var(--sage)", background: "var(--sage)", flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          {reading.label && (
-                            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 13, color: "var(--ink-faint)", textDecoration: "line-through", textDecorationColor: "var(--sage-md)", marginBottom: 1 }}>
-                              {reading.label}
-                            </p>
-                          )}
-                          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: reading.label ? 12 : 13, color: "var(--ink-faint)", textDecoration: "line-through", textDecorationColor: "var(--sage-md)", lineHeight: 1.4 }}>
-                            {reading.reference}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+            })
+          )}
         </div>
       )}
     </div>
@@ -1056,11 +1101,11 @@ export default function HomeScreen({ onNavigate, settings }) {
         </div>
       )}
 
-      {/* Today's Beauty card — both school year and summer, weekdays only */}
+      {/* Today's Beauty card — both modes, weekdays only */}
       {isToday && !isWeekend && <BeautyCard dayName={dayName} isSummer={isSummer} />}
 
       {/* Family Bible Study card — every day on today */}
-      {isToday && <FamilyBibleStudy />}
+      {isToday && <FamilyBibleStudy userId={settings?.userId} />}
 
       {/* Schedule or weekend invitations */}
       {isSummer && isWeekend ? (
