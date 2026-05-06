@@ -4,6 +4,14 @@
 
 import { supabase } from "../lib/supabase";
 
+export const RISE_SHINE_ITEMS = {
+  Monday:    ["Piano", "Math", "Reading", "Writing"],
+  Tuesday:   ["Piano", "Math", "Reading", "Copywork"],
+  Wednesday: ["Piano", "Math", "Reading", "Writing"],
+  Thursday:  ["Piano", "Math", "Reading", "Copywork"],
+  Friday:    ["Piano", "Math", "Reading", "Writing"],
+};
+
 // ─────────────────────────────────────────────────────────────────────
 // ANCHORS
 // Beauty rotation anchor: Mon May 4, 2026 = Week A
