@@ -398,3 +398,66 @@ export function advanceNatureLoop() {
   } catch {}
   return next;
 }
+
+// ─── BEAUTY ROTATION (woven beauty cards) ─────────────────────────────────────
+export const BEAUTY_ROTATION = {
+  Monday: {
+    morning: {
+      anchors: ["language", "using language", "math"],
+      items: [
+        { id: "bl-m-bio", label: "Biography Study",   note: "A life worth knowing. Read a chapter and narrate — what made this person who they were?" },
+        { id: "bl-m-cit", label: "Citizenship Study", note: "Stories of virtue and civic life. What does it mean to be a good neighbor, citizen, steward?" },
+      ],
+    },
+    afternoon: {
+      anchors: ["science", "artist", "beauty"],
+      items: [
+        { id: "bl-m-art",  label: "Artist Study",        note: "Picture study — observe quietly, narrate, then sketch from memory." },
+        { id: "bl-m-poet", label: "Poet & Poetry Study", note: "Read the poem aloud twice. What image stayed with you?" },
+      ],
+    },
+  },
+  Tuesday: {
+    morning: {
+      anchors: ["language", "math"],
+      items: [
+        { id: "bl-t-cit", label: "Citizenship Study", note: "Stories of virtue and good neighboring." },
+        { id: "bl-t-self", label: "Self-Growth",      note: "A small habit, tended faithfully." },
+      ],
+    },
+  },
+  Wednesday: {
+    morning: {
+      anchors: ["language", "math"],
+      items: [
+        { id: "bl-w-rec",  label: "Recitation",      note: "Speak the poem or passage aloud. Let the voice make it yours." },
+        { id: "bl-w-bio",  label: "Biography",       note: "A life worth knowing — read and narrate." },
+        { id: "bl-w-folk", label: "Folk Song",       note: "Sing together. The song is the lesson." },
+      ],
+    },
+  },
+  Friday: {
+    morning: {
+      anchors: ["language", "math"],
+      items: [
+        { id: "bl-f-comp", label: "Composer Study", note: "Listen to one piece. What did you hear?" },
+        { id: "bl-f-hymn", label: "Hymn Study",     note: "Sing this term's hymn together." },
+      ],
+    },
+  },
+};
+
+export function getBeautyForBlock(subject, today, week) {
+  const dayRotations = BEAUTY_ROTATION[today];
+  if (!dayRotations) return null;
+  const s = subject.toLowerCase();
+  for (const slot of Object.values(dayRotations)) {
+    if (slot.anchors.some(a => s.includes(a))) {
+      const items = slot.items;
+      if (!items.length) return null;
+      if (items.length === 1) return items[0];
+      return items[week % 2 === 1 ? 0 : 1];
+    }
+  }
+  return null;
+}
