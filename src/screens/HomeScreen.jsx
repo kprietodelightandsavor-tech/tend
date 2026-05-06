@@ -1022,7 +1022,7 @@ export default function HomeScreen({ onNavigate, settings }) {
   const isViewOnly = !isToday;
 
   const day = viewDate.getDay();
-  const dayName = DAYS[day];
+  const dayName = DAYS[day === 0 ? 6 : day - 1];
   const today = dayName;
   const cmQuote = CM_QUOTES[day];
 
