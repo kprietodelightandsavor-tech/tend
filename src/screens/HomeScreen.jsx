@@ -1096,25 +1096,32 @@ export default function HomeScreen({ onNavigate, settings }) {
         </p>
       )}
 
-      {isSummer && isToday && <ScreensBanner />}
-
-      {!isSummer && isToday && (
-        <div style={{ padding: "14px 16px", background: dailyOffset > 0 ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${dailyOffset > 0 ? "#E0CBA8" : "var(--sage-md)"}`, borderRadius: 4, marginBottom: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: dailyOffset > 0 ? "var(--gold)" : "var(--sage)", marginBottom: 0 }}>
-              {dailyOffset > 0 ? `Started ${dailyOffset}m late` : "On Schedule"}
-            </p>
-            {dailyOffset > 0 && <button onClick={() => updateOffset(0)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--gold)", textDecoration: "underline" }}>Reset</button>}
-          </div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {[0, 15, 30, 45, 60].map((minutes) => (
-              <button key={minutes} onClick={() => updateOffset(minutes)} style={{ padding: "7px 12px", borderRadius: 20, border: `1.5px solid ${dailyOffset === minutes ? (dailyOffset > 0 ? "var(--gold)" : "var(--sage)") : "var(--rule)"}`, background: dailyOffset === minutes ? (dailyOffset > 0 ? "var(--gold)" : "var(--sage)") : "var(--cream)", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: dailyOffset === minutes ? "white" : "var(--ink-faint)", transition: "all .2s" }}>
-                {minutes === 0 ? "On time" : `+${minutes}m`}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {isSummer ? (
+  <SummerRhythm
+    userId={settings?.userId}
+    viewDate={viewDate}
+    isToday={isToday}
+  />
+) : (
+  <>
+    {isToday && <FamilyBibleStudy userId={settings?.userId} />}
+    {isWeekend ? (
+      <WeekendRhythm rhythm={weekendRhythm} />
+    ) : (
+      <TodaySchedule
+        today={today}
+        blocks={todayBlocks}
+        onNavigate={onNavigate}
+        settings={settings}
+        week={week}
+        dailyOffset={dailyOffset}
+        viewDate={viewDate}
+        isToday={isToday}
+        isViewOnly={isViewOnly}
+      />
+    )}
+  </>
+)}
 
       {isSummer && isToday && <MorningAnchors />}
 
