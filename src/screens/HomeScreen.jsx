@@ -33,7 +33,6 @@ const Icon = {
   ChevR:   ({ color = "var(--ink-faint)" }) => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>),
   Camera:  ({ color = "var(--sage)" }) => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>),
   X:       () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
-  // Small line-art flower for Beauty subjects
   Flower:  ({ size = 13, color = "var(--sage)" }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="2"/>
@@ -93,9 +92,9 @@ function addDays(date, n) {
 
 export function PremiumModal({ onClose }) {
   const FREE_FEATURES = [
-    "Daily schedule — one repeating template",
+    "Daily schedule \u2014 one repeating template",
     "Outdoor time tracker toward your weekly goal",
-    "Consider the Lilies — up to 3 journal entries",
+    "Consider the Lilies \u2014 up to 3 journal entries",
     "One habit focus (Attention) with today's ideas",
     "5 free narration sessions",
     "One student profile",
@@ -103,8 +102,8 @@ export function PremiumModal({ onClose }) {
     "CM quote of the day",
   ];
   const PREMIUM_FEATURES = [
-    "Full weekly planner — different schedule per day, editable blocks",
-    "Week grid view — see your whole week at a glance",
+    "Full weekly planner \u2014 different schedule per day, editable blocks",
+    "Week grid view \u2014 see your whole week at a glance",
     "Beauty Loop anchored to your daily subjects",
     "Term counter with rest week gentle rhythm",
     "All five Charlotte Mason habits with 12-week reflection",
@@ -126,25 +125,25 @@ export function PremiumModal({ onClose }) {
         </div>
         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontStyle: "italic", color: "var(--ink-lt)", marginBottom: 24, lineHeight: 1.8 }}>Beauty. Meaning. Connection.</p>
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 12 }}>Free — always</p>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 12 }}>Free \u2014 always</p>
           {FREE_FEATURES.map((f, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
-              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>✓</span>
+              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>{"\u2713"}</span>
               <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.5 }}>{f}</p>
             </div>
           ))}
         </div>
         <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3, padding: "18px", marginBottom: 28 }}>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 14 }}>Premium — everything above, plus</p>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 14 }}>Premium \u2014 everything above, plus</p>
           {PREMIUM_FEATURES.map((f, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
-              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>✦</span>
+              <span style={{ color: "var(--sage)", fontSize: 13, flexShrink: 0, marginTop: 1 }}>{"\u2726"}</span>
               <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, fontStyle: "italic", color: "var(--ink-lt)", lineHeight: 1.5 }}>{f}</p>
             </div>
           ))}
         </div>
         <a href="https://delightnsavor.gumroad.com/l/qrxxi" target="_blank" rel="noopener noreferrer" style={{ display: "block", background: "var(--sage)", borderRadius: 2, padding: "14px 0", width: "100%", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "white", textAlign: "center", textDecoration: "none", marginBottom: 12 }}>
-          Join Tend Premium →
+          Join Tend Premium {"\u2192"}
         </a>
         <button onClick={onClose} style={{ width: "100%", background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
           Maybe later
@@ -170,13 +169,10 @@ async function saveDailyState(userId, date, state) {
 
 const SCHEDULE_KEY = "tend_schedule_state";
 const DAILY_OFFSET_KEY = "tend_daily_offset";
-const ANCHORS_KEY = "tend_summer_anchors";
-const EVE_ANCHORS_KEY = "tend_summer_evening_anchors";
 const FB_EXPANDED_KEY = "tend_fb_expanded";
 const SKIP_SUBJECTS = ["Rise & Shine", "Lunch", "Outdoor Break", "Afternoon Pursuits", "House Reset & Animal Chores", "Tuesday Rhythm", "Tennis"];
 
-// ─── BEAUTY BLOCK (replaces Beauty Loop schedule blocks inline) ────────
-// Renders inside a schedule block when the block subject contains "Beauty Loop"
+// ─── BEAUTY BLOCK (school year only) ───────────────────────────────────
 function BeautyBlockContent({ dayName, viewDate, userId, beautyProgress, onToggle }) {
   const items = getTodayBeauty(dayName, viewDate);
   if (!items || items.length === 0) return null;
@@ -234,7 +230,7 @@ function BeautyBlockContent({ dayName, viewDate, userId, beautyProgress, onToggl
   );
 }
 
-// ─── FAMILY BIBLE STUDY CARD (Supabase-backed) ─────────────────────────
+// ─── FAMILY BIBLE STUDY CARD (school year only) ────────────────────────
 function FamilyBibleStudy({ userId }) {
   const [expanded, setExpanded] = useState(() => {
     try {
@@ -315,7 +311,7 @@ function FamilyBibleStudy({ userId }) {
             ))}
           </div>
           <span style={{ fontSize: 11, color: "var(--ink-faint)", fontFamily: "'Lato', sans-serif", letterSpacing: ".05em", lineHeight: 1 }}>
-            {expanded ? "↑" : "↓"}
+            {expanded ? "\u2191" : "\u2193"}
           </span>
         </div>
       </div>
@@ -328,7 +324,7 @@ function FamilyBibleStudy({ userId }) {
 
           {loading ? (
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", padding: "16px 0", textAlign: "center" }}>
-              Loading…
+              Loading...
             </p>
           ) : (
             FAMILY_BIBLE_STREAMS.map((stream, idx) => {
@@ -344,7 +340,7 @@ function FamilyBibleStudy({ userId }) {
                       {stream.label}
                     </p>
                     <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)" }}>
-                      Complete · add more readings in settings
+                      Complete \u00b7 add more readings in settings
                     </p>
                   </div>
                 );
@@ -403,165 +399,6 @@ function FamilyBibleStudy({ userId }) {
   );
 }
 
-function MorningAnchors() {
-  const dateKey = new Date().toISOString().slice(0, 10);
-  const [done, setDone] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(ANCHORS_KEY) || "null");
-      if (saved?.date === dateKey) return saved.done;
-    } catch {}
-    return {};
-  });
-
-  const toggle = (id) => {
-    const next = { ...done, [id]: !done[id] };
-    setDone(next);
-    try { localStorage.setItem(ANCHORS_KEY, JSON.stringify({ date: dateKey, done: next })); } catch {}
-  };
-
-  return (
-    <div className="anchors-card">
-      <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 12 }}>
-        Morning Anchors
-      </p>
-      {SUMMER_MORNING_ANCHORS.map(anchor => {
-        const isDone = !!done[anchor.id];
-        return (
-          <div key={anchor.id} onClick={() => toggle(anchor.id)} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "6px 0", cursor: "pointer", opacity: isDone ? 0.5 : 1, transition: "opacity .2s" }}>
-            <div style={{ width: 16, height: 16, borderRadius: 2, border: `1.5px solid ${isDone ? "var(--sage)" : "var(--rule)"}`, background: isDone ? "var(--sage)" : "none", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-              {isDone && <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
-            </div>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 14, fontFamily: "'Playfair Display', serif", color: isDone ? "var(--ink-faint)" : "var(--ink)", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)" }}>
-                {anchor.label}
-              </p>
-              {anchor.note && !isDone && (
-                <p style={{ fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.5, marginTop: 2 }}>
-                  {anchor.note}
-                </p>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function EveningAnchors({ dayName }) {
-  const dateKey = new Date().toISOString().slice(0, 10);
-  const anchors = getEveningAnchors(dayName);
-  const [done, setDone] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(EVE_ANCHORS_KEY) || "null");
-      if (saved?.date === dateKey) return saved.done;
-    } catch {}
-    return {};
-  });
-
-  const toggle = (id) => {
-    const next = { ...done, [id]: !done[id] };
-    setDone(next);
-    try { localStorage.setItem(EVE_ANCHORS_KEY, JSON.stringify({ date: dateKey, done: next })); } catch {}
-  };
-
-  return (
-    <div className="anchors-card">
-      <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 12 }}>
-        Day's Rhythm
-      </p>
-      {anchors.map(anchor => {
-        const isDone = !!done[anchor.id];
-        return (
-          <div key={anchor.id} onClick={() => toggle(anchor.id)} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "6px 0", cursor: "pointer", opacity: isDone ? 0.5 : 1, transition: "opacity .2s" }}>
-            <div style={{ width: 16, height: 16, borderRadius: 2, border: `1.5px solid ${isDone ? "var(--sage)" : "var(--rule)"}`, background: isDone ? "var(--sage)" : "none", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-              {isDone && <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
-            </div>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 14, fontFamily: "'Playfair Display', serif", color: isDone ? "var(--ink-faint)" : "var(--ink)", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)" }}>
-                {anchor.label}
-              </p>
-              {anchor.note && !isDone && (
-                <p style={{ fontSize: 12, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.5, marginTop: 2 }}>
-                  {anchor.note}
-                </p>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function MorningActivityCard() {
-  const evening = isEveningSetupTime();
-  const choices = getActivityChoices(new Date(), 3);
-  const tomorrow = getTomorrowActivity();
-  const [selected, setSelected] = useState(() => {
-    const dateKey = new Date().toISOString().slice(0, 10);
-    try { return JSON.parse(localStorage.getItem(`tend_morning_pick_${dateKey}`) || "null"); }
-    catch { return null; }
-  });
-
-  const pickActivity = (activity) => {
-    const dateKey = new Date().toISOString().slice(0, 10);
-    setSelected(activity);
-    try { localStorage.setItem(`tend_morning_pick_${dateKey}`, JSON.stringify(activity)); } catch {}
-  };
-
-  if (evening) {
-    return (
-      <div className="morning-activity morning-activity-evening">
-        <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 8 }}>Set up for tomorrow morning</p>
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 6 }}>{tomorrow.label}</p>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-lt)", lineHeight: 1.6, marginBottom: 4 }}>
-          <strong style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, fontStyle: "normal", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", fontWeight: 400 }}>Tonight: </strong>
-          {tomorrow.setup}
-        </p>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", lineHeight: 1.6 }}>
-          <strong style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, fontStyle: "normal", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", fontWeight: 400 }}>They'll need: </strong>
-          {tomorrow.kidsNeed}
-        </p>
-      </div>
-    );
-  }
-
-  if (selected) {
-    return (
-      <div className="morning-activity">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-          <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)" }}>Today's Morning Activity</p>
-          <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", color: "var(--ink-faint)", cursor: "pointer", textTransform: "uppercase" }}>Change</button>
-        </div>
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 6 }}>{selected.label}</p>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-lt)", lineHeight: 1.6 }}>{selected.kidsNeed}</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="morning-activity">
-      <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 10 }}>Pick a morning activity</p>
-      {choices.map(choice => (
-        <div key={choice.id} onClick={() => pickActivity(choice)} style={{ borderTop: "1px solid var(--rule)", padding: "10px 0", cursor: "pointer" }}>
-          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", marginBottom: 2 }}>{choice.label}</p>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", lineHeight: 1.5 }}>{choice.kidsNeed}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function ScreensBanner() {
-  return (
-    <div className="screens-banner">
-      <strong>Phones</strong>
-      <span>on the counter from 8:30 — yours included — until 2:00. Screens allowed 2:00–4:00, then back on the counter.</span>
-    </div>
-  );
-}
-
 function MemoryVerseBlock({ items, blockId, subChecked, onToggle, viewOnly }) {
   const [expanded, setExpanded] = useState(false);
   const memoryIdx = items.findIndex(i => typeof i === "string" && i.toLowerCase().includes("memory"));
@@ -576,14 +413,14 @@ function MemoryVerseBlock({ items, blockId, subChecked, onToggle, viewOnly }) {
             <div key={idx} style={{ borderRadius: 3, border: "1px solid var(--rule)", overflow: "hidden" }}>
               <button onClick={() => setExpanded(e => !e)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "none", border: "none", cursor: "pointer" }}>
                 <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--sage)" }}>Memory Verse</span>
-                <span style={{ fontSize: 10, color: "var(--ink-faint)" }}>{expanded ? "↑" : "↓"}</span>
+                <span style={{ fontSize: 10, color: "var(--ink-faint)" }}>{expanded ? "\u2191" : "\u2193"}</span>
               </button>
               {expanded && (
                 <div style={{ padding: "4px 10px 10px" }}>
                   <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.7, marginBottom: 8 }}>{item}</p>
                   {!viewOnly && (
                     <button onClick={() => onToggle(idx)} style={{ background: checked ? "var(--sage-bg)" : "none", border: `1px solid ${checked ? "var(--sage)" : "var(--rule)"}`, borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontSize: 11, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", color: checked ? "var(--sage)" : "var(--ink-faint)", textDecoration: checked ? "line-through" : "none" }}>
-                      {checked ? "recited ✦" : "mark recited"}
+                      {checked ? "recited \u2726" : "mark recited"}
                     </button>
                   )}
                 </div>
@@ -601,40 +438,6 @@ function MemoryVerseBlock({ items, blockId, subChecked, onToggle, viewOnly }) {
   );
 }
 
-function WeekendInvitations({ dayName }) {
-  const [openId, setOpenId] = useState(null);
-  return (
-    <div style={{ marginBottom: 28 }}>
-      <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 14 }}>{dayName}</p>
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 400, color: "var(--ink)", marginBottom: 6, lineHeight: 1.2 }}>This day is yours.</h2>
-      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "var(--ink-faint)", lineHeight: 1.6, marginBottom: 28 }}>What does it want to hold?</p>
-      <div>
-        {WEEKEND_ORDER.map((id, idx) => {
-          const inv = WEEKEND_INVITATIONS[id];
-          const IconComp = inv.icon;
-          const isOpen = openId === id;
-          const isLast = idx === WEEKEND_ORDER.length - 1;
-          return (
-            <div key={id} style={{ borderBottom: isLast ? "none" : "1px solid var(--rule)" }}>
-              <div onClick={() => setOpenId(isOpen ? null : id)} style={{ display: "flex", alignItems: "center", gap: 16, padding: "18px 4px", cursor: "pointer" }}>
-                <div style={{ color: isOpen ? "var(--sage)" : "var(--ink-faint)", transition: "color .2s", flexShrink: 0 }}><IconComp /></div>
-                <p style={{ flex: 1, fontFamily: "'Playfair Display', serif", fontSize: 18, color: "var(--ink)", fontWeight: 400 }}>{inv.label}</p>
-              </div>
-              {isOpen && (
-                <div style={{ paddingLeft: 36, paddingBottom: 18, paddingTop: 0, borderLeft: "2px solid var(--sage)", marginLeft: 9, marginBottom: 4 }}>
-                  {inv.prompts.map((prompt, i) => (
-                    <p key={i} style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.7, marginBottom: i === inv.prompts.length - 1 ? 0 : 8 }}>{prompt}</p>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset, viewDate, isToday, isViewOnly }) {
   const dateKey = viewDate.toISOString().slice(0, 10);
   const userId  = settings?.userId;
@@ -645,7 +448,6 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
   const [editingNotes, setEditingNotes] = useState(null);
   const [notesText, setNotesText] = useState("");
 
-  // Beauty progress (Supabase-backed, weekly Mon-to-Mon)
   const [beautyProgress, setBeautyProgress] = useState({});
   useEffect(() => {
     if (!userId || !isToday) return;
@@ -660,11 +462,9 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
   const handleBeautyToggle = async (beautyId) => {
     if (isViewOnly || !userId) return;
     const currentValue = !!beautyProgress[beautyId];
-    // Optimistic update
     setBeautyProgress(prev => ({ ...prev, [beautyId]: !currentValue }));
     const newValue = await toggleBeautyComplete(userId, beautyId, currentValue);
     if (newValue === null) {
-      // Revert on error
       setBeautyProgress(prev => ({ ...prev, [beautyId]: currentValue }));
     }
   };
@@ -797,7 +597,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
       const saved = JSON.parse(localStorage.getItem("tend_nature_current") || "null");
       if (saved?.subject) return saved;
     } catch {}
-    return { subject: "The Story of the Tadpole", read: "The Year Round by C.J. Hylander · Spring section", observe: "Go outside and look near ponds or puddles for frogs or tadpoles." };
+    return { subject: "The Story of the Tadpole", read: "The Year Round by C.J. Hylander \u00b7 Spring section", observe: "Go outside and look near ponds or puddles for frogs or tadpoles." };
   });
   const [natureDone, setNatureDone] = useState(() => {
     if (!isToday) return false;
@@ -836,7 +636,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Icon.Sun />
-          <p className="eyebrow" style={{ marginBottom: 0 }}>{isToday ? "Today" : "Day"} · {today}</p>
+          <p className="eyebrow" style={{ marginBottom: 0 }}>{isToday ? "Today" : "Day"} \u00b7 {today}</p>
         </div>
         <button onClick={() => onNavigate("planner")} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase" }}>
           Full week <Icon.Arrow />
@@ -852,10 +652,10 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
               <span style={{ fontSize: 11, color: "var(--ink-faint)", width: 36, paddingTop: 2, flexShrink: 0, fontFamily: "'Lato', sans-serif" }}></span>
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: 16, color: natureDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: natureDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)" }}>
-                  Nature Study · {step.label}
+                  Nature Study \u00b7 {step.label}
                 </p>
                 <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>
-                  {natureCurrent.subject} · {step.icon} {step.step}
+                  {natureCurrent.subject} \u00b7 {step.icon} {step.step}
                 </p>
                 {!natureDone && (<p style={{ fontSize: 12, color: "var(--sage)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 4, lineHeight: 1.5 }}>{step.getInstruction(natureCurrent)}</p>)}
                 {natureDone && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
@@ -873,7 +673,6 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
         const displayTime = getAdjustedTime(b.time, dailyOffset);
         const isExpanded = expandedBlock === b.id;
 
-        // Detect Beauty Loop block — render Beauty checkboxes inline
         const isBeautyBlock = b.subject.toLowerCase().includes("beauty loop") && !b.subject.toLowerCase().includes("volunteer");
         const beautyItems = isBeautyBlock && isToday ? getTodayBeauty(today, viewDate) : null;
 
@@ -893,13 +692,12 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
                     {isBeautyBlock && <Icon.Flower size={14} color={isDone ? "var(--ink-faint)" : "var(--sage)"} />}
                     <span>{b.subject} <span style={{ fontSize: 12, color: "var(--ink-faint)", fontWeight: 400 }}>{displayTime}</span></span>
                   </p>
-                  {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped · tap to restore</p>}
+                  {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped \u00b7 tap to restore</p>}
                   {b.note && !isSkipped && !isDone && !isBeautyBlock && <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
                   {isDone && isToday && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
                 </div>
               </div>
 
-              {/* Beauty Loop sub-checkboxes — always visible inside the block */}
               {isBeautyBlock && beautyItems && beautyItems.length > 0 && !isDone && !isSkipped && (
                 <BeautyBlockContent
                   dayName={today}
@@ -943,7 +741,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
                     <input autoFocus defaultValue={b.motherNote} placeholder="What will you tend during this time?" onBlur={e => saveNote(b.id, e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveNote(b.id, e.target.value); }} style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--rule)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)", outline: "none", padding: "4px 0" }} />
                   ) : (
                     <button onClick={() => setEditingNote(b.id)} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", padding: 0, textAlign: "left", opacity: b.motherNote ? 1 : 0.5 }}>
-                      {b.motherNote ? `✦ ${b.motherNote}` : "your time · what will you tend?"}
+                      {b.motherNote ? `\u2726 ${b.motherNote}` : "your time \u00b7 what will you tend?"}
                     </button>
                   )}
                 </div>
@@ -952,8 +750,8 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
           </div>
         );
       })}
-      {isToday && <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap checkbox to complete · Long press to skip · Tap to expand for notes</p>}
-      {isViewOnly && <p className="caption italic" style={{ marginTop: 12, textAlign: "center", color: "var(--ink-faint)" }}>Viewing another day · tap a block to add or edit notes</p>}
+      {isToday && <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap checkbox to complete \u00b7 Long press to skip \u00b7 Tap to expand for notes</p>}
+      {isViewOnly && <p className="caption italic" style={{ marginTop: 12, textAlign: "center", color: "var(--ink-faint)" }}>Viewing another day \u00b7 tap a block to add or edit notes</p>}
     </div>
   );
 }
@@ -1038,15 +836,13 @@ export default function HomeScreen({ onNavigate, settings }) {
   } else {
     const baseBlocks = DAY_SCHEDULE[dayName] || [];
     if (dayName === "Tuesday" && isVolunteerTuesday(viewDate)) {
-      // Volunteer Tuesday — replace Beauty Loop OR Volunteer block with Cibolo block
       todayBlocks = baseBlocks.map(b => {
         if (b.subject.includes("Beauty Loop OR Volunteer")) {
-          return { ...b, subject: "Cibolo Rehab Center", note: "Volunteer with Chispa · 10:30—12:00" };
+          return { ...b, subject: "Cibolo Rehab Center", note: "Volunteer with Chispa \u00b7 10:30\u201312:00" };
         }
         return b;
       });
     } else if (dayName === "Tuesday") {
-      // Non-volunteer Tuesday — change "Beauty Loop OR Volunteer" to just "Beauty Loop"
       todayBlocks = baseBlocks.map(b => {
         if (b.subject.includes("Beauty Loop OR Volunteer")) {
           return { ...b, subject: "Beauty Loop", note: "" };
@@ -1097,56 +893,40 @@ export default function HomeScreen({ onNavigate, settings }) {
       )}
 
       {isSummer ? (
-  <SummerRhythm
-    userId={settings?.userId}
-    viewDate={viewDate}
-    isToday={isToday}
-  />
-) : (
-  <>
-    {isToday && <FamilyBibleStudy userId={settings?.userId} />}
-    {isWeekend ? (
-      <WeekendRhythm rhythm={weekendRhythm} />
-    ) : (
-      <TodaySchedule
-        today={today}
-        blocks={todayBlocks}
-        onNavigate={onNavigate}
-        settings={settings}
-        week={week}
-        dailyOffset={dailyOffset}
-        viewDate={viewDate}
-        isToday={isToday}
-        isViewOnly={isViewOnly}
-      />
-    )}
-  </>
-)}
-
-      {isSummer && isToday && <MorningAnchors />}
-
-      {/* CM quote */}
-      {isToday && (
-        <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
-          <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
-          <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
-        </div>
-      )}
-
-      {/* Family Bible Study card — every day on today */}
-      {isToday && <FamilyBibleStudy userId={settings?.userId} />}
-
-      {/* Schedule or weekend invitations */}
-      {isSummer && isWeekend ? (
-        <WeekendInvitations dayName={dayName} />
-      ) : !isSummer && isWeekend ? (
-        <WeekendRhythm rhythm={weekendRhythm} />
+        <SummerRhythm
+          userId={settings?.userId}
+          viewDate={viewDate}
+          isToday={isToday}
+        />
       ) : (
-        <TodaySchedule today={today} blocks={todayBlocks} onNavigate={onNavigate} settings={settings} week={week} dailyOffset={dailyOffset} viewDate={viewDate} isToday={isToday} isViewOnly={isViewOnly} />
-      )}
+        <>
+          {/* CM quote (school year only; summer renders inside SummerRhythm) */}
+          {isToday && (
+            <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
+              <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
+              <p className="caption">\u2014 Charlotte Mason, {cmQuote.source}</p>
+            </div>
+          )}
 
-      {isSummer && isToday && <EveningAnchors dayName={dayName} />}
-      {isSummer && isToday && <MorningActivityCard />}
+          {isToday && <FamilyBibleStudy userId={settings?.userId} />}
+
+          {isWeekend ? (
+            <WeekendRhythm rhythm={weekendRhythm} />
+          ) : (
+            <TodaySchedule
+              today={today}
+              blocks={todayBlocks}
+              onNavigate={onNavigate}
+              settings={settings}
+              week={week}
+              dailyOffset={dailyOffset}
+              viewDate={viewDate}
+              isToday={isToday}
+              isViewOnly={isViewOnly}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }
