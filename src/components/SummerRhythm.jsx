@@ -4,8 +4,20 @@
 // into a single expandable "Reading & learning" panel.
 
 import { useState, useEffect } from "react";
-import { CM_QUOTES, DAYS } from "../data/seed";
+import {
+  CM_QUOTES,
+  DAYS,
+  NATURE_DAYS,
+  NATURE_LOOP_STEPS,
+  getNatureLoopStep,
+  advanceNatureLoop,
+} from "../data/seed";
 import { getTodayBeauty } from "../data/beauty-seed";
+import {
+  getActivityChoices,
+  getTomorrowActivity,
+  isEveningSetupTime,
+} from "../data/summer-seed";
 import {
   FAMILY_BIBLE_STREAMS,
   getStreamView,
@@ -354,6 +366,485 @@ function ReadingAndLearning({ userId, today, viewDate, isToday }) {
   );
 }
 
+// ─── BLOOM EFFECT (nature study completion) ──────────────────────────
+function BloomEffect({ show }) {
+  if (!show) return null;
+  const palette = ["#A9B786", "#8FA374", "#C29B61", "#D4A574", "#E8C39E"];
+  const flowers = Array.from({ length: 10 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 85 + 7,
+    top: Math.random() * 75 + 12,
+    delay: Math.random() * 0.6,
+    size: 18 + Math.random() * 16,
+    color: palette[Math.floor(Math.random() * palette.length)],
+    rotate: Math.random() * 90 - 45,
+  }));
+  return (
+    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 9999 }}>
+      {flowers.map((f) => (
+        <svg
+          key={f.id}
+          width={f.size}
+          height={f.size}
+          viewBox="0 0 24 24"
+          style={{
+            position: "absolute",
+            left: `${f.left}%`,
+            top: `${f.top}%`,
+            color: f.color,
+            opacity: 0,
+            animation: `tend-bloom 2.4s ${f.delay}s ease-out forwards`,
+            ["--tend-rot"]: `${f.rotate}deg`,
+          }}
+        >
+          <g fill="currentColor" opacity="0.78">
+            <circle cx="12" cy="6" r="3.4" />
+            <circle cx="17.5" cy="9.5" r="3.4" />
+            <circle cx="15.5" cy="16" r="3.4" />
+            <circle cx="8.5" cy="16" r="3.4" />
+            <circle cx="6.5" cy="9.5" r="3.4" />
+          </g>
+          <circle cx="12" cy="11" r="1.9" fill="#FAF6EE" />
+        </svg>
+      ))}
+      <style>{`
+        @keyframes tend-bloom {
+          0% { opacity: 0; transform: translate(-50%, -50%) scale(0) rotate(var(--tend-rot)); }
+          25% { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(var(--tend-rot)); }
+          50% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(var(--tend-rot)); }
+          85% { opacity: 0.8; transform: translate(-50%, -50%) scale(1) rotate(var(--tend-rot)); }
+          100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1) rotate(var(--tend-rot)); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── PETAL SHOWER (activity completion celebration) ──────────────────
+function PetalShower({ show }) {
+  if (!show) return null;
+  const palette = ["#C29B61", "#D4A574", "#A9B786", "#E8C39E", "#8FA374", "#B8935A"];
+  const petals = Array.from({ length: 26 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 1.4,
+    duration: 2.4 + Math.random() * 1.6,
+    rotStart: Math.random() * 360,
+    rotEnd: Math.random() * 720 - 360,
+    size: 7 + Math.random() * 9,
+    color: palette[Math.floor(Math.random() * palette.length)],
+    drift: (Math.random() - 0.5) * 80,
+  }));
+  return (
+    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 9999, overflow: "hidden" }}>
+      {petals.map((p) => (
+        <svg
+          key={p.id}
+          width={p.size}
+          height={p.size * 1.6}
+          viewBox="0 0 12 20"
+          style={{
+            position: "absolute",
+            left: `${p.left}%`,
+            top: "-12%",
+            color: p.color,
+            opacity: 0,
+            animation: `tend-petal ${p.duration}s ${p.delay}s ease-in forwards`,
+            ["--tend-rot-start"]: `${p.rotStart}deg`,
+            ["--tend-rot-end"]: `${p.rotEnd}deg`,
+            ["--tend-drift"]: `${p.drift}px`,
+          }}
+        >
+          <path d="M6 0 C 10 6, 10 14, 6 20 C 2 14, 2 6, 6 0 Z" fill="currentColor" opacity="0.88" />
+        </svg>
+      ))}
+      <style>{`
+        @keyframes tend-petal {
+          0% { opacity: 0; transform: translate(0, 0) rotate(var(--tend-rot-start)); }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { opacity: 0; transform: translate(var(--tend-drift), 110vh) rotate(var(--tend-rot-end)); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── NATURE STUDY & LORE ─────────────────────────────────────────────
+function NatureStudy({ isToday, viewDate }) {
+  const [expanded, setExpanded] = useState(false);
+  const [loopStep, setLoopStep] = useState(getNatureLoopStep);
+  const [showBloom, setShowBloom] = useState(false);
+
+  const dateKey = viewDate.toISOString().slice(0, 10);
+
+  const [natureCurrent] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("tend_nature_current") || "null");
+      if (saved?.subject) return saved;
+    } catch {}
+    return {
+      subject: "The Story of the Tadpole",
+      read: "The Year Round by C.J. Hylander \u00b7 Spring section",
+      observe: "Go outside and look near ponds or puddles for frogs or tadpoles.",
+    };
+  });
+
+  const [done, setDone] = useState(() => {
+    if (!isToday) return false;
+    try {
+      const saved = JSON.parse(localStorage.getItem("tend_nature_done") || "null");
+      return saved?.date === dateKey ? saved.done : false;
+    } catch {
+      return false;
+    }
+  });
+
+  const markDone = () => {
+    if (!isToday) return;
+    setDone(true);
+    try {
+      localStorage.setItem("tend_nature_done", JSON.stringify({ date: dateKey, done: true }));
+    } catch {}
+    setLoopStep(advanceNatureLoop());
+    setShowBloom(true);
+    setTimeout(() => setShowBloom(false), 2800);
+  };
+
+  const undoDone = () => {
+    if (!isToday) return;
+    setDone(false);
+    try {
+      localStorage.setItem("tend_nature_done", JSON.stringify({ date: dateKey, done: false }));
+    } catch {}
+  };
+
+  const step = NATURE_LOOP_STEPS[loopStep];
+  const nextStep = NATURE_LOOP_STEPS[(loopStep + 1) % 3];
+
+  return (
+    <>
+      <BloomEffect show={showBloom} />
+      <div
+        onClick={() => setExpanded((e) => !e)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          margin: "4px 0 0",
+          padding: "6px 12px 6px 8px",
+          background: expanded ? "var(--sage-bg)" : "rgba(232, 226, 213, 0.35)",
+          borderRadius: 4,
+          cursor: "pointer",
+          transition: "background .2s",
+        }}
+      >
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, margin: 0, color: "var(--ink)" }}>
+          Nature study
+          {done && <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", color: "var(--sage)", marginLeft: 8 }}>done today</span>}
+        </p>
+        <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", color: "var(--ink-faint)" }}>
+          {expanded ? "close" : "open"}
+        </span>
+      </div>
+
+      {expanded && (
+        <div
+          style={{
+            margin: "8px 0 4px",
+            padding: "14px 18px",
+            background: "rgba(232, 226, 213, 0.25)",
+            borderLeft: "1.5px solid var(--sage-md)",
+            borderRadius: "0 4px 4px 0",
+          }}
+        >
+          <div style={{ marginBottom: 14 }}>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 3px" }}>THIS WEEK</p>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink)", margin: 0 }}>
+              {natureCurrent.subject}
+            </p>
+          </div>
+
+          <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
+
+          {done ? (
+            <>
+              <div style={{ marginBottom: 12 }}>
+                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 3px" }}>NEXT STEP</p>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink)", margin: 0 }}>
+                  {nextStep.icon} {nextStep.label}
+                </p>
+              </div>
+              {isToday && (
+                <button
+                  onClick={undoDone}
+                  style={{ background: "none", border: "1px solid var(--rule)", borderRadius: 20, padding: "5px 14px", cursor: "pointer", fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "lowercase", color: "var(--ink-faint)" }}
+                >
+                  tap to undo
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <div style={{ marginBottom: 12 }}>
+                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 3px" }}>TODAY'S STEP</p>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink)", margin: "0 0 6px" }}>
+                  {step.icon} {step.label}
+                </p>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink-lt)", margin: 0 }}>
+                  {step.getInstruction(natureCurrent)}
+                </p>
+              </div>
+              {isToday && (
+                <button
+                  onClick={markDone}
+                  style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 20, padding: "5px 14px", cursor: "pointer", fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "lowercase", color: "var(--sage)" }}
+                >
+                  mark done
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+// ─── DAILY ACTIVITY (today's pick / tomorrow's setup) ────────────────
+function DailyActivity({ isToday, viewDate }) {
+  const evening = isEveningSetupTime();
+  const choices = getActivityChoices(new Date(), 3);
+  const tomorrow = getTomorrowActivity();
+  const dateKey = viewDate.toISOString().slice(0, 10);
+
+  const [selected, setSelected] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(`tend_morning_pick_${dateKey}`) || "null");
+    } catch {
+      return null;
+    }
+  });
+
+  const [activityDone, setActivityDone] = useState(() => {
+    if (!isToday) return false;
+    try {
+      const saved = JSON.parse(localStorage.getItem(`tend_activity_done_${dateKey}`) || "null");
+      return saved === true;
+    } catch {
+      return false;
+    }
+  });
+
+  const [showPetals, setShowPetals] = useState(false);
+
+  const pickActivity = (activity) => {
+    if (!isToday) return;
+    setSelected(activity);
+    try {
+      localStorage.setItem(`tend_morning_pick_${dateKey}`, JSON.stringify(activity));
+    } catch {}
+  };
+
+  const clearSelection = () => {
+    if (!isToday) return;
+    setSelected(null);
+    setActivityDone(false);
+    try {
+      localStorage.removeItem(`tend_morning_pick_${dateKey}`);
+      localStorage.removeItem(`tend_activity_done_${dateKey}`);
+    } catch {}
+  };
+
+  const markActivityDone = () => {
+    if (!isToday) return;
+    setActivityDone(true);
+    try {
+      localStorage.setItem(`tend_activity_done_${dateKey}`, JSON.stringify(true));
+    } catch {}
+    setShowPetals(true);
+    setTimeout(() => setShowPetals(false), 3800);
+  };
+
+  const undoActivityDone = () => {
+    if (!isToday) return;
+    setActivityDone(false);
+    try {
+      localStorage.removeItem(`tend_activity_done_${dateKey}`);
+    } catch {}
+  };
+
+  // Evening: tomorrow's setup view
+  if (evening && isToday) {
+    return (
+      <div style={{
+        background: "rgba(232, 226, 213, 0.35)",
+        borderRadius: 6,
+        padding: "18px 20px",
+      }}>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".14em", textTransform: "lowercase", color: "var(--ink-faint)", margin: "0 0 10px" }}>
+          tomorrow morning
+        </p>
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, color: "var(--ink)", margin: "0 0 14px" }}>
+          {tomorrow.label}
+        </p>
+
+        {tomorrow.setup && (
+          <div style={{ marginBottom: 12 }}>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--sage)", margin: "0 0 3px" }}>TONIGHT</p>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink-lt)", margin: 0 }}>
+              {tomorrow.setup}
+            </p>
+          </div>
+        )}
+
+        {tomorrow.materials && (
+          <div style={{ marginBottom: 12 }}>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--ink-lt)", margin: "0 0 3px" }}>MATERIALS</p>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink)", margin: 0 }}>
+              {tomorrow.materials}
+            </p>
+          </div>
+        )}
+
+        {tomorrow.steps && (
+          <div style={{ marginBottom: 12 }}>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--ink-lt)", margin: "0 0 3px" }}>WHAT TO DO</p>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.65, color: "var(--ink)", margin: 0 }}>
+              {tomorrow.steps}
+            </p>
+          </div>
+        )}
+
+        {tomorrow.kidsNeed && (
+          <div>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--ink-faint)", margin: "0 0 3px" }}>THEY'LL NEED</p>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink-faint)", margin: 0 }}>
+              {tomorrow.kidsNeed}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Selected: show today's pick
+  if (selected) {
+    return (
+      <>
+        <PetalShower show={showPetals} />
+        <div style={{
+          background: activityDone ? "rgba(169, 183, 134, 0.18)" : "rgba(232, 226, 213, 0.35)",
+          borderRadius: 6,
+          padding: "18px 20px",
+          transition: "background .4s",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".14em", textTransform: "lowercase", color: "var(--ink-faint)", margin: 0 }}>
+              today's activity
+              {activityDone && <span style={{ color: "var(--sage)", marginLeft: 8 }}>&#x2731; done</span>}
+            </p>
+            {isToday && (
+              <button
+                onClick={activityDone ? undoActivityDone : clearSelection}
+                style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".08em", textTransform: "lowercase", color: "var(--ink-faint)", padding: 0 }}
+              >
+                {activityDone ? "tap to undo" : "change"}
+              </button>
+            )}
+          </div>
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, color: "var(--ink)", margin: "0 0 14px" }}>
+            {selected.label}
+          </p>
+
+          {selected.materials && (
+            <div style={{ marginBottom: 12 }}>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--ink-lt)", margin: "0 0 3px" }}>MATERIALS</p>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink)", margin: 0 }}>
+                {selected.materials}
+              </p>
+            </div>
+          )}
+
+          {selected.steps && (
+            <div style={{ marginBottom: 12 }}>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--ink-lt)", margin: "0 0 3px" }}>WHAT TO DO</p>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.65, color: "var(--ink)", margin: 0 }}>
+                {selected.steps}
+              </p>
+            </div>
+          )}
+
+          {selected.kidsNeed && (
+            <div style={{ marginBottom: activityDone || !isToday ? 0 : 16 }}>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--ink-faint)", margin: "0 0 3px" }}>THEY'LL NEED</p>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink-faint)", margin: 0 }}>
+                {selected.kidsNeed}
+              </p>
+            </div>
+          )}
+
+          {!activityDone && isToday && (
+            <button
+              onClick={markActivityDone}
+              style={{
+                background: "var(--sage-bg)",
+                border: "1px solid var(--sage-md)",
+                borderRadius: 20,
+                padding: "6px 16px",
+                cursor: "pointer",
+                fontFamily: "'Lato', sans-serif",
+                fontSize: 10,
+                letterSpacing: ".12em",
+                textTransform: "lowercase",
+                color: "var(--sage)",
+                marginTop: 4,
+              }}
+            >
+              mark complete &#x2731;
+            </button>
+          )}
+        </div>
+      </>
+    );
+  }
+
+  // No selection yet: picker
+  return (
+    <div style={{
+      background: "rgba(232, 226, 213, 0.35)",
+      borderRadius: 6,
+      padding: "18px 20px",
+    }}>
+      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".14em", textTransform: "lowercase", color: "var(--ink-faint)", margin: "0 0 6px" }}>
+        today's activity
+      </p>
+      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)", margin: "0 0 14px" }}>
+        What feels good for today?
+      </p>
+      {choices.map((choice, idx) => (
+        <div
+          key={choice.id}
+          onClick={() => pickActivity(choice)}
+          style={{
+            padding: "10px 0",
+            borderTop: idx === 0 ? "0.5px solid var(--rule)" : "none",
+            borderBottom: "0.5px solid var(--rule)",
+            cursor: isToday ? "pointer" : "default",
+          }}
+        >
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)", margin: "0 0 3px" }}>
+            {choice.label}
+          </p>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, lineHeight: 1.5, color: "var(--ink-faint)", margin: 0 }}>
+            {choice.kidsNeed}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── MAIN SUMMER RHYTHM COMPONENT ────────────────────────────────────
 export default function SummerRhythm({ userId, viewDate, isToday }) {
   const day = viewDate.getDay();
@@ -405,6 +896,10 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
         Outside early
       </p>
 
+      {NATURE_DAYS[dayName] === true && (
+        <NatureStudy isToday={isToday} viewDate={viewDate} />
+      )}
+
       <ReadingAndLearning userId={userId} today={dayName} viewDate={viewDate} isToday={isToday} />
 
       <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, lineHeight: 1.9, color: "var(--ink)", margin: "4px 0 0" }}>
@@ -449,7 +944,12 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
         Rest
       </p>
 
-      <div style={{ height: "0.5px", background: "var(--rule)", margin: "28px 0 16px" }}></div>
+      <div style={{ height: "0.5px", background: "var(--rule)", margin: "28px 0 22px" }}></div>
+
+      {/* DAILY ACTIVITY — today's pick during the day, tomorrow's setup in the evening */}
+      {isToday && <DailyActivity isToday={isToday} viewDate={viewDate} />}
+
+      <div style={{ height: "0.5px", background: "var(--rule)", margin: "26px 0 16px" }}></div>
 
       {/* SUMMER VALUES */}
       <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".18em", color: "var(--ink-faint)", margin: "0 0 8px", textAlign: "center" }}>
