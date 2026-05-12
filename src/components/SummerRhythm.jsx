@@ -12,7 +12,7 @@ import {
   getNatureLoopStep,
   advanceNatureLoop,
 } from "../data/seed";
-import { getTodayBeauty } from "../data/beauty-seed";
+import { getTodayBeauty, isVolunteerTuesday } from "../data/beauty-seed";
 import {
   getActivityChoices,
   getTomorrowActivity,
@@ -420,50 +420,80 @@ function BloomEffect({ show }) {
   );
 }
 
-// ─── PETAL SHOWER (activity completion celebration) ──────────────────
-function PetalShower({ show }) {
+// ─── WATERCOLOR WASH (activity completion celebration) ───────────────
+function WatercolorWash({ show }) {
   if (!show) return null;
-  const palette = ["#C29B61", "#D4A574", "#A9B786", "#E8C39E", "#8FA374", "#B8935A"];
-  const petals = Array.from({ length: 26 }, (_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    delay: Math.random() * 1.4,
-    duration: 2.4 + Math.random() * 1.6,
-    rotStart: Math.random() * 360,
-    rotEnd: Math.random() * 720 - 360,
-    size: 7 + Math.random() * 9,
-    color: palette[Math.floor(Math.random() * palette.length)],
-    drift: (Math.random() - 0.5) * 80,
-  }));
+  const palette = [
+    "#A9B786", // sage
+    "#C29B61", // amber
+    "#B5C7CC", // soft sky
+    "#C49E97", // dusty rose
+    "#D4A574", // gold
+    "#8FA374", // deep sage
+    "#E8C39E", // pale amber
+  ];
+
+  const strokes = Array.from({ length: 7 }, (_, i) => {
+    const y1 = 15 + Math.random() * 12;
+    const y2 = 15 + Math.random() * 12;
+    const y3 = 15 + Math.random() * 12;
+    const y4 = 15 + Math.random() * 12;
+    return {
+      id: i,
+      color: palette[Math.floor(Math.random() * palette.length)],
+      delay: i * 0.22 + Math.random() * 0.15,
+      duration: 1.4 + Math.random() * 0.6,
+      top: 10 + Math.random() * 80,
+      widthVw: 55 + Math.random() * 35,
+      angle: Math.random() * 40 - 20,
+      strokeWidth: 22 + Math.random() * 14,
+      pathD: `M 5,${y1} Q 100,${y2} 200,${y3} T 395,${y4}`,
+    };
+  });
+
   return (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 9999, overflow: "hidden" }}>
-      {petals.map((p) => (
+      {strokes.map((s) => (
         <svg
-          key={p.id}
-          width={p.size}
-          height={p.size * 1.6}
-          viewBox="0 0 12 20"
+          key={s.id}
+          viewBox="0 0 400 40"
+          preserveAspectRatio="none"
           style={{
             position: "absolute",
-            left: `${p.left}%`,
-            top: "-12%",
-            color: p.color,
+            top: `${s.top}%`,
+            left: "50%",
+            width: `${s.widthVw}vw`,
+            height: "60px",
             opacity: 0,
-            animation: `tend-petal ${p.duration}s ${p.delay}s ease-in forwards`,
-            ["--tend-rot-start"]: `${p.rotStart}deg`,
-            ["--tend-rot-end"]: `${p.rotEnd}deg`,
-            ["--tend-drift"]: `${p.drift}px`,
+            transform: `translate(-50%, -50%) rotate(${s.angle}deg)`,
+            animation: `tend-wash ${s.duration + 1.2}s ${s.delay}s ease-out forwards`,
           }}
         >
-          <path d="M6 0 C 10 6, 10 14, 6 20 C 2 14, 2 6, 6 0 Z" fill="currentColor" opacity="0.88" />
+          <path
+            d={s.pathD}
+            stroke={s.color}
+            strokeWidth={s.strokeWidth}
+            strokeLinecap="round"
+            fill="none"
+            pathLength="1"
+            style={{
+              strokeDasharray: 1,
+              strokeDashoffset: 1,
+              animation: `tend-paint ${s.duration}s ${s.delay}s ease-out forwards`,
+            }}
+          />
         </svg>
       ))}
       <style>{`
-        @keyframes tend-petal {
-          0% { opacity: 0; transform: translate(0, 0) rotate(var(--tend-rot-start)); }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { opacity: 0; transform: translate(var(--tend-drift), 110vh) rotate(var(--tend-rot-end)); }
+        @keyframes tend-wash {
+          0% { opacity: 0; }
+          18% { opacity: 0.55; }
+          70% { opacity: 0.55; }
+          100% { opacity: 0; }
+        }
+        @keyframes tend-paint {
+          0% { stroke-dashoffset: 1; }
+          100% { stroke-dashoffset: 0; }
         }
       `}</style>
     </div>
@@ -636,9 +666,7 @@ function DailyActivity({ isToday, viewDate }) {
     }
   });
 
-  const [showPetals, setShowPetals] = useState(false);
-
-  const pickActivity = (activity) => {
+  const [showPetals, setShowPetals] = useState(false);  const pickActivity = (activity) => {
     if (!isToday) return;
     setSelected(activity);
     try {
@@ -732,7 +760,7 @@ function DailyActivity({ isToday, viewDate }) {
   if (selected) {
     return (
       <>
-        <PetalShower show={showPetals} />
+        <WatercolorWash show={showPetals} />
         <div style={{
           background: activityDone ? "rgba(169, 183, 134, 0.18)" : "rgba(232, 226, 213, 0.35)",
           borderRadius: 6,
@@ -895,6 +923,27 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
         Care for our home<br />
         Outside early
       </p>
+
+      {dayName === "Tuesday" && isVolunteerTuesday(viewDate) && (
+        <div style={{
+          margin: "6px 0 0",
+          padding: "8px 12px 8px 10px",
+          background: "rgba(232, 226, 213, 0.45)",
+          borderLeft: "2px solid var(--sage)",
+          borderRadius: "0 4px 4px 0",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}>
+          <div>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--sage)", margin: "0 0 2px" }}>VOLUNTEER WITH CHISPA</p>
+            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", margin: 0 }}>Cibolo Rehab Center</p>
+          </div>
+          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)" }}>
+            10:30&ndash;12:00
+          </span>
+        </div>
+      )}
 
       {NATURE_DAYS[dayName] === true && (
         <NatureStudy isToday={isToday} viewDate={viewDate} />
