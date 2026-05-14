@@ -873,11 +873,92 @@ function DailyActivity({ isToday, viewDate }) {
   );
 }
 
+// ─── RHYTHM SVG MARKERS (clean line icons, not emojis) ───────────────
+const SunriseMarker = (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3v3" />
+    <path d="M4.5 8.5l1.6 1.6" />
+    <path d="M19.5 8.5l-1.6 1.6" />
+    <path d="M2 19h20" />
+    <path d="M7 19a5 5 0 0 1 10 0" />
+  </svg>
+);
+const SunMarker = (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4.2" />
+    <path d="M12 2v2.2" />
+    <path d="M12 19.8V22" />
+    <path d="M2 12h2.2" />
+    <path d="M19.8 12H22" />
+    <path d="M4.9 4.9l1.5 1.5" />
+    <path d="M17.6 17.6l1.5 1.5" />
+    <path d="M19.1 4.9l-1.5 1.5" />
+    <path d="M6.4 17.6l-1.5 1.5" />
+  </svg>
+);
+const MoonMarker = (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 14.2A8 8 0 1 1 9.8 4 6.4 6.4 0 0 0 20 14.2z" />
+  </svg>
+);
+
+// ─── RHYTHM ACCORDION SHELL (side marker + connecting rail) ──────────
+function RhythmAccordion({ marker, title, isOpen, onToggle, showLine, children }) {
+  return (
+    <div style={{ display: "flex" }}>
+      {/* left marker rail */}
+      <div style={{ width: 30, flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ marginTop: 13 }}>{marker}</div>
+        {showLine && <div style={{ width: 1, flex: 1, background: "var(--rule)", marginTop: 7 }} />}
+      </div>
+      {/* body */}
+      <div style={{ flex: 1, paddingBottom: 4 }}>
+        <div
+          onClick={onToggle}
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 0 9px", cursor: "pointer" }}
+        >
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 400, color: "var(--ink)", margin: 0 }}>
+            {title}
+          </p>
+          <svg
+            width="11" height="11" viewBox="0 0 24 24" fill="none"
+            stroke="var(--ink)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
+            style={{ opacity: 0.35, transform: isOpen ? "none" : "rotate(-90deg)", transition: "transform .3s ease" }}
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
+        {isOpen && <div style={{ paddingBottom: 8 }}>{children}</div>}
+      </div>
+    </div>
+  );
+}
+
+const rhythmItemStyle = {
+  fontFamily: "'Cormorant Garamond', serif",
+  fontSize: 15.5,
+  lineHeight: 1.5,
+  color: "var(--ink-lt)",
+  padding: "3px 0",
+  margin: 0,
+};
+
 // ─── MAIN SUMMER RHYTHM COMPONENT ────────────────────────────────────
 export default function SummerRhythm({ userId, viewDate, isToday }) {
   const day = viewDate.getDay();
   const dayName = DAYS[day === 0 ? 6 : day - 1];
   const cmQuote = CM_QUOTES[day];
+
+  const [expandedSections, setExpandedSections] = useState({
+    morning: true,
+    afternoon: false,
+    evening: false,
+  });
+  const toggleSection = (key) =>
+    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const isVolunteerTue = dayName === "Tuesday" && isVolunteerTuesday(viewDate);
+  const isNatureDay = NATURE_DAYS[dayName] === true;
 
   return (
     <div>
@@ -904,109 +985,138 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
             charlotte mason, {cmQuote.source}
           </p>
 
-          <div style={{ height: "0.5px", background: "var(--rule)", margin: "24px 0 28px" }}></div>
+          <div style={{ height: "0.5px", background: "var(--rule)", margin: "24px 0 26px" }}></div>
         </>
       )}
 
-      {/* SUMMER RHYTHM poster */}
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 400, letterSpacing: ".16em", textAlign: "center", margin: "0 0 4px", color: "var(--ink)" }}>
-        SUMMER RHYTHM
-      </h2>
-      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", margin: "0 0 24px", textAlign: "center" }}>
-        a gentle shape for our days
-      </p>
-
-      {/* MORNING */}
-      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".18em", color: "var(--ink)", margin: "0 0 10px" }}>MORNING</p>
-      <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, lineHeight: 1.9, color: "var(--ink)", margin: 0 }}>
-        Slow beginnings<br />
-        Care for our home<br />
-        Outside early
-      </p>
-
-      {dayName === "Tuesday" && isVolunteerTuesday(viewDate) && (
-        <div style={{
-          margin: "6px 0 0",
-          padding: "8px 12px 8px 10px",
-          background: "rgba(232, 226, 213, 0.45)",
-          borderLeft: "2px solid var(--sage)",
-          borderRadius: "0 4px 4px 0",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}>
-          <div>
-            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--sage)", margin: "0 0 2px" }}>VOLUNTEER WITH CHISPA</p>
-            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", margin: 0 }}>Cibolo Rehab Center</p>
-          </div>
-          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)" }}>
-            10:30&ndash;12:00
-          </span>
-        </div>
-      )}
-
-      {NATURE_DAYS[dayName] === true && (
-        <NatureStudy isToday={isToday} viewDate={viewDate} />
-      )}
-
-      <ReadingAndLearning userId={userId} today={dayName} viewDate={viewDate} isToday={isToday} />
-
-      <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, lineHeight: 1.9, color: "var(--ink)", margin: "4px 0 0" }}>
-        Lunch together
-      </p>
-
-      <div style={{ height: "0.5px", background: "var(--rule)", margin: "22px 0 18px" }}></div>
-
-      {/* AFTERNOON */}
-      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".18em", color: "var(--ink)", margin: "0 0 10px" }}>AFTERNOON</p>
-      <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, lineHeight: 1.9, color: "var(--ink)", margin: "0 0 8px" }}>
-        Play &middot; Projects &middot; Adventure<br />
-        Friends are welcome
-      </p>
-      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.7, color: "var(--ink-faint)", margin: 0 }}>
-        Room for wandering, errands, library days, outings, rest, and ordinary life.
-      </p>
-
-      {/* SCREENS box */}
-      <div style={{ border: "1px solid var(--sage-md)", borderRadius: 6, padding: "12px 16px", margin: "18px 0", background: "var(--sage-bg)", display: "flex", alignItems: "flex-start", gap: 10 }}>
-        <span style={{ fontSize: 14, opacity: 0.55, marginTop: 1 }}>&#x1F550;</span>
-        <div style={{ flex: 1 }}>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".18em", color: "var(--ink)", margin: "0 0 6px" }}>SCREENS</p>
-          <table style={{ width: "100%", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink)" }}>
-            <tbody>
-              <tr><td style={{ padding: "1px 0" }}>Weekdays</td><td style={{ textAlign: "right" }}>2:00 to 5:00</td></tr>
-              <tr><td style={{ padding: "1px 0" }}>Weekends</td><td style={{ textAlign: "right" }}>11:00 to 4:00</td></tr>
-            </tbody>
-          </table>
+      {/* ── HEADER ── */}
+      <div style={{ textAlign: "center", marginBottom: 6 }}>
+        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 23, fontWeight: 400, letterSpacing: ".18em", margin: "0 0 5px", color: "var(--ink)" }}>
+          SUMMER RHYTHM
+        </h2>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", margin: "0 0 14px" }}>
+          a gentle shape for our days
+        </p>
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, flexWrap: "wrap" }}>
+          {["inspire wonder", "connection", "restoration"].map((v) => (
+            <span
+              key={v}
+              style={{
+                fontFamily: "'Lato', sans-serif",
+                fontSize: 9,
+                letterSpacing: ".08em",
+                color: "var(--sage)",
+                background: "var(--sage-bg)",
+                border: "0.5px solid var(--sage-md)",
+                borderRadius: 11,
+                padding: "3px 10px",
+              }}
+            >
+              {v}
+            </span>
+          ))}
         </div>
       </div>
 
-      <div style={{ height: "0.5px", background: "var(--rule)", margin: "18px 0" }}></div>
-
-      {/* EVENING */}
-      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".18em", color: "var(--ink)", margin: "0 0 10px" }}>EVENING</p>
-      <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, lineHeight: 1.9, color: "var(--ink)", margin: 0 }}>
-        Dinner together<br />
-        Outside at dusk<br />
-        Quiet rhythms<br />
-        Read-alouds or family TV<br />
-        Rest
+      {/* ── DAILY RHYTHM eyebrow ── */}
+      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".16em", textTransform: "lowercase", color: "var(--ink-faint)", margin: "26px 0 2px" }}>
+        our daily rhythm
       </p>
 
-      <div style={{ height: "0.5px", background: "var(--rule)", margin: "28px 0 22px" }}></div>
+      {/* ── MORNING (expanded by default) ── */}
+      <RhythmAccordion
+        marker={SunriseMarker}
+        title="Morning"
+        isOpen={expandedSections.morning}
+        onToggle={() => toggleSection("morning")}
+        showLine
+      >
+        <p style={rhythmItemStyle}>Slow beginnings</p>
+        <p style={rhythmItemStyle}>Care for our home</p>
+        <p style={rhythmItemStyle}>Outside early</p>
 
-      {/* DAILY ACTIVITY — today's pick during the day, tomorrow's setup in the evening */}
-      {isToday && <DailyActivity isToday={isToday} viewDate={viewDate} />}
+        {isVolunteerTue && (
+          <div style={{
+            margin: "6px 0 4px",
+            padding: "8px 12px 8px 10px",
+            background: "rgba(232, 226, 213, 0.45)",
+            borderLeft: "2px solid var(--sage)",
+            borderRadius: "0 4px 4px 0",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}>
+            <div>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--sage)", margin: "0 0 2px" }}>VOLUNTEER WITH CHISPA</p>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", margin: 0 }}>Cibolo Rehab Center</p>
+            </div>
+            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)" }}>
+              10:30&ndash;12:00
+            </span>
+          </div>
+        )}
 
-      <div style={{ height: "0.5px", background: "var(--rule)", margin: "26px 0 16px" }}></div>
+        {isNatureDay && <NatureStudy isToday={isToday} viewDate={viewDate} />}
 
-      {/* SUMMER VALUES */}
-      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".18em", color: "var(--ink-faint)", margin: "0 0 8px", textAlign: "center" }}>
-        OUR SUMMER VALUES
-      </p>
-      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)", margin: 0, textAlign: "center" }}>
-        inspire wonder &middot; connection &middot; restoration
-      </p>
+        <ReadingAndLearning userId={userId} today={dayName} viewDate={viewDate} isToday={isToday} />
+
+        <p style={{ ...rhythmItemStyle, margin: "4px 0 0" }}>Lunch together</p>
+      </RhythmAccordion>
+
+      {/* ── AFTERNOON ── */}
+      <RhythmAccordion
+        marker={SunMarker}
+        title="Afternoon"
+        isOpen={expandedSections.afternoon}
+        onToggle={() => toggleSection("afternoon")}
+        showLine
+      >
+        <p style={rhythmItemStyle}>Play &middot; Projects &middot; Adventure</p>
+        <p style={rhythmItemStyle}>Friends are welcome</p>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13.5, lineHeight: 1.65, color: "var(--ink-faint)", margin: "7px 0 2px" }}>
+          Room for wandering, library days, errands, and ordinary life.
+        </p>
+      </RhythmAccordion>
+
+      {/* ── EVENING ── */}
+      <RhythmAccordion
+        marker={MoonMarker}
+        title="Evening"
+        isOpen={expandedSections.evening}
+        onToggle={() => toggleSection("evening")}
+        showLine={false}
+      >
+        <p style={rhythmItemStyle}>Dinner together</p>
+        <p style={rhythmItemStyle}>Outside at dusk</p>
+        <p style={rhythmItemStyle}>Quiet hours</p>
+        <p style={rhythmItemStyle}>Read-alouds or family TV</p>
+        <p style={rhythmItemStyle}>Rest</p>
+      </RhythmAccordion>
+
+      {/* ── SCREENS — standalone, always visible ── */}
+      <div style={{ margin: "14px 0 2px", padding: "13px 0 12px", borderTop: "0.5px solid var(--rule)", borderBottom: "0.5px solid var(--rule)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.7 }}>
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7.5V12l3 2" />
+          </svg>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-lt)", margin: 0 }}>
+            Screens&nbsp;&nbsp;Weekdays 2&ndash;5
+            <span style={{ color: "var(--rule)", margin: "0 5px" }}>|</span>
+            Weekends 11&ndash;4
+          </p>
+        </div>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12.5, lineHeight: 1.6, color: "var(--ink-faint)", margin: "6px 0 0", paddingLeft: 22 }}>
+          &ldquo;There&rsquo;s no WiFi in the forest, but you&rsquo;ll find a better connection.&rdquo;
+        </p>
+      </div>
+
+      {/* ── TODAY'S CREATIVE INVITATION (DailyActivity — full logic preserved) ── */}
+      {isToday && (
+        <div style={{ margin: "22px 0 4px" }}>
+          <DailyActivity isToday={isToday} viewDate={viewDate} />
+        </div>
+      )}
     </div>
   );
 }
