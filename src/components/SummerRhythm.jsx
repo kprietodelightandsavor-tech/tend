@@ -964,19 +964,6 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
     <div>
       {isToday && (
         <>
-          {/* A gentle morning - prose, not checklist */}
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".14em", textTransform: "lowercase", color: "var(--ink-faint)", margin: "0 0 14px" }}>
-            a gentle morning
-          </p>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, lineHeight: 2, color: "var(--ink-lt)", margin: 0 }}>
-            Get the day's first light.<br />
-            Read before screens.<br />
-            Step outside first.<br />
-            Move slowly until the coffee is finished.
-          </p>
-
-          <div style={{ height: "0.5px", background: "var(--rule)", margin: "26px 0 22px" }}></div>
-
           {/* CM quote */}
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, lineHeight: 1.75, color: "var(--ink-lt)", margin: "0 0 4px", textAlign: "center" }}>
             "{cmQuote.quote}"
