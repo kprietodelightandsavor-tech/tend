@@ -9,10 +9,10 @@ import {
   DAYS,
   NATURE_DAYS,
   NATURE_LOOP_STEPS,
-  HABIT_PROMPTS,
   getNatureLoopStep,
   advanceNatureLoop,
 } from "../data/seed";
+import { HABIT_TERM, HABIT_MONTHS } from "../data/habit-term-seed";
 import { getTodayBeauty, isVolunteerTuesday } from "../data/beauty-seed";
 import {
   getActivityChoices,
@@ -874,30 +874,100 @@ function DailyActivity({ isToday, viewDate }) {
   );
 }
 
-// ─── HABIT FOCUS (term habit of choice) ──────────────────────────────
-function HabitFocus({ viewDate }) {
+// ─── HABIT FOCUS (term + month + lesson progress) ────────────────────
+function HabitFocus() {
   const [expanded, setExpanded] = useState(false);
-  const [showPicker, setShowPicker] = useState(false);
-  const [habitKey, setHabitKey] = useState(() => {
+
+  // progress: { [monthNumber]: [completed lesson numbers] }
+  const [progress, setProgress] = useState(() => {
     try {
-      const saved = localStorage.getItem("tend_summer_term_habit");
-      if (saved && HABIT_PROMPTS[saved]) return saved;
+      const saved = JSON.parse(localStorage.getItem("tend_habit_term_progress") || "null");
+      if (saved && typeof saved === "object") return saved;
     } catch {}
-    return Object.keys(HABIT_PROMPTS)[0] || "attention";
+    return {};
   });
 
-  const habit = HABIT_PROMPTS[habitKey];
-  const dailyArr = habit?.daily || [];
-  const dayIdx = viewDate.getDay();
-  const promptPair = dailyArr.length > 0 ? dailyArr[dayIdx % dailyArr.length] : [];
-
-  const setHabit = (key) => {
-    setHabitKey(key);
-    try { localStorage.setItem("tend_summer_term_habit", key); } catch {}
-    setShowPicker(false);
+  const saveProgress = (next) => {
+    setProgress(next);
+    try { localStorage.setItem("tend_habit_term_progress", JSON.stringify(next)); } catch {}
   };
 
-  const habitKeys = Object.keys(HABIT_PROMPTS);
+  // First month with incomplete lessons is the current month
+  const currentMonth = HABIT_MONTHS.find((m) => {
+    const completed = progress[m.number] || [];
+    return completed.length < m.lessons.length;
+  });
+
+  // Term complete state
+  if (!currentMonth) {
+    return (
+      <>
+        <div
+          onClick={() => setExpanded((e) => !e)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            margin: "4px 0 0",
+            padding: "6px 12px 6px 8px",
+            background: expanded ? "var(--sage-bg)" : "rgba(232, 226, 213, 0.35)",
+            borderRadius: 4,
+            cursor: "pointer",
+          }}
+        >
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, margin: 0, color: "var(--ink)" }}>
+            Habit focus &middot; <span style={{ color: "var(--sage)" }}>term complete &#x2731;</span>
+          </p>
+          <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", color: "var(--ink-faint)" }}>
+            {expanded ? "close" : "open"}
+          </span>
+        </div>
+        {expanded && (
+          <div style={{ margin: "8px 0 4px", padding: "14px 18px", background: "rgba(232, 226, 213, 0.25)", borderLeft: "1.5px solid var(--sage-md)", borderRadius: "0 4px 4px 0" }}>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, lineHeight: 1.6, color: "var(--ink)", margin: "0 0 10px" }}>
+              {HABIT_TERM.title} &mdash; you did all twenty-seven lessons. Body, will, world. Well done.
+            </p>
+            <button
+              onClick={() => saveProgress({})}
+              style={{ background: "none", border: "1px solid var(--rule)", borderRadius: 20, padding: "5px 14px", cursor: "pointer", fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "lowercase", color: "var(--ink-faint)" }}
+            >
+              start a new term
+            </button>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  const completedThisMonth = progress[currentMonth.number] || [];
+  const currentLesson = currentMonth.lessons.find((l) => !completedThisMonth.includes(l.number));
+  if (!currentLesson) return null; // defensive
+
+  const monthIndex = HABIT_MONTHS.findIndex((m) => m.number === currentMonth.number);
+  const isFirstLessonOfMonth = currentLesson.number === 1 && completedThisMonth.length === 0;
+  const practiceStarted = currentLesson.number >= currentMonth.practiceBeginsAtLesson;
+  const midMonthShown = currentLesson.number >= currentMonth.midMonthQuestionAtLesson;
+
+  const markLessonComplete = () => {
+    const next = {
+      ...progress,
+      [currentMonth.number]: [...completedThisMonth, currentLesson.number],
+    };
+    saveProgress(next);
+  };
+
+  const undoLastLesson = () => {
+    if (completedThisMonth.length > 0) {
+      saveProgress({
+        ...progress,
+        [currentMonth.number]: completedThisMonth.slice(0, -1),
+      });
+    } else if (monthIndex > 0) {
+      const prev = HABIT_MONTHS[monthIndex - 1];
+      const prevDone = progress[prev.number] || [];
+      saveProgress({ ...progress, [prev.number]: prevDone.slice(0, -1) });
+    }
+  };
 
   return (
     <>
@@ -917,7 +987,10 @@ function HabitFocus({ viewDate }) {
       >
         <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, margin: 0, color: "var(--ink)" }}>
           Habit focus &middot;{" "}
-          <span style={{ color: "var(--sage)" }}>{habit?.name || "Attention"}</span>
+          <span style={{ color: "var(--sage)" }}>{currentMonth.habit}</span>
+          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", marginLeft: 8 }}>
+            lesson {currentLesson.number} of {currentMonth.lessons.length}
+          </span>
         </p>
         <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", color: "var(--ink-faint)" }}>
           {expanded ? "close" : "open"}
@@ -934,116 +1007,196 @@ function HabitFocus({ viewDate }) {
             borderRadius: "0 4px 4px 0",
           }}
         >
-          {/* TERM HABIT */}
-          <div style={{ marginBottom: 14 }}>
-            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 4px" }}>
-              TERM HABIT
+          {/* TERM HEADLINE + MONTH PROGRESS DOTS */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: 0 }}>
+              {HABIT_TERM.title.toUpperCase()}
             </p>
-            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, color: "var(--ink)", margin: "0 0 4px" }}>
-              {habit?.name}
-            </p>
-            {habit?.desc && (
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.55, color: "var(--ink-lt)", margin: 0 }}>
-                {habit.desc}
-              </p>
-            )}
+            <div style={{ display: "flex", gap: 4 }}>
+              {HABIT_MONTHS.map((m, i) => {
+                const isPast = i < monthIndex;
+                const isCurrent = i === monthIndex;
+                return (
+                  <div
+                    key={m.number}
+                    title={m.habit}
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: "50%",
+                      background: isPast || isCurrent ? "var(--sage)" : "transparent",
+                      border: `1.5px solid ${isPast || isCurrent ? "var(--sage)" : "var(--sage-md)"}`,
+                      opacity: isCurrent ? 1 : isPast ? 0.55 : 1,
+                    }}
+                  />
+                );
+              })}
+            </div>
           </div>
 
-          {promptPair.length > 0 && (
-            <>
-              <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
+          {/* HABIT NAME + MONTH FRAME + DEFINITION + PHRASE */}
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, color: "var(--ink)", margin: "0 0 2px" }}>
+            {currentMonth.habit}
+          </p>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", margin: "0 0 6px" }}>
+            month {currentMonth.number} &middot; {currentMonth.title} &mdash; {currentMonth.subtitle}
+          </p>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.55, color: "var(--ink-lt)", margin: "0 0 6px" }}>
+            {currentMonth.habitDefinition}
+          </p>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.55, color: "var(--sage)", margin: 0 }}>
+            &ldquo;{currentMonth.phrase}&rdquo;
+          </p>
 
-              {/* TODAY'S PROMPTS */}
-              <div style={{ marginBottom: 14 }}>
-                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 6px" }}>
-                  FOR TODAY
+          {/* PARENT ANCHOR (only at start of a new month) */}
+          {isFirstLessonOfMonth && currentMonth.parentAnchor && (
+            <div style={{
+              margin: "14px 0 0",
+              padding: "10px 12px",
+              background: "rgba(195, 155, 97, 0.10)",
+              borderLeft: "2px solid #C29B61",
+              borderRadius: "0 4px 4px 0",
+            }}>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "#A07F4C", margin: "0 0 4px" }}>
+                BEFORE LESSON 1 &middot; PARENT READING
+              </p>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 13, color: "var(--ink)", margin: "0 0 2px" }}>
+                {currentMonth.parentAnchor.title}
+              </p>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, lineHeight: 1.5, color: "var(--ink-lt)", margin: "0 0 4px" }}>
+                {currentMonth.parentAnchor.source} &middot; {currentMonth.parentAnchor.pages}
+              </p>
+              {currentMonth.parentAnchor.note && (
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, lineHeight: 1.5, color: "var(--ink-faint)", margin: 0 }}>
+                  {currentMonth.parentAnchor.note}
                 </p>
-                {promptPair.map((p, i) => (
-                  <p
-                    key={i}
-                    style={{
-                      fontFamily: "'Cormorant Garamond', serif",
-                      fontStyle: "italic",
-                      fontSize: 13,
-                      lineHeight: 1.6,
-                      color: "var(--ink)",
-                      margin: i === promptPair.length - 1 ? 0 : "0 0 8px",
-                    }}
-                  >
-                    {p}
-                  </p>
-                ))}
-              </div>
+              )}
+            </div>
+          )}
+
+          {/* THIS MONTH'S PRACTICE (after practice begins) */}
+          {practiceStarted && currentMonth.practiceText && (
+            <>
+              <div style={{ height: "0.5px", background: "var(--rule)", margin: "14px 0" }}></div>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--sage)", margin: "0 0 4px" }}>
+                THIS MONTH&rsquo;S PRACTICE
+              </p>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.55, color: "var(--ink)", margin: 0 }}>
+                {currentMonth.practiceText}
+              </p>
             </>
           )}
 
-          <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 12px" }}></div>
+          {/* MID-MONTH QUESTION (when reached) */}
+          {midMonthShown && currentMonth.midMonthQuestion && (
+            <>
+              <div style={{ height: "0.5px", background: "var(--rule)", margin: "14px 0" }}></div>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 4px" }}>
+                TO ASK
+              </p>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.55, color: "var(--ink)", margin: 0 }}>
+                {currentMonth.midMonthQuestion}
+              </p>
+            </>
+          )}
 
-          {/* CHANGE FOCUS */}
-          {!showPicker ? (
+          <div style={{ height: "0.5px", background: "var(--rule)", margin: "14px 0" }}></div>
+
+          {/* CURRENT LESSON */}
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 4px" }}>
+            LESSON {currentLesson.number} OF {currentMonth.lessons.length}
+          </p>
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", margin: "0 0 10px" }}>
+            {currentLesson.title}
+          </p>
+
+          {/* FAMILY content */}
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--ink-lt)", margin: "0 0 4px" }}>
+            FAMILY
+          </p>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink)", margin: 0 }}>
+            {currentLesson.family}
+          </p>
+
+          {/* TEEN content */}
+          {currentLesson.teen && (
+            <div style={{ marginTop: 12 }}>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--ink-lt)", margin: "0 0 6px" }}>
+                TEEN
+              </p>
+              {currentLesson.teen.reading && (
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink)", margin: "0 0 6px" }}>
+                  <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, fontStyle: "normal", letterSpacing: ".08em", color: "var(--ink-faint)", marginRight: 6 }}>READ</span>
+                  {currentLesson.teen.reading}
+                  {currentLesson.teen.source && (
+                    <span style={{ color: "var(--ink-faint)" }}> &middot; {currentLesson.teen.source}</span>
+                  )}
+                </p>
+              )}
+              {currentLesson.teen.quote && (
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink)", margin: "0 0 6px" }}>
+                  <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, fontStyle: "normal", letterSpacing: ".08em", color: "var(--ink-faint)", marginRight: 6 }}>QUOTE</span>
+                  {currentLesson.teen.quote}
+                </p>
+              )}
+              {currentLesson.teen.experiment && (
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink)", margin: "0 0 6px" }}>
+                  <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, fontStyle: "normal", letterSpacing: ".08em", color: "var(--ink-faint)", marginRight: 6 }}>EXPERIMENT</span>
+                  {currentLesson.teen.experiment}
+                </p>
+              )}
+              {currentLesson.teen.question && (
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink)", margin: "0 0 6px" }}>
+                  <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, fontStyle: "normal", letterSpacing: ".08em", color: "var(--ink-faint)", marginRight: 6 }}>ASK</span>
+                  {currentLesson.teen.question}
+                </p>
+              )}
+              {currentLesson.teen.note && (
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, lineHeight: 1.55, color: "var(--ink-faint)", margin: 0 }}>
+                  {currentLesson.teen.note}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* MARK COMPLETE */}
+          <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 14 }}>
             <button
-              onClick={() => setShowPicker(true)}
+              onClick={markLessonComplete}
               style={{
-                background: "none",
-                border: "none",
+                background: "var(--sage-bg)",
+                border: "1px solid var(--sage-md)",
+                borderRadius: 20,
+                padding: "6px 16px",
                 cursor: "pointer",
                 fontFamily: "'Lato', sans-serif",
-                fontSize: 9,
+                fontSize: 10,
                 letterSpacing: ".12em",
                 textTransform: "lowercase",
-                color: "var(--ink-faint)",
-                padding: 0,
+                color: "var(--sage)",
               }}
             >
-              change focus &#8250;
+              mark lesson complete &#x2731;
             </button>
-          ) : (
-            <div>
-              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--ink-lt)", margin: "0 0 8px" }}>
-                CHOOSE THIS TERM&rsquo;S HABIT
-              </p>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {habitKeys.map((key) => {
-                  const isActive = key === habitKey;
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => setHabit(key)}
-                      style={{
-                        fontFamily: "'Lato', sans-serif",
-                        fontSize: 10,
-                        letterSpacing: ".06em",
-                        color: isActive ? "white" : "var(--sage)",
-                        background: isActive ? "var(--sage)" : "var(--sage-bg)",
-                        border: `0.5px solid var(--sage-md)`,
-                        borderRadius: 12,
-                        padding: "4px 11px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {HABIT_PROMPTS[key].name}
-                    </button>
-                  );
-                })}
-              </div>
+            {(completedThisMonth.length > 0 || monthIndex > 0) && (
               <button
-                onClick={() => setShowPicker(false)}
+                onClick={undoLastLesson}
                 style={{
                   background: "none",
                   border: "none",
                   cursor: "pointer",
                   fontFamily: "'Lato', sans-serif",
                   fontSize: 9,
-                  letterSpacing: ".12em",
+                  letterSpacing: ".08em",
                   textTransform: "lowercase",
                   color: "var(--ink-faint)",
-                  padding: "8px 0 0",
+                  padding: 0,
                 }}
               >
-                done
+                undo last
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </>
@@ -1182,9 +1335,9 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
         </div>
       </div>
 
-      {/* ── HABIT FOCUS (term habit of choice) ── */}
+      {/* ── HABIT FOCUS (term + month + lesson) ── */}
       <div style={{ marginTop: 22 }}>
-        <HabitFocus viewDate={viewDate} />
+        <HabitFocus />
       </div>
 
       {/* ── DAILY RHYTHM eyebrow ── */}
