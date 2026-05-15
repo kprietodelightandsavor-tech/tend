@@ -9,6 +9,7 @@ import {
   DAYS,
   NATURE_DAYS,
   NATURE_LOOP_STEPS,
+  HABIT_PROMPTS,
   getNatureLoopStep,
   advanceNatureLoop,
 } from "../data/seed";
@@ -873,6 +874,182 @@ function DailyActivity({ isToday, viewDate }) {
   );
 }
 
+// ─── HABIT FOCUS (term habit of choice) ──────────────────────────────
+function HabitFocus({ viewDate }) {
+  const [expanded, setExpanded] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [habitKey, setHabitKey] = useState(() => {
+    try {
+      const saved = localStorage.getItem("tend_summer_term_habit");
+      if (saved && HABIT_PROMPTS[saved]) return saved;
+    } catch {}
+    return Object.keys(HABIT_PROMPTS)[0] || "attention";
+  });
+
+  const habit = HABIT_PROMPTS[habitKey];
+  const dailyArr = habit?.daily || [];
+  const dayIdx = viewDate.getDay();
+  const promptPair = dailyArr.length > 0 ? dailyArr[dayIdx % dailyArr.length] : [];
+
+  const setHabit = (key) => {
+    setHabitKey(key);
+    try { localStorage.setItem("tend_summer_term_habit", key); } catch {}
+    setShowPicker(false);
+  };
+
+  const habitKeys = Object.keys(HABIT_PROMPTS);
+
+  return (
+    <>
+      <div
+        onClick={() => setExpanded((e) => !e)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          margin: "4px 0 0",
+          padding: "6px 12px 6px 8px",
+          background: expanded ? "var(--sage-bg)" : "rgba(232, 226, 213, 0.35)",
+          borderRadius: 4,
+          cursor: "pointer",
+          transition: "background .2s",
+        }}
+      >
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, margin: 0, color: "var(--ink)" }}>
+          Habit focus &middot;{" "}
+          <span style={{ color: "var(--sage)" }}>{habit?.name || "Attention"}</span>
+        </p>
+        <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", color: "var(--ink-faint)" }}>
+          {expanded ? "close" : "open"}
+        </span>
+      </div>
+
+      {expanded && (
+        <div
+          style={{
+            margin: "8px 0 4px",
+            padding: "14px 18px",
+            background: "rgba(232, 226, 213, 0.25)",
+            borderLeft: "1.5px solid var(--sage-md)",
+            borderRadius: "0 4px 4px 0",
+          }}
+        >
+          {/* TERM HABIT */}
+          <div style={{ marginBottom: 14 }}>
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 4px" }}>
+              TERM HABIT
+            </p>
+            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, color: "var(--ink)", margin: "0 0 4px" }}>
+              {habit?.name}
+            </p>
+            {habit?.desc && (
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.55, color: "var(--ink-lt)", margin: 0 }}>
+                {habit.desc}
+              </p>
+            )}
+          </div>
+
+          {promptPair.length > 0 && (
+            <>
+              <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
+
+              {/* TODAY'S PROMPTS */}
+              <div style={{ marginBottom: 14 }}>
+                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 6px" }}>
+                  FOR TODAY
+                </p>
+                {promptPair.map((p, i) => (
+                  <p
+                    key={i}
+                    style={{
+                      fontFamily: "'Cormorant Garamond', serif",
+                      fontStyle: "italic",
+                      fontSize: 13,
+                      lineHeight: 1.6,
+                      color: "var(--ink)",
+                      margin: i === promptPair.length - 1 ? 0 : "0 0 8px",
+                    }}
+                  >
+                    {p}
+                  </p>
+                ))}
+              </div>
+            </>
+          )}
+
+          <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 12px" }}></div>
+
+          {/* CHANGE FOCUS */}
+          {!showPicker ? (
+            <button
+              onClick={() => setShowPicker(true)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontFamily: "'Lato', sans-serif",
+                fontSize: 9,
+                letterSpacing: ".12em",
+                textTransform: "lowercase",
+                color: "var(--ink-faint)",
+                padding: 0,
+              }}
+            >
+              change focus &#8250;
+            </button>
+          ) : (
+            <div>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--ink-lt)", margin: "0 0 8px" }}>
+                CHOOSE THIS TERM&rsquo;S HABIT
+              </p>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {habitKeys.map((key) => {
+                  const isActive = key === habitKey;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setHabit(key)}
+                      style={{
+                        fontFamily: "'Lato', sans-serif",
+                        fontSize: 10,
+                        letterSpacing: ".06em",
+                        color: isActive ? "white" : "var(--sage)",
+                        background: isActive ? "var(--sage)" : "var(--sage-bg)",
+                        border: `0.5px solid var(--sage-md)`,
+                        borderRadius: 12,
+                        padding: "4px 11px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {HABIT_PROMPTS[key].name}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => setShowPicker(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "'Lato', sans-serif",
+                  fontSize: 9,
+                  letterSpacing: ".12em",
+                  textTransform: "lowercase",
+                  color: "var(--ink-faint)",
+                  padding: "8px 0 0",
+                }}
+              >
+                done
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
 // ─── RHYTHM SVG MARKERS (clean line icons, not emojis) ───────────────
 const SunriseMarker = (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
@@ -1003,6 +1180,11 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
             </span>
           ))}
         </div>
+      </div>
+
+      {/* ── HABIT FOCUS (term habit of choice) ── */}
+      <div style={{ marginTop: 22 }}>
+        <HabitFocus viewDate={viewDate} />
       </div>
 
       {/* ── DAILY RHYTHM eyebrow ── */}
