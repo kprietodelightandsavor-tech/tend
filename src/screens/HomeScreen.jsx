@@ -885,7 +885,22 @@ export default function HomeScreen({ onNavigate, settings }) {
   return (
     <div className={`screen${isSummer ? " summer" : ""}`}>
       <DayNavigator viewDate={viewDate} onChange={setViewDate} onSnapToday={snapToToday} onCamera={openCamera} />
-      {isToday && <h1 className="display serif" style={{ marginBottom: 4, marginTop: 8 }}>{greeting},<br />{name}.</h1>}
+      {isToday && (
+        <h1
+          className="serif"
+          style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontWeight: 400,
+            fontSize: 22,
+            lineHeight: 1.25,
+            color: "var(--ink)",
+            marginBottom: 14,
+            marginTop: 8,
+          }}
+        >
+          {greeting}, {name}.
+        </h1>
+      )}
       {!isToday && (
         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", marginBottom: 18, marginTop: 8 }}>
           {offset < 0 ? `${Math.abs(offset)} day${Math.abs(offset) === 1 ? "" : "s"} ago` : `In ${offset} day${offset === 1 ? "" : "s"}`}
