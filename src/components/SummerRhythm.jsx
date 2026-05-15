@@ -875,7 +875,7 @@ function DailyActivity({ isToday, viewDate }) {
 }
 
 // ─── HABIT FOCUS (term + month + lesson progress) ────────────────────
-function HabitFocus() {
+export function HabitFocus() {
   const [expanded, setExpanded] = useState(false);
 
   // progress: { [monthNumber]: [completed lesson numbers] }
