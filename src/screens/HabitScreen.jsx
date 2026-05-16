@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { HABIT_TERM, HABIT_MONTHS } from "../data/habit-term-seed";
+import { TERMS, HABIT_MONTHS, SPINE, getMonthsForTerm } from "../data/habit-term-seed";
 import { supabase } from "../lib/supabase";
 
 // ─── ICONS ────────────────────────────────────────────────────────────
@@ -79,9 +79,12 @@ const isLessonComplete = (progress, monthId, lessonNum) => {
   return completed.includes(lessonNum);
 };
 
-const isMonthUnlocked = (progress, monthIdx) => {
-  if (monthIdx === 0) return true;
-  const prevMonth = HABIT_MONTHS[monthIdx - 1];
+// Months unlock in sequence WITHIN their own term. The first month of
+// each term is always open; later months unlock when the previous month
+// in that same term is fully complete.
+const isMonthUnlocked = (progress, termMonths, monthIdxInTerm) => {
+  if (monthIdxInTerm === 0) return true;
+  const prevMonth = termMonths[monthIdxInTerm - 1];
   const completed = progress[prevMonth.id] || [];
   return completed.length === prevMonth.lessons.length;
 };
@@ -92,16 +95,18 @@ const getMonthProgress = (progress, month) => {
 };
 
 // ─── TERM OVERVIEW ────────────────────────────────────────────────────
+// Renders every term in TERMS, each with its own header, arc strip,
+// and month list. Months unlock within their own term independently.
 function TermOverview({ progress, onSelectMonth }) {
   return (
     <div className="screen">
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
           <Icon.Sprout />
-          <p className="eyebrow" style={{ marginBottom: 0 }}>Habit Term</p>
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Habit Terms</p>
         </div>
         <h1 className="display serif" style={{ marginBottom: 8 }}>
-          {HABIT_TERM.title}.
+          Habit Study.
         </h1>
         <p
           style={{
@@ -112,61 +117,240 @@ function TermOverview({ progress, onSelectMonth }) {
             lineHeight: 1.6,
           }}
         >
-          {HABIT_TERM.description}
+          A Charlotte Mason habit term walks one virtue, three months at a time.
         </p>
       </div>
 
-      <div
-        style={{
-          padding: "14px 18px",
-          background: "var(--sage-bg)",
-          borderLeft: "3px solid var(--sage)",
-          marginBottom: 28,
-        }}
-      >
-        <p
-          style={{
-            fontSize: 10,
-            fontFamily: "'Lato', sans-serif",
-            letterSpacing: ".14em",
-            textTransform: "uppercase",
-            color: "var(--sage)",
-            marginBottom: 6,
-          }}
-        >
-          The Three Faces of Temperance
-        </p>
-        <p
-          style={{
-            fontFamily: "'Playfair Display', serif",
-            fontSize: 16,
-            color: "var(--ink)",
-            lineHeight: 1.5,
-          }}
-        >
-          At the table · Of the will · In the world
-        </p>
-        <p
-          style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontStyle: "italic",
-            fontSize: 13,
-            color: "var(--ink-lt)",
-            marginTop: 4,
-            lineHeight: 1.6,
-          }}
-        >
-          One habit, three places it shows up.
-        </p>
-      </div>
+      {TERMS.map((term, termIdx) => {
+        const termMonths = getMonthsForTerm(term.id);
+        const arcFaces = term.arc
+          .split("→")
+          .map((s) => s.trim())
+          .map((s) => s.charAt(0).toUpperCase() + s.slice(1));
 
-      {HABIT_TERM.spine && (
+        return (
+          <div
+            key={term.id}
+            style={{ marginBottom: termIdx === TERMS.length - 1 ? 0 : 40 }}
+          >
+            {/* Term header */}
+            <div style={{ marginBottom: 18 }}>
+              <p
+                style={{
+                  fontSize: 10,
+                  fontFamily: "'Lato', sans-serif",
+                  letterSpacing: ".14em",
+                  textTransform: "uppercase",
+                  color: "var(--sage)",
+                  marginBottom: 6,
+                }}
+              >
+                Term {term.number}
+              </p>
+              <h2
+                className="serif"
+                style={{
+                  fontSize: 27,
+                  fontWeight: 400,
+                  color: "var(--ink)",
+                  marginBottom: 8,
+                  lineHeight: 1.2,
+                }}
+              >
+                {term.title}.
+              </h2>
+              <p
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontStyle: "italic",
+                  fontSize: 15,
+                  color: "var(--ink-faint)",
+                  lineHeight: 1.6,
+                }}
+              >
+                {term.description}
+              </p>
+            </div>
+
+            {/* Arc strip */}
+            <div
+              style={{
+                padding: "14px 18px",
+                background: "var(--sage-bg)",
+                borderLeft: "3px solid var(--sage)",
+                marginBottom: 20,
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontSize: 16,
+                  color: "var(--ink)",
+                  lineHeight: 1.5,
+                }}
+              >
+                {arcFaces.join(" · ")}
+              </p>
+              {term.phrase && (
+                <p
+                  style={{
+                    fontFamily: "'Cormorant Garamond', serif",
+                    fontStyle: "italic",
+                    fontSize: 13,
+                    color: "var(--ink-lt)",
+                    marginTop: 4,
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {term.phrase}
+                </p>
+              )}
+            </div>
+
+            {/* Month list */}
+            <div>
+              {termMonths.map((month, idx) => {
+                const unlocked = isMonthUnlocked(progress, termMonths, idx);
+                const { completed, total } = getMonthProgress(progress, month);
+                const isComplete = total > 0 && completed === total;
+                const isCurrent = unlocked && !isComplete;
+                const notReady = total === 0;
+
+                return (
+                  <div
+                    key={month.id}
+                    onClick={() =>
+                      unlocked && !notReady && onSelectMonth(month.id)
+                    }
+                    style={{
+                      borderBottom:
+                        idx === termMonths.length - 1
+                          ? "none"
+                          : "1px solid var(--rule)",
+                      padding: "20px 0",
+                      cursor: unlocked && !notReady ? "pointer" : "default",
+                      opacity: unlocked ? 1 : 0.4,
+                      transition: "opacity .3s",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "50%",
+                          border: `1.5px solid ${
+                            isComplete
+                              ? "var(--sage)"
+                              : isCurrent
+                              ? "var(--sage-md)"
+                              : "var(--rule)"
+                          }`,
+                          background: isComplete ? "var(--sage)" : "var(--cream)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                          fontFamily: "'Playfair Display', serif",
+                          fontSize: 15,
+                          color: isComplete ? "white" : "var(--ink-faint)",
+                        }}
+                      >
+                        {isComplete ? (
+                          <Icon.Check />
+                        ) : !unlocked ? (
+                          <Icon.Lock />
+                        ) : (
+                          month.number
+                        )}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "baseline",
+                            marginBottom: 4,
+                          }}
+                        >
+                          <p
+                            style={{
+                              fontSize: 10,
+                              fontFamily: "'Lato', sans-serif",
+                              letterSpacing: ".14em",
+                              textTransform: "uppercase",
+                              color: "var(--sage)",
+                            }}
+                          >
+                            Month {month.number} · {month.subtitle}
+                          </p>
+                          {unlocked && !notReady && (
+                            <p
+                              style={{
+                                fontSize: 10,
+                                fontFamily: "'Lato', sans-serif",
+                                letterSpacing: ".08em",
+                                color: "var(--ink-faint)",
+                              }}
+                            >
+                              {completed}/{total}
+                            </p>
+                          )}
+                          {notReady && (
+                            <p
+                              style={{
+                                fontSize: 10,
+                                fontFamily: "'Lato', sans-serif",
+                                letterSpacing: ".08em",
+                                color: "var(--ink-faint)",
+                                fontStyle: "italic",
+                              }}
+                            >
+                              Coming soon
+                            </p>
+                          )}
+                        </div>
+                        <h3
+                          style={{
+                            fontFamily: "'Playfair Display', serif",
+                            fontSize: 22,
+                            fontWeight: 400,
+                            color: "var(--ink)",
+                            marginBottom: 4,
+                            lineHeight: 1.25,
+                          }}
+                        >
+                          {month.title}
+                        </h3>
+                        <p
+                          style={{
+                            fontFamily: "'Cormorant Garamond', serif",
+                            fontStyle: "italic",
+                            fontSize: 14,
+                            color: "var(--ink-lt)",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          Habit: {month.habit}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Spine attribution — shared across all terms */}
+      {SPINE && (
         <div
           style={{
             padding: "10px 14px",
             border: "1px solid var(--rule)",
             borderRadius: 3,
-            marginBottom: 22,
+            marginTop: 32,
           }}
         >
           <p
@@ -189,7 +373,7 @@ function TermOverview({ progress, onSelectMonth }) {
               marginBottom: 2,
             }}
           >
-            {HABIT_TERM.spine.title}
+            {SPINE.title}
           </p>
           <p
             style={{
@@ -200,104 +384,10 @@ function TermOverview({ progress, onSelectMonth }) {
               lineHeight: 1.5,
             }}
           >
-            by {HABIT_TERM.spine.author}
+            by {SPINE.author}
           </p>
         </div>
       )}
-
-      <div>
-        {HABIT_MONTHS.map((month, idx) => {
-          const unlocked = isMonthUnlocked(progress, idx);
-          const { completed, total } = getMonthProgress(progress, month);
-          const isComplete = completed === total;
-          const isCurrent = unlocked && !isComplete;
-
-          return (
-            <div
-              key={month.id}
-              onClick={() => unlocked && onSelectMonth(month.id)}
-              style={{
-                borderBottom: idx === HABIT_MONTHS.length - 1 ? "none" : "1px solid var(--rule)",
-                padding: "20px 0",
-                cursor: unlocked ? "pointer" : "default",
-                opacity: unlocked ? 1 : 0.4,
-                transition: "opacity .3s",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    border: `1.5px solid ${isComplete ? "var(--sage)" : isCurrent ? "var(--sage-md)" : "var(--rule)"}`,
-                    background: isComplete ? "var(--sage)" : "var(--cream)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    fontFamily: "'Playfair Display', serif",
-                    fontSize: 15,
-                    color: isComplete ? "white" : "var(--ink-faint)",
-                  }}
-                >
-                  {isComplete ? <Icon.Check /> : !unlocked ? <Icon.Lock /> : month.number}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                    <p
-                      style={{
-                        fontSize: 10,
-                        fontFamily: "'Lato', sans-serif",
-                        letterSpacing: ".14em",
-                        textTransform: "uppercase",
-                        color: "var(--sage)",
-                      }}
-                    >
-                      Month {month.number} · {month.subtitle}
-                    </p>
-                    {unlocked && (
-                      <p
-                        style={{
-                          fontSize: 10,
-                          fontFamily: "'Lato', sans-serif",
-                          letterSpacing: ".08em",
-                          color: "var(--ink-faint)",
-                        }}
-                      >
-                        {completed}/{total}
-                      </p>
-                    )}
-                  </div>
-                  <h2
-                    style={{
-                      fontFamily: "'Playfair Display', serif",
-                      fontSize: 22,
-                      fontWeight: 400,
-                      color: "var(--ink)",
-                      marginBottom: 4,
-                      lineHeight: 1.25,
-                    }}
-                  >
-                    {month.title}
-                  </h2>
-                  <p
-                    style={{
-                      fontFamily: "'Cormorant Garamond', serif",
-                      fontStyle: "italic",
-                      fontSize: 14,
-                      color: "var(--ink-lt)",
-                      lineHeight: 1.6,
-                    }}
-                  >
-                    Habit: {month.habit}
-                  </p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }
