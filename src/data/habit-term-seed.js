@@ -1,31 +1,83 @@
-// ─── HABIT TERM: STEWARDSHIP OF APPETITE ──────────────────────────────
-// A 12-week Charlotte Mason habit term for parents and families.
-// Three months, three appetites: body → will → world.
+// ─── HABIT TERMS · CHARLOTTE MASON COMPANION ────────────────────────
+// A Charlotte Mason habit-term system for parents and families.
+// Each term is three months. Each month carries one habit, trimmed to
+// roughly 8 lessons drawn from Simply Charlotte Mason's
+// Laying Down the Rails for Children.
 //
-// Pacing: Lessons unlock one at a time. The family moves at its own pace.
-// No calendar days are imposed. When a lesson is marked complete, the next
-// becomes available. The "Practice begins this week" note appears on the
-// lesson that introduces the family rhythm shift.
+// Pacing: Lessons unlock one at a time. The family moves at its own
+// pace. When a lesson is marked complete, the next becomes available.
+// The "Practice begins this week" note appears on the lesson that
+// introduces the family rhythm shift.
+//
+// Weekly practice check-in: every month carries a weeklyPractice block.
+// Four small check-ins (Week 1, Week 2, Week 3, Week 4) sit alongside
+// the lessons — not gated by them, freely available throughout the
+// month. They are the gentle reminder that the habit is practiced
+// between lessons, not after them.
 
+// ─── TERM-LEVEL METADATA ─────────────────────────────────────────────
+export const TERMS = [
+  {
+    id: "term-1-temperance",
+    number: 1,
+    title: "The Habit of Temperance",
+    subtitle: "A Charlotte Mason habit term for parents and families",
+    description:
+      "Three months. One habit, three faces. " +
+      "Temperance at the table, of the will, and in the world — " +
+      "Mason's broad virtue of moderation in all our appetites.",
+    phrase: null,
+    arc: "table → will → world",
+    monthIds: ["month-1-eating", "month-2-screens", "month-3-shopping"],
+  },
+  {
+    id: "term-2-integrity",
+    number: 2,
+    title: "The Habit of Integrity",
+    subtitle: "A Charlotte Mason habit term for parents and families",
+    description:
+      "Three months. One habit, three faces. " +
+      "Firm adherence to a code of values; being a good steward of all that we possess.",
+    phrase: "We finish what we start.",
+    arc: "priorities → finishing → use of time",
+    monthIds: ["month-1-priorities", "month-2-finishing", "month-3-use-of-time"],
+  },
+];
+
+// ─── SPINE ATTRIBUTION (shared across terms) ─────────────────────────
+export const SPINE = {
+  title: "Laying Down the Rails",
+  author: "Simply Charlotte Mason",
+  note: "Each month's habit lessons follow the spine of Laying Down the Rails. This term is the companion structure that walks beside it.",
+};
+
+// ─── BACKWARD COMPATIBILITY ──────────────────────────────────────────
+// Earlier components reference HABIT_TERM directly. Keep that export
+// so nothing breaks; it points to the first term.
 export const HABIT_TERM = {
-  id: "stewardship-of-appetite",
-  title: "Stewardship of Appetite",
-  subtitle: "A Charlotte Mason habit term for parents and families",
-  description:
-    "Three months. Three appetites. One quiet practice at a time. " +
-    "Body, will, world — the three places appetite shows up and asks to be governed.",
-  arc: "body → will → world",
+  id: TERMS[0].id,
+  title: TERMS[0].title,
+  subtitle: TERMS[0].subtitle,
+  description: TERMS[0].description,
+  spine: SPINE,
+  arc: TERMS[0].arc,
   totalMonths: 3,
   totalLessons: 27,
 };
 
+// ─── ALL MONTHS · BOTH TERMS ─────────────────────────────────────────
 export const HABIT_MONTHS = [
-  // ─── MONTH ONE: EATING ───────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  // TERM ONE · THE HABIT OF TEMPERANCE
+  // ═══════════════════════════════════════════════════════════════════
+
+  // ─── MONTH ONE: EATING ─────────────────────────────────────────────
   {
+    termId: "term-1-temperance",
     id: "month-1-eating",
     number: 1,
     title: "Eating at the Table",
-    subtitle: "Body",
+    subtitle: "at the table",
     habit: "Temperance",
     habitDefinition: "Moderation in action, thought, or feeling; restraint",
     phrase: "Appetite is a good servant.",
@@ -44,6 +96,15 @@ export const HABIT_MONTHS = [
       "Meals and snacks at the table, at set times. Water between. No grazing.",
     midMonthQuestion: "What's the difference between hungry and wanting?",
     midMonthQuestionAtLesson: 6,
+    weeklyPractice: {
+      enabled: true,
+      weeks: 4,
+      prompt: "We practiced this week.",
+      reminderPhrase: "Appetite is a good servant.",
+      reminderPractice:
+        "Meals and snacks at the table, at set times. Water between. No grazing.",
+      affirmation: "Steady on.",
+    },
     lessons: [
       {
         number: 1,
@@ -158,12 +219,13 @@ export const HABIT_MONTHS = [
     ],
   },
 
-  // ─── MONTH TWO: SCREENS ──────────────────────────────────────────────
+  // ─── MONTH TWO: SCREENS ────────────────────────────────────────────
   {
+    termId: "term-1-temperance",
     id: "month-2-screens",
     number: 2,
     title: "Screens",
-    subtitle: "Will",
+    subtitle: "of the will",
     habit: "Self-Control",
     habitDefinition: "Keeping back the expression of our passions and emotions",
     phrase: "I am the master of this, not the other way around.",
@@ -182,6 +244,15 @@ export const HABIT_MONTHS = [
       "Screens 2–4 only. Phones on the counter outside that window — parents' phones too.",
     midMonthQuestion: "What did boredom open up this week?",
     midMonthQuestionAtLesson: 6,
+    weeklyPractice: {
+      enabled: true,
+      weeks: 4,
+      prompt: "We practiced this week.",
+      reminderPhrase: "I am the master of this, not the other way around.",
+      reminderPractice:
+        "Screens 2–4 only. Phones on the counter outside that window — parents' phones too.",
+      affirmation: "Steady on.",
+    },
     lessons: [
       {
         number: 1,
@@ -293,20 +364,20 @@ export const HABIT_MONTHS = [
     ],
   },
 
-  // ─── MONTH THREE: SHOPPING ───────────────────────────────────────────
+  // ─── MONTH THREE: SHOPPING ─────────────────────────────────────────
   {
+    termId: "term-1-temperance",
     id: "month-3-shopping",
     number: 3,
     title: "Shopping",
-    subtitle: "World",
+    subtitle: "in the world",
     habit: "Self-Restraint in Indulgences",
     habitDefinition: "Enjoying pleasure in moderation; not being controlled by desire",
     phrase: "Not every desire needs a yes.",
     familyFocus:
       "We pause before buying. We look at what we already have first — and " +
       "ask how it could be used or worn differently, or whether something we " +
-      "already own can do what the new item promises. Wanting more is a " +
-      "feeling, not an instruction. Gratitude before wanting.",
+      "already own can do what the new item promises. Gratitude before wanting.",
     parentAnchor: {
       title: "Self-Restraint in Indulgences",
       source: "Laying Down the Rails (adult)",
@@ -321,6 +392,15 @@ export const HABIT_MONTHS = [
     midMonthQuestion:
       "What did we want this week that we didn't need? What did we already have that turned out to be enough?",
     midMonthQuestionAtLesson: 7,
+    weeklyPractice: {
+      enabled: true,
+      weeks: 4,
+      prompt: "We practiced this week.",
+      reminderPhrase: "Not every desire needs a yes.",
+      reminderPractice:
+        "Pause Before Yes. Look at what you already own first.",
+      affirmation: "Steady on.",
+    },
     lessons: [
       {
         number: 1,
@@ -458,4 +538,462 @@ export const HABIT_MONTHS = [
       },
     ],
   },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // TERM TWO · THE HABIT OF INTEGRITY
+  // ═══════════════════════════════════════════════════════════════════
+
+  // ─── MONTH ONE: PRIORITIES ─────────────────────────────────────────
+  {
+    termId: "term-2-integrity",
+    id: "month-1-priorities",
+    number: 1,
+    title: "Priorities",
+    subtitle: "first things first",
+    habit: "Integrity in Priorities",
+    habitDefinition: "Firm adherence to a code of values; being a good steward of all that we possess",
+    phrase: "First things first.",
+    familyFocus:
+      "We finish schoolwork and chores and enjoy the outdoors before any screen time. " +
+      "What we give our time to first says what we actually value.",
+    parentAnchor: {
+      title: "Integrity",
+      source: "Laying Down the Rails (adult)",
+      pages: "pp. 92–96",
+      note: "Read once before Lesson 1. Fill in Parent Prep, LDtR for Children p. 227.",
+    },
+    practiceBeginsAtLesson: 4,
+    practiceText:
+      "Schoolwork and chores first. Outdoors before screens. Screens come last, not first.",
+    midMonthQuestion: "What did we put first this week — and what got pushed?",
+    midMonthQuestionAtLesson: 6,
+    weeklyPractice: {
+      enabled: true,
+      weeks: 4,
+      prompt: "We practiced this week.",
+      reminderPhrase: "First things first.",
+      reminderPractice:
+        "Schoolwork and chores first. Outdoors before screens. Screens come last.",
+      affirmation: "Steady on.",
+    },
+    lessons: [
+      {
+        number: 1,
+        title: "Name it",
+        family:
+          "Read the definition of Integrity together: firm adherence to a code of values; being a good steward of all that we possess. " +
+          "Discuss how priorities are the first place integrity shows up — what we give our time to first says what we actually value. " +
+          'Identify the family goal: "We will finish schoolwork and chores and enjoy the outdoors before any screen time." ' +
+          "Read 1 Timothy 5:3–10, 16 — families who order their priorities rightly become known for their good deeds. " +
+          "Get the kids' input on what changes feel doable.",
+        teen: {
+          quote:
+            "Seek first the kingdom of God and his righteousness, and all these things will be added to you. — Matthew 6:33",
+          question:
+            "What's the difference between what you say is important and what actually gets the first hour of your day?",
+          note: "Hand them the verse on a card. Ask one-on-one when you're alone.",
+        },
+      },
+      {
+        number: 2,
+        title: "The Ant and the Cricket",
+        family:
+          'Read "The Ant and the Cricket" from Fairy Stories and Fables by James Baldwin. ' +
+          "The cricket sings through the warm months and starves in winter; the ant prioritizes the work that future-self will need. " +
+          "Discuss point one: Learn how to set priorities and practice prioritizing your work. " +
+          "Talk over how children can begin prioritizing for themselves even when they are young.",
+        teen: {
+          question:
+            "Name one thing you'll be glad you did six months from now. What would you have to deprioritize this week to actually do it?",
+          note: "Skip the fable.",
+        },
+      },
+      {
+        number: 3,
+        title: "The greatest commandment",
+        family:
+          "Read Mark 12:28–31 — Love God. Love your neighbor. This is the essence of all priorities. " +
+          "Read Matthew 15:1–20 — Jesus removed heavy burdens when he taught that added-on rules and traditions had become more important than actually keeping one's heart and mind pure. " +
+          "He declared the heart of the matter.",
+        teen: {
+          reading: "Matthew 15:1–20",
+          source: "The Bible",
+          question:
+            "What's a rule you follow that has stopped meaning anything? What's the heart of the matter underneath it?",
+        },
+      },
+      {
+        number: 4,
+        title: "A Time to Talk",
+        family:
+          'Read "A Time to Talk" by Robert Frost — the speaker is hoeing in the field, but when a friend calls from the road, ' +
+          "he thrusts his hoe into the mellow ground, blade-end up, and goes for a friendly visit. " +
+          "Work must be completed, but use wisdom to know when to take a break for a more important situation that comes up in the midst of chores.",
+        teen: {
+          reading: '"A Time to Talk" by Robert Frost',
+          source: "Robert Frost",
+          question:
+            "When did you last interrupt your work for a person — and was it the right call? How do you know?",
+        },
+        practiceBegins: true,
+      },
+      {
+        number: 5,
+        title: "The Milne quote",
+        family:
+          'Read the A. A. Milne quotation: "Organizing is what you do before you do something, so that when you do it, it\'s not all mixed up." ' +
+          "Make sure the children know who Milne was (author of Winnie the Pooh). " +
+          "Activity: Have the children make a list of activities in their life — both have-to and want-to. " +
+          "Then help them prioritize the list by putting them in order of importance. " +
+          "You can focus on a week, month, or year. Or do this as a family, focusing on field trips, service projects, sports, or special time with individual children.",
+        teen: {
+          experiment: "Make your own private list — no sharing required.",
+          question: "Did anything surprise you about what's near the top?",
+        },
+      },
+      {
+        number: 6,
+        title: "Socrates and His House",
+        family:
+          'Read "Socrates and His House" from Fifty Famous Stories Retold by James Baldwin. ' +
+          'Socrates built himself a house so small the neighbors wondered why. He said: "Small as the place is, I shall think myself happy if I can fill even it with true friends." ' +
+          "Possessions often become a measure of value, but there are far more important priorities in life than the coolness of your bicycle or the number of tech gadgets you own.",
+        teen: {
+          quote:
+            "There are more important priorities than the coolness of your bicycle or the number of tech gadgets you own.",
+          question: "What would it cost you to actually live like that's true?",
+          note: "Skip the story. Offer the line itself.",
+        },
+        midMonth: true,
+      },
+      {
+        number: 7,
+        title: "Following God / Parent Share",
+        family:
+          "Discuss together — Ecclesiastes 11:7–12:14 (remember your Creator while you are young; every action counts and is seen by God) and Matthew 6:33 (seek God's kingdom first, and the rest will follow). " +
+          "Have a Parent Share moment: tell a story from your life about a time you got your priorities right, or a time you didn't, and what it cost.",
+        teen: {
+          note: "Tell them the Parent Share story alone first, before the family circle. Make it real. No moral attached.",
+        },
+      },
+      {
+        number: 8,
+        title: "Mr. Vinegar and celebration",
+        family:
+          'Read "Mr. Vinegar and His Fortune" from Another Fairy Reader by James Baldwin. ' +
+          "Mr. Vinegar finds fifty gold pieces, trades them for a cow, the cow for bagpipes, the bagpipes for gloves, the gloves for a stick — and ends with nothing, talked into each trade by whoever happened by. " +
+          "Prioritizing involves wisdom and forethought about the future. Don't let others persuade you to think only of the moment, especially if they have much to gain by their persuasion. " +
+          "Hold your family celebration. End-of-month reflection: Where did we put first things first? Where did we let the next shiny thing win?",
+        teen: {
+          question:
+            "Name one trade you've made — time, money, attention — that you'd take back now. What were you talked into?",
+          note: "The Mr. Vinegar story holds up for teens too — let them join. Or ask the question separately.",
+        },
+      },
+    ],
+  },
+
+  // ─── MONTH TWO: FINISHING ──────────────────────────────────────────
+  // Lessons to be added in the next turn.
+  {
+    termId: "term-2-integrity",
+    id: "month-2-finishing",
+    number: 2,
+    title: "Finishing",
+    subtitle: "we don't leave it half-done",
+    habit: "Integrity in Finishing",
+    habitDefinition: "Firm adherence to a code of values; being a good steward of all that we possess",
+    phrase: "We don't leave it half-done.",
+    familyFocus:
+      "We finish one thing before beginning another. We put away before we move on. " +
+      "Half-finished tasks become the shape of a life if we let them.",
+    parentAnchor: {
+      title: "Integrity",
+      source: "Laying Down the Rails (adult)",
+      pages: "pp. 92–96",
+      note: "Read once before Lesson 1. Fill in Parent Prep, LDtR for Children p. 234.",
+    },
+    practiceBeginsAtLesson: 4,
+    practiceText:
+      "Finish one thing before beginning another. Put away before moving on.",
+    midMonthQuestion: "What did we finish this week that we'd usually leave half-done?",
+    midMonthQuestionAtLesson: 6,
+    weeklyPractice: {
+      enabled: true,
+      weeks: 4,
+      prompt: "We practiced this week.",
+      reminderPhrase: "We don't leave it half-done.",
+      reminderPractice:
+        "Finish one thing before beginning another. Put away before moving on.",
+      affirmation: "Steady on.",
+    },
+    lessons: [
+      {
+        number: 1,
+        title: "Name it",
+        family:
+          "Read the definition of Integrity together and relate it to Finishing: firm adherence to a code of values; being a good steward of all that we possess. " +
+          'Identify the family goal: "We will not make promises to complete something within a timeframe that we cannot keep." ' +
+          "Read 2 Timothy 4:6–8 — Paul's reminiscence of keeping the faith until the very end. Finishing our race of faith well is the most important thing in life we could finish. " +
+          "Get the kids' input on what changes feel doable.",
+        teen: {
+          quote:
+            "I have fought the good fight, I have finished the race, I have kept the faith. — 2 Timothy 4:7",
+          question:
+            "What's something you started with real intention and then quietly let drop? What happened in the middle?",
+          note: "Ask one-on-one when you're alone.",
+        },
+      },
+      {
+        number: 2,
+        title: "Finish before you begin",
+        family:
+          "Discuss point two together: finish one project before beginning something new. " +
+          "Young children can begin practicing this habit by putting away toys before moving to another area of play. " +
+          'Read the quotation: "There is nothing so fatal to character as half-finished tasks." — David Lloyd George.',
+        teen: {
+          quote:
+            "There is nothing so fatal to character as half-finished tasks. — David Lloyd George",
+          question:
+            "Is that overstated, or true? What does a pile of half-finished things do to a person over time?",
+          note: "Leave the quote on a card.",
+        },
+      },
+      {
+        number: 3,
+        title: "Faithful till death",
+        family:
+          'Read "Faithful Till Death," adapted from A Book of Golden Deeds by Charlotte M. Yonge — Gertrude stays beside her condemned husband through his last night, faithful to the very end. ' +
+          "A most essential quality of Finishing is being faithful unto death. " +
+          "Parental discretion advisory: this story is intense. Use your judgment on whether it fits your younger family members; you may read it only with older children.",
+        teen: {
+          reading: '"Faithful Till Death" from A Book of Golden Deeds by Charlotte M. Yonge',
+          source: "Charlotte M. Yonge",
+          question:
+            "Gertrude finished what loyalty asked of her, at great cost. Where is finishing easy for you, and where would it actually cost something?",
+        },
+      },
+      {
+        number: 4,
+        title: "The Oak",
+        family:
+          'Read and discuss the poem "The Oak" by Alfred, Lord Tennyson — "Live thy Life, young and old, like yon oak..." ' +
+          "Completing tasks and school assignments and keeping promises helps one stand tall and strong, trunk and bough, naked strength.",
+        teen: {
+          reading: '"The Oak" by Alfred, Lord Tennyson',
+          source: "Alfred, Lord Tennyson",
+          question:
+            "The oak stands strong in winter because of every season it finished. What are you building strength for by finishing now?",
+        },
+        practiceBegins: true,
+      },
+      {
+        number: 5,
+        title: "Genius and labor",
+        family:
+          'Read and discuss the quotation: "Genius begins great works; labor alone finishes them." — Joseph Joubert. ' +
+          "Read Nehemiah 6:15–7:3 — amidst trials and after much hard work, the men completed the rebuilding of the walls around Jerusalem.",
+        teen: {
+          quote:
+            "Genius begins great works; labor alone finishes them. — Joseph Joubert",
+          question:
+            "Starting is exciting; finishing is just work. What's one thing where you need to trade excitement for labor right now?",
+        },
+      },
+      {
+        number: 6,
+        title: "Make butter",
+        family:
+          'Read and discuss the quotation: "Do not plan for ventures before finishing what\'s at hand." — Euripides. ' +
+          "Activity: Make butter together. Fill a jar about half full with room-temperature heavy cream, add a pinch or two of salt, and take turns shaking it — about 30 minutes. " +
+          "Make it fun with music or jumping activities, but encourage everyone to finish the job. Once a good lump forms, rinse it with cold water. Spread it on bread, toast, or muffins together.",
+        teen: {
+          note: "Invite them to run the butter-making for the younger kids — they keep the rhythm, they call the finish. Authority shift.",
+          question: "Was the hardest part the start, the middle, or the end? It usually tells you something.",
+        },
+        midMonth: true,
+      },
+      {
+        number: 7,
+        title: "About Dogs",
+        family:
+          'Discuss how fulfilling one\'s duty relates to Integrity and Finishing. Read "About Dogs" from Harper\'s Third Reader, edited by James Baldwin — ' +
+          "the shepherd dog Fanny, wet and exhausted, will not rest until she has gone back into the storm and brought home the three missing lambs. " +
+          'Read and discuss the quotation: "Promises must be kept, deadlines met, commitments honored, not for the sake of morality, but because we become what we do or fail to do. Character is the sum of all that." — Howard Sparks.',
+        teen: {
+          quote:
+            "We become what we do or fail to do. Character is the sum of all that. — Howard Sparks",
+          question:
+            "If character really is the sum of what we finish and fail to finish — what has yours been adding up to lately?",
+        },
+      },
+      {
+        number: 8,
+        title: "The missing piece and celebration",
+        family:
+          'Share and enjoy the quotation: "There are two kinds of people: those who finish what they start, and so on." — Robert Byrne. ' +
+          "Activity: Play a game where the children must retrieve a missing piece in order to finish. Freeze 10 pennies in ice cubes; have them toss 15 into a can from a distance — they will get the first 10, then notice some are missing, and must thaw the rest to finish. " +
+          "(Or freeze one puzzle piece, let them assemble the puzzle, discover the gap, and thaw the last piece to complete it.) " +
+          "Hold your family celebration. End-of-month reflection: Where did we finish what we started? Where did we leave it half-done?",
+        teen: {
+          note: "Let them join the game or run it. Or, separately: ask them to name one thing they will finish before this month closes — and then let them do it without reminders.",
+        },
+      },
+    ],
+  },
+
+  // ─── MONTH THREE: USE OF TIME ──────────────────────────────────────
+  {
+    termId: "term-2-integrity",
+    id: "month-3-use-of-time",
+    number: 3,
+    title: "Use of Time",
+    subtitle: "today counts",
+    habit: "Integrity in Use of Time",
+    habitDefinition: "Firm adherence to a code of values; being a good steward of all that we possess",
+    phrase: "Today counts.",
+    familyFocus:
+      "At the end of each day, we will name at least one accomplishment with which we can be satisfied as we lay our heads down to rest.",
+    parentAnchor: {
+      title: "Integrity",
+      source: "Laying Down the Rails (adult)",
+      pages: "pp. 92–96",
+      note: "Read once before Lesson 1. Fill in Parent Prep, LDtR for Children p. 240.",
+    },
+    practiceBeginsAtLesson: 4,
+    practiceText:
+      "Name one accomplishment from the day before bed. One thing the day was actually for.",
+    midMonthQuestion: "What did today actually count for?",
+    midMonthQuestionAtLesson: 6,
+    weeklyPractice: {
+      enabled: true,
+      weeks: 4,
+      prompt: "We practiced this week.",
+      reminderPhrase: "Today counts.",
+      reminderPractice:
+        "Name one accomplishment from the day before bed.",
+      affirmation: "Steady on.",
+    },
+    lessons: [
+      {
+        number: 1,
+        title: "Name it",
+        family:
+          "Read the definition of Integrity together and discuss how it relates to Use of Time: firm adherence to a code of values; being a good steward of all that we possess. " +
+          'Identify the family goal: "At the end of each day, we will name at least one accomplishment with which we can be satisfied as we lay our heads down to rest." ' +
+          "Read Titus 3:14 — a productive life consists of providing for daily necessities and doing what is good. " +
+          "Get the kids' input on what changes feel doable.",
+        teen: {
+          quote:
+            "Those who make the worst use of their time are the first to complain of its shortness. — Jean de La Bruyère",
+          question:
+            "Be honest — where does your time actually go? Not where you'd like it to go. Where does it go?",
+          note: "Ask one-on-one when you're alone. No lecture after the answer.",
+        },
+      },
+      {
+        number: 2,
+        title: "Against Idleness and Mischief",
+        family:
+          "Discuss point three: make good use of your time every day. " +
+          'Read and discuss the poem "Against Idleness and Mischief" by Isaac Watts — "How doth the little busy bee improve each shining hour..." ' +
+          "Evaluate together how your family does with this principle.",
+        teen: {
+          reading: '"Against Idleness and Mischief" by Isaac Watts',
+          source: "Isaac Watts",
+          question:
+            "The bee 'improves each shining hour.' What's one shining hour you keep letting slip past unimproved?",
+        },
+      },
+      {
+        number: 3,
+        title: "Working smart",
+        family:
+          "Working smart is as important as working hard. " +
+          "Read Exodus 18:13–26 — on Jethro's advice, Moses lightened his daily workload while accomplishing more. " +
+          "Read Acts 6:1–7 — the apostles delegated some tasks to capable men in order to free up time for the work only they could do.",
+        teen: {
+          question:
+            "Moses learned to give work away. What are you carrying that someone else could carry — and what would you do with the time it freed?",
+        },
+      },
+      {
+        number: 4,
+        title: "A full day's work",
+        family:
+          "Read and discuss two quotations together. Make sure the children know that Margaret Thatcher was Prime Minister of England and can appreciate how many things she had to do in a day. " +
+          'First: "Those who make the worst use of their time are the first to complain of its shortness." — Jean de La Bruyère. ' +
+          'Second: "Look at a day when you are supremely satisfied at the end. It\'s not a day when you lounge around doing nothing. It\'s when you\'ve had everything to do, and you\'ve done it." — Margaret Thatcher. ' +
+          "Talk about the satisfaction that comes from a full day's work.",
+        teen: {
+          quote:
+            "A day you are satisfied with is not a day you lounged — it's a day you had everything to do, and did it. — Margaret Thatcher (paraphrased)",
+          question:
+            "When did you last end a day genuinely satisfied? What made that day different?",
+        },
+        practiceBegins: true,
+      },
+      {
+        number: 5,
+        title: "Grown-up Land",
+        family:
+          'Read and discuss the poem "Grown-up Land" from Harper\'s Third Reader, edited by James Baldwin — a child asks the way to Grown-up Land and is told every road leads there, hour by hour, little by little. ' +
+          "Ecclesiastes 11:9 reminds us that the way we choose to use our young years shapes the persons we will become as adults. Every action counts and is seen by God.",
+        teen: {
+          reading: '"Grown-up Land" from Harper\'s Third Reader',
+          source: "edited by James Baldwin",
+          question:
+            "The poem says you reach Grown-up Land hour by hour, little by little. What are this year's hours quietly making you into?",
+        },
+      },
+      {
+        number: 6,
+        title: "A balanced day",
+        family:
+          'Read and discuss the poem "I Meant to Do My Work Today" by Richard Le Gallienne — the speaker is called away from work by a brown bird, a butterfly, a beckoning wind. ' +
+          "In a world that can have us running from one thing to the next without ever stopping to enjoy the journey, remember that a balanced schedule — with time for rest as well as work — is essential.",
+        teen: {
+          reading: '"I Meant to Do My Work Today" by Richard Le Gallienne',
+          source: "Richard Le Gallienne",
+          question:
+            "There's wise rest and there's avoidance. How do you tell the difference in your own day?",
+        },
+        midMonth: true,
+      },
+      {
+        number: 7,
+        title: "$1440 a day",
+        family:
+          'Read and discuss the quotation: "If a man has any greatness in him, it comes to light — not in one flamboyant hour, but in the ledger of his daily work." — Beryl Markham. ' +
+          "Activity: Do a little exercise. Pretend each child is given $1440 every day — and explain that we are each given 1440 minutes every day. " +
+          "Discuss good ways to use it. Include restful, fun ideas for the end of the day when chores and have-to's are done.",
+        teen: {
+          quote:
+            "Greatness comes to light not in one flamboyant hour, but in the ledger of daily work. — Beryl Markham",
+          question:
+            "You get 1440 minutes today, same as everyone. If you wrote down where they went, what would the ledger say?",
+        },
+      },
+      {
+        number: 8,
+        title: "The Water Mill and term reflection",
+        family:
+          'Read and discuss the poem "The Water Mill" from Harper\'s Third Reader, edited by James Baldwin — "The mill will never, never grind with the water that has passed." ' +
+          "We cannot get back the moments that have passed, so wisdom should be used in how we spend each one. " +
+          "Have a Parent Share moment — tell a story from your life about a season you used well, or one you wish back. " +
+          "Hold your family celebration. End-of-term reflection: Across these three months — priorities, finishing, use of time — where did we grow in integrity? What stays with us going forward?",
+        teen: {
+          reading: '"The Water Mill" from Harper\'s Third Reader',
+          source: "edited by James Baldwin",
+          note: "Let them pick the celebration, or write a private term reflection in their own notebook — three lines, just for them. The growth doesn't have to be witnessed to be real.",
+        },
+      },
+    ],
+  },
 ];
+
+// ─── HELPERS ─────────────────────────────────────────────────────────
+export const getTermById = (id) => TERMS.find((t) => t.id === id);
+export const getMonthById = (id) => HABIT_MONTHS.find((m) => m.id === id);
+export const getMonthsForTerm = (termId) =>
+  HABIT_MONTHS.filter((m) => m.termId === termId);
