@@ -325,6 +325,67 @@ function BibleBlock({ userId, isToday }) {
   );
 }
 
+// ─── BEAUTY NAME FIELD (inline editable — artist or composer) ────────
+function BeautyNameField({ value, placeholder, done, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value || "");
+
+  useEffect(() => { setDraft(value || ""); }, [value]);
+
+  const commit = () => {
+    onSave(draft.trim() || null);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit();
+          if (e.key === "Escape") { setDraft(value || ""); setEditing(false); }
+        }}
+        placeholder={placeholder}
+        style={{
+          width: "100%",
+          background: "transparent",
+          border: "none",
+          borderBottom: "1px solid var(--sage-md)",
+          fontFamily: "'Cormorant Garamond', serif",
+          fontStyle: "italic",
+          fontSize: 13,
+          color: "var(--ink)",
+          outline: "none",
+          padding: "2px 0",
+        }}
+      />
+    );
+  }
+
+  return (
+    <p
+      onClick={() => setEditing(true)}
+      style={{
+        fontFamily: "'Cormorant Garamond', serif",
+        fontStyle: "italic",
+        fontSize: 13,
+        lineHeight: 1.5,
+        color: done && value ? "var(--ink-faint)" : (value ? "var(--ink)" : "var(--ink-faint)"),
+        textDecoration: done && value ? "line-through" : "none",
+        textDecorationColor: "var(--sage-md)",
+        opacity: value ? 1 : 0.7,
+        margin: 0,
+        cursor: "pointer",
+      }}
+    >
+      {value || placeholder}
+    </p>
+  );
+}
+
 // ─── READING & LEARNING EXPANDABLE ───────────────────────────────────
 function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
   const [expanded, setExpanded] = useState(false);
@@ -364,9 +425,18 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
     await saveCurrentStudy(userId, subject, content);
   };
 
-  // Today's scheduled beauty (from existing rotation)
-  const beautyItems = getTodayBeauty(today, viewDate) || [];
-  const beautyScheduled = beautyItems.find((b) => b.scheduled);
+  // Beauty focus: artist or composer, persisted
+  const [beautyFocus, setBeautyFocus] = useState(() => {
+    try {
+      const saved = localStorage.getItem("tend_beauty_focus");
+      if (saved === "artist" || saved === "composer") return saved;
+    } catch {}
+    return "artist";
+  });
+  const selectBeautyFocus = (opt) => {
+    setBeautyFocus(opt);
+    try { localStorage.setItem("tend_beauty_focus", opt); } catch {}
+  };
 
   return (
     <>
@@ -421,57 +491,68 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
 
           <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
 
-          {/* BEAUTY */}
+          {/* BEAUTY — artist / composer study */}
           <div style={{ marginBottom: 14 }}>
-            {beautyScheduled ? (
-              <>
-                <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
-                  <div
-                    onClick={() => toggleDone("beauty")}
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
+              <div
+                onClick={() => toggleDone("beauty")}
+                style={{
+                  width: 13,
+                  height: 13,
+                  borderRadius: 2,
+                  border: `1.5px solid ${doneMap["beauty"] ? "var(--sage)" : "var(--rule)"}`,
+                  background: doneMap["beauty"] ? "var(--sage)" : "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  cursor: "pointer",
+                }}
+              >
+                {doneMap["beauty"] && (
+                  <svg width="7" height="7" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: doneMap["beauty"] ? "var(--ink-faint)" : "var(--ink-lt)", margin: 0 }}>BEAUTY</p>
+            </div>
+
+            {/* Artist / Composer toggle */}
+            <div style={{ display: "flex", gap: 6, paddingLeft: 20, marginBottom: 7 }}>
+              {["artist", "composer"].map((opt) => {
+                const isActive = beautyFocus === opt;
+                return (
+                  <button
+                    key={opt}
+                    onClick={() => selectBeautyFocus(opt)}
                     style={{
-                      width: 13,
-                      height: 13,
-                      borderRadius: 2,
-                      border: `1.5px solid ${doneMap["beauty"] ? "var(--sage)" : "var(--rule)"}`,
-                      background: doneMap["beauty"] ? "var(--sage)" : "none",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
+                      fontFamily: "'Lato', sans-serif",
+                      fontSize: 9,
+                      letterSpacing: ".08em",
+                      color: isActive ? "white" : "var(--sage)",
+                      background: isActive ? "var(--sage)" : "var(--sage-bg)",
+                      border: "0.5px solid var(--sage-md)",
+                      borderRadius: 11,
+                      padding: "3px 12px",
                       cursor: "pointer",
                     }}
                   >
-                    {doneMap["beauty"] && (
-                      <svg width="7" height="7" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </div>
-                  <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: doneMap["beauty"] ? "var(--ink-faint)" : "var(--ink-lt)", margin: 0 }}>BEAUTY</p>
-                </div>
-                <p style={{
-                  fontFamily: "'Cormorant Garamond', serif",
-                  fontStyle: "italic",
-                  fontSize: 13,
-                  lineHeight: 1.5,
-                  color: doneMap["beauty"] ? "var(--ink-faint)" : "var(--ink)",
-                  textDecoration: doneMap["beauty"] ? "line-through" : "none",
-                  textDecorationColor: "var(--sage-md)",
-                  margin: 0,
-                  paddingLeft: 20,
-                }}>
-                  {beautyScheduled.label}
-                  <span style={{ color: "var(--ink-faint)", fontSize: 11, textDecoration: "none" }}> &middot; today</span>
-                </p>
-              </>
-            ) : (
-              <>
-                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 3px" }}>BEAUTY</p>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", margin: 0 }}>
-                  No beauty scheduled for today.
-                </p>
-              </>
-            )}
+                    {opt === "artist" ? "Artist" : "Composer"}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* name for the selected focus */}
+            <div style={{ paddingLeft: 20 }}>
+              <BeautyNameField
+                value={studies[beautyFocus]}
+                placeholder={beautyFocus === "artist" ? "Tap to add the artist" : "Tap to add the composer"}
+                done={doneMap["beauty"]}
+                onSave={(content) => handleSave(beautyFocus, content)}
+              />
+            </div>
           </div>
 
           <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
@@ -516,17 +597,6 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
             onSave={(content) => handleSave("history", content)}
             checked={!!doneMap["history"]}
             onToggleCheck={() => toggleDone("history")}
-          />
-
-          <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
-
-          <StudyField
-            label="ARTIST / COMPOSER STUDY"
-            value={studies["artist_composer"]}
-            placeholder="Tap to add who you are studying"
-            onSave={(content) => handleSave("artist_composer", content)}
-            checked={!!doneMap["artist_composer"]}
-            onToggleCheck={() => toggleDone("artist_composer")}
           />
         </div>
       )}
@@ -1500,20 +1570,29 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
         <p style={rhythmItemStyle}>Rest</p>
       </RhythmSection>
 
-      {/* ── SCREENS — standalone, always visible ── */}
-      <div style={{ margin: "14px 0 2px", padding: "13px 0 12px", borderTop: "0.5px solid var(--rule)", borderBottom: "0.5px solid var(--rule)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.7 }}>
+      {/* ── SCREENS — standalone card, always visible ── */}
+      <div style={{
+        margin: "16px 0 4px",
+        padding: "13px 16px",
+        background: "var(--sage-bg)",
+        border: "0.5px solid var(--sage-md)",
+        borderRadius: 8,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
             <circle cx="12" cy="12" r="9" />
             <path d="M12 7.5V12l3 2" />
           </svg>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-lt)", margin: 0 }}>
-            Screens&nbsp;&nbsp;Weekdays 2&ndash;5
-            <span style={{ color: "var(--rule)", margin: "0 5px" }}>|</span>
-            Weekends 11&ndash;4
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--sage)", margin: 0 }}>
+            Screens
           </p>
         </div>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12.5, lineHeight: 1.6, color: "var(--ink-faint)", margin: "6px 0 0", paddingLeft: 22 }}>
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)", margin: "0 0 5px", paddingLeft: 23 }}>
+          Weekdays 2&ndash;5
+          <span style={{ color: "var(--sage-md)", margin: "0 8px" }}>&middot;</span>
+          Weekends 11&ndash;4
+        </p>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12.5, lineHeight: 1.6, color: "var(--ink-faint)", margin: 0, paddingLeft: 23 }}>
           &ldquo;There&rsquo;s no WiFi in the forest, but you&rsquo;ll find a better connection.&rdquo;
         </p>
       </div>
