@@ -70,7 +70,7 @@ async function saveCurrentStudy(userId, subject, content) {
 }
 
 // ─── EDITABLE STUDY FIELD ────────────────────────────────────────────
-function StudyField({ label, value, placeholder, sublabel, onSave }) {
+function StudyField({ label, value, placeholder, sublabel, onSave, checked, onToggleCheck }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value || "");
 
@@ -88,15 +88,38 @@ function StudyField({ label, value, placeholder, sublabel, onSave }) {
 
   return (
     <div style={{ marginBottom: 14 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 3 }}>
-        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: 0 }}>
-          {label}
-          {sublabel && (
-            <span style={{ textTransform: "none", letterSpacing: 0, fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", fontSize: 11, color: "var(--ink-faint)", marginLeft: 4 }}>
-              {sublabel}
-            </span>
-          )}
-        </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <div
+            onClick={onToggleCheck}
+            style={{
+              width: 13,
+              height: 13,
+              borderRadius: 2,
+              border: `1.5px solid ${checked ? "var(--sage)" : "var(--rule)"}`,
+              background: checked ? "var(--sage)" : "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              cursor: "pointer",
+            }}
+          >
+            {checked && (
+              <svg width="7" height="7" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </div>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: checked ? "var(--ink-faint)" : "var(--ink-lt)", margin: 0 }}>
+            {label}
+            {sublabel && (
+              <span style={{ textTransform: "none", letterSpacing: 0, fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", fontSize: 11, color: "var(--ink-faint)", marginLeft: 4 }}>
+                {sublabel}
+              </span>
+            )}
+          </p>
+        </div>
         {!editing && (
           <button
             onClick={() => setEditing(true)}
@@ -128,16 +151,27 @@ function StudyField({ label, value, placeholder, sublabel, onSave }) {
             color: "var(--ink)",
             outline: "none",
             padding: "2px 0",
+            marginLeft: 20,
           }}
         />
       ) : value ? (
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink)", margin: 0 }}>
+        <p style={{
+          fontFamily: "'Cormorant Garamond', serif",
+          fontStyle: "italic",
+          fontSize: 13,
+          lineHeight: 1.5,
+          color: checked ? "var(--ink-faint)" : "var(--ink)",
+          textDecoration: checked ? "line-through" : "none",
+          textDecorationColor: "var(--sage-md)",
+          margin: 0,
+          paddingLeft: 20,
+        }}>
           {value}
         </p>
       ) : (
         <p
           onClick={() => setEditing(true)}
-          style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink-faint)", margin: 0, cursor: "pointer", opacity: 0.7 }}
+          style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink-faint)", margin: 0, cursor: "pointer", opacity: 0.7, paddingLeft: 20 }}
         >
           {placeholder}
         </p>
@@ -193,59 +227,97 @@ function BibleBlock({ userId, isToday }) {
 
   return (
     <div>
-      {FAMILY_BIBLE_STREAMS.map((stream) => {
+      {FAMILY_BIBLE_STREAMS.map((stream, idx) => {
         const state = streamStates?.[stream.id];
         const view = getStreamView(stream, state);
         const isBusy = !!busy[stream.id];
+        const isLastStream = idx === FAMILY_BIBLE_STREAMS.length - 1;
 
         if (!view.active && view.completed.length === 0) return null;
-
-        const ref = view.active
-          ? view.active.reference
-          : view.completed[view.completed.length - 1].reference;
-        const isComplete = !view.active;
 
         return (
           <div
             key={stream.id}
-            onClick={() => {
-              if (isComplete) handleUndo(stream.id);
-              else handleComplete(stream.id);
-            }}
-            style={{
-              display: "flex",
-              gap: 8,
-              alignItems: "baseline",
-              padding: "3px 0",
-              cursor: isToday && !isBusy ? "pointer" : "default",
-              opacity: isBusy ? 0.5 : isComplete ? 0.5 : 1,
-              transition: "opacity .2s",
-            }}
+            style={{ marginBottom: isLastStream ? 0 : 11, opacity: isBusy ? 0.5 : 1, transition: "opacity .2s" }}
           >
-            <span
-              style={{
-                fontFamily: "'Lato', sans-serif",
-                fontSize: 9,
-                letterSpacing: ".12em",
-                color: isComplete ? "var(--ink-faint)" : "var(--sage)",
-                flexShrink: 0,
-                minWidth: 72,
-              }}
-            >
+            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--sage)", margin: "0 0 4px" }}>
               {stream.label}
-            </span>
-            <span
-              style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontStyle: "italic",
-                fontSize: 13,
-                color: isComplete ? "var(--ink-faint)" : "var(--ink)",
-                textDecoration: isComplete ? "line-through" : "none",
-                textDecorationColor: "var(--sage-md)",
-              }}
-            >
-              {ref}
-            </span>
+            </p>
+
+            {/* completed readings — grayed, struck, last one tappable to undo */}
+            {view.completed.map((reading, i) => {
+              const isLastDone = i === view.completed.length - 1;
+              return (
+                <div
+                  key={reading.id}
+                  onClick={() => isToday && isLastDone && handleUndo(stream.id)}
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    alignItems: "center",
+                    padding: "2px 0",
+                    cursor: isToday && isLastDone && !isBusy ? "pointer" : "default",
+                  }}
+                >
+                  <span style={{
+                    width: 13,
+                    height: 13,
+                    borderRadius: 2,
+                    border: "1.5px solid var(--sage)",
+                    background: "var(--sage)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}>
+                    <svg width="7" height="7" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                  <span style={{
+                    fontFamily: "'Cormorant Garamond', serif",
+                    fontStyle: "italic",
+                    fontSize: 13,
+                    color: "var(--ink-faint)",
+                    textDecoration: "line-through",
+                    textDecorationColor: "var(--sage-md)",
+                  }}>
+                    {reading.reference}
+                  </span>
+                </div>
+              );
+            })}
+
+            {/* next reading — tappable to mark read */}
+            {view.active && (
+              <div
+                onClick={() => handleComplete(stream.id)}
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "center",
+                  padding: "2px 0",
+                  cursor: isToday && !isBusy ? "pointer" : "default",
+                }}
+              >
+                <span style={{
+                  width: 13,
+                  height: 13,
+                  borderRadius: 2,
+                  border: "1.5px solid var(--rule)",
+                  background: "none",
+                  flexShrink: 0,
+                }} />
+                <span style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontStyle: "italic",
+                  fontSize: 13,
+                  color: "var(--ink)",
+                }}>
+                  {view.active.reference}
+                </span>
+              </div>
+            )}
           </div>
         );
       })}
@@ -257,6 +329,30 @@ function BibleBlock({ userId, isToday }) {
 function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
   const [expanded, setExpanded] = useState(false);
   const [studies, setStudies] = useState({});
+
+  const dateKey = viewDate.toISOString().slice(0, 10);
+
+  // Per-day "completed today" checkmarks for the learning items
+  const [doneMap, setDoneMap] = useState({});
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("tend_learning_done") || "null");
+      setDoneMap(saved?.date === dateKey ? (saved.done || {}) : {});
+    } catch {
+      setDoneMap({});
+    }
+  }, [dateKey]);
+
+  const toggleDone = (key) => {
+    if (!isToday) return;
+    setDoneMap((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        localStorage.setItem("tend_learning_done", JSON.stringify({ date: dateKey, done: next }));
+      } catch {}
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!userId) return;
@@ -327,16 +423,54 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
 
           {/* BEAUTY */}
           <div style={{ marginBottom: 14 }}>
-            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 3px" }}>BEAUTY</p>
             {beautyScheduled ? (
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink)", margin: 0 }}>
-                {beautyScheduled.label}
-                <span style={{ color: "var(--ink-faint)", fontSize: 11 }}> &middot; today</span>
-              </p>
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
+                  <div
+                    onClick={() => toggleDone("beauty")}
+                    style={{
+                      width: 13,
+                      height: 13,
+                      borderRadius: 2,
+                      border: `1.5px solid ${doneMap["beauty"] ? "var(--sage)" : "var(--rule)"}`,
+                      background: doneMap["beauty"] ? "var(--sage)" : "none",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {doneMap["beauty"] && (
+                      <svg width="7" height="7" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: doneMap["beauty"] ? "var(--ink-faint)" : "var(--ink-lt)", margin: 0 }}>BEAUTY</p>
+                </div>
+                <p style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontStyle: "italic",
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                  color: doneMap["beauty"] ? "var(--ink-faint)" : "var(--ink)",
+                  textDecoration: doneMap["beauty"] ? "line-through" : "none",
+                  textDecorationColor: "var(--sage-md)",
+                  margin: 0,
+                  paddingLeft: 20,
+                }}>
+                  {beautyScheduled.label}
+                  <span style={{ color: "var(--ink-faint)", fontSize: 11, textDecoration: "none" }}> &middot; today</span>
+                </p>
+              </>
             ) : (
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", margin: 0 }}>
-                No beauty scheduled for today.
-              </p>
+              <>
+                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 3px" }}>BEAUTY</p>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", margin: 0 }}>
+                  No beauty scheduled for today.
+                </p>
+              </>
             )}
           </div>
 
@@ -357,6 +491,8 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
             value={studies["family_read_aloud"]}
             placeholder="Tap to add what you are reading"
             onSave={(content) => handleSave("family_read_aloud", content)}
+            checked={!!doneMap["family_read_aloud"]}
+            onToggleCheck={() => toggleDone("family_read_aloud")}
           />
 
           <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
@@ -366,6 +502,8 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
             value={studies["math"]}
             placeholder="Tap to add what you are studying"
             onSave={(content) => handleSave("math", content)}
+            checked={!!doneMap["math"]}
+            onToggleCheck={() => toggleDone("math")}
           />
 
           <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
@@ -376,6 +514,8 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
             value={studies["history"]}
             placeholder="Tap to add what you are studying"
             onSave={(content) => handleSave("history", content)}
+            checked={!!doneMap["history"]}
+            onToggleCheck={() => toggleDone("history")}
           />
 
           <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
@@ -385,6 +525,8 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
             value={studies["artist_composer"]}
             placeholder="Tap to add who you are studying"
             onSave={(content) => handleSave("artist_composer", content)}
+            checked={!!doneMap["artist_composer"]}
+            onToggleCheck={() => toggleDone("artist_composer")}
           />
         </div>
       )}
