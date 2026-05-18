@@ -13,7 +13,7 @@ import {
   advanceNatureLoop,
 } from "../data/seed";
 import { HABIT_TERM, HABIT_MONTHS } from "../data/habit-term-seed";
-import { getTodayBeauty, isVolunteerTuesday } from "../data/beauty-seed";
+import { isVolunteerTuesday } from "../data/beauty-seed";
 import {
   getActivityChoices,
   getTomorrowActivity,
@@ -325,6 +325,48 @@ function BibleBlock({ userId, isToday }) {
   );
 }
 
+// ─── BEAUTY ROTATION ─────────────────────────────────────────────────
+// Full enrichment set — any can be picked as an override.
+const ENRICHMENTS = [
+  { id: "artist", label: "Artist" },
+  { id: "composer", label: "Composer" },
+  { id: "natural_history", label: "Natural History" },
+  { id: "recitation", label: "Recitation" },
+  { id: "poetry", label: "Poetry" },
+  { id: "folk_song", label: "Folk Song" },
+  { id: "hymn", label: "Hymn" },
+  { id: "biography", label: "Biography" },
+  { id: "nature", label: "Nature Walk" },
+  { id: "music", label: "Music" },
+];
+const ENRICHMENT_LABEL = ENRICHMENTS.reduce((m, e) => { m[e.id] = e.label; return m; }, {});
+
+// Weekly rotation. Pairs alternate by A/B week parity.
+const BEAUTY_ROTATION = {
+  Monday: { pair: ["artist", "composer"] },
+  Tuesday: { single: "natural_history" },
+  Wednesday: { single: "recitation" },
+  Friday: { pair: ["poetry", "folk_song"] },
+};
+
+// Anchor: Monday May 4, 2026 = Week A. Even weeks A, odd weeks B.
+const BEAUTY_ANCHOR = new Date("2026-05-04T00:00:00");
+function getBeautyWeekParity(date) {
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const weeksSince = Math.floor((date - BEAUTY_ANCHOR) / msPerWeek);
+  return (((weeksSince % 2) + 2) % 2) === 0 ? "A" : "B";
+}
+
+// Returns { options: [ids shown by default], scheduled: id|null }
+function getBeautyDay(dayName, viewDate) {
+  const entry = BEAUTY_ROTATION[dayName];
+  if (!entry) return { options: [], scheduled: null };
+  if (entry.single) return { options: [entry.single], scheduled: entry.single };
+  const parity = getBeautyWeekParity(viewDate);
+  const scheduled = parity === "A" ? entry.pair[0] : entry.pair[1];
+  return { options: entry.pair, scheduled };
+}
+
 // ─── BEAUTY NAME FIELD (inline editable — artist or composer) ────────
 function BeautyNameField({ value, placeholder, done, onSave }) {
   const [editing, setEditing] = useState(false);
@@ -425,17 +467,30 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
     await saveCurrentStudy(userId, subject, content);
   };
 
-  // Beauty focus: artist or composer, persisted
-  const [beautyFocus, setBeautyFocus] = useState(() => {
+  // Beauty: the day's scheduled enrichment, with per-day override
+  const beautyDay = getBeautyDay(today, viewDate);
+  const [beautyFocus, setBeautyFocus] = useState(beautyDay.scheduled);
+  const [beautyShowAll, setBeautyShowAll] = useState(false);
+
+  useEffect(() => {
     try {
-      const saved = localStorage.getItem("tend_beauty_focus");
-      if (saved === "artist" || saved === "composer") return saved;
+      const saved = JSON.parse(localStorage.getItem("tend_beauty_focus") || "null");
+      if (saved?.date === dateKey && saved.focus) {
+        setBeautyFocus(saved.focus);
+        setBeautyShowAll(false);
+        return;
+      }
     } catch {}
-    return "artist";
-  });
-  const selectBeautyFocus = (opt) => {
-    setBeautyFocus(opt);
-    try { localStorage.setItem("tend_beauty_focus", opt); } catch {}
+    setBeautyFocus(beautyDay.scheduled);
+    setBeautyShowAll(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateKey]);
+
+  const selectBeautyFocus = (id) => {
+    setBeautyFocus(id);
+    try {
+      localStorage.setItem("tend_beauty_focus", JSON.stringify({ date: dateKey, focus: id }));
+    } catch {}
   };
 
   return (
@@ -491,7 +546,7 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
 
           <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
 
-          {/* BEAUTY — artist / composer study */}
+          {/* BEAUTY — enrichment rotation */}
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
               <div
@@ -518,41 +573,65 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
               <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: doneMap["beauty"] ? "var(--ink-faint)" : "var(--ink-lt)", margin: 0 }}>BEAUTY</p>
             </div>
 
-            {/* Artist / Composer toggle */}
-            <div style={{ display: "flex", gap: 6, paddingLeft: 20, marginBottom: 7 }}>
-              {["artist", "composer"].map((opt) => {
-                const isActive = beautyFocus === opt;
+            {/* enrichment pills — day's scheduled by default, 'other' reveals all */}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", paddingLeft: 20, marginBottom: beautyFocus ? 7 : 0 }}>
+              {(beautyShowAll || beautyDay.options.length === 0
+                ? ENRICHMENTS.map((e) => e.id)
+                : beautyDay.options
+              ).map((id) => {
+                const isActive = beautyFocus === id;
+                const isScheduled = beautyDay.scheduled === id;
                 return (
                   <button
-                    key={opt}
-                    onClick={() => selectBeautyFocus(opt)}
+                    key={id}
+                    onClick={() => selectBeautyFocus(id)}
                     style={{
                       fontFamily: "'Lato', sans-serif",
                       fontSize: 9,
-                      letterSpacing: ".08em",
+                      letterSpacing: ".06em",
                       color: isActive ? "white" : "var(--sage)",
                       background: isActive ? "var(--sage)" : "var(--sage-bg)",
-                      border: "0.5px solid var(--sage-md)",
+                      border: `0.5px solid ${isScheduled && !isActive ? "var(--sage)" : "var(--sage-md)"}`,
                       borderRadius: 11,
-                      padding: "3px 12px",
+                      padding: "3px 11px",
                       cursor: "pointer",
                     }}
                   >
-                    {opt === "artist" ? "Artist" : "Composer"}
+                    {ENRICHMENT_LABEL[id]}
                   </button>
                 );
               })}
+              {beautyDay.options.length > 0 && (
+                <button
+                  onClick={() => setBeautyShowAll((v) => !v)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: "'Lato', sans-serif",
+                    fontSize: 9,
+                    letterSpacing: ".08em",
+                    textTransform: "lowercase",
+                    color: "var(--ink-faint)",
+                    padding: "3px 4px",
+                  }}
+                >
+                  {beautyShowAll ? "less" : "other \u203a"}
+                </button>
+              )}
             </div>
 
-            {/* name for the selected focus */}
-            <div style={{ paddingLeft: 20 }}>
-              <BeautyNameField
-                value={studies[beautyFocus]}
-                placeholder={beautyFocus === "artist" ? "Tap to add the artist" : "Tap to add the composer"}
-                done={doneMap["beauty"]}
-                onSave={(content) => handleSave(beautyFocus, content)}
-              />
-            </div>
+            {/* name for the selected enrichment */}
+            {beautyFocus && (
+              <div style={{ paddingLeft: 20 }}>
+                <BeautyNameField
+                  value={studies[beautyFocus]}
+                  placeholder="Tap to add what you are studying"
+                  done={doneMap["beauty"]}
+                  onSave={(content) => handleSave(beautyFocus, content)}
+                />
+              </div>
+            )}
           </div>
 
           <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
