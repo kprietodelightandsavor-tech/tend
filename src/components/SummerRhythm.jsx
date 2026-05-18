@@ -254,7 +254,7 @@ function BibleBlock({ userId, isToday }) {
 }
 
 // ─── READING & LEARNING EXPANDABLE ───────────────────────────────────
-function ReadingAndLearning({ userId, today, viewDate, isToday }) {
+function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
   const [expanded, setExpanded] = useState(false);
   const [studies, setStudies] = useState({});
 
@@ -288,8 +288,14 @@ function ReadingAndLearning({ userId, today, viewDate, isToday }) {
           transition: "background .2s",
         }}
       >
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, margin: 0, color: "var(--ink)" }}>
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, margin: 0, color: "var(--ink)", display: "flex", alignItems: "center", gap: 7 }}>
           Reading &amp; learning
+          {isNatureDay && (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="nature day">
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" />
+              <path d="M2 21c0-3 1.85-5.36 5.08-6" />
+            </svg>
+          )}
         </p>
         <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", color: "var(--ink-faint)" }}>
           {expanded ? "close" : "open"}
@@ -336,6 +342,16 @@ function ReadingAndLearning({ userId, today, viewDate, isToday }) {
 
           <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
 
+          {/* NATURE STUDY — only on nature days */}
+          {isNatureDay && (
+            <>
+              <div style={{ marginBottom: 14 }}>
+                <NatureStudySection isToday={isToday} viewDate={viewDate} />
+              </div>
+              <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
+            </>
+          )}
+
           <StudyField
             label="FAMILY READ-ALOUD"
             value={studies["family_read_aloud"]}
@@ -360,6 +376,15 @@ function ReadingAndLearning({ userId, today, viewDate, isToday }) {
             value={studies["history"]}
             placeholder="Tap to add what you are studying"
             onSave={(content) => handleSave("history", content)}
+          />
+
+          <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
+
+          <StudyField
+            label="ARTIST / COMPOSER STUDY"
+            value={studies["artist_composer"]}
+            placeholder="Tap to add who you are studying"
+            onSave={(content) => handleSave("artist_composer", content)}
           />
         </div>
       )}
@@ -502,8 +527,8 @@ function WatercolorWash({ show }) {
 }
 
 // ─── NATURE STUDY & LORE ─────────────────────────────────────────────
-function NatureStudy({ isToday, viewDate }) {
-  const [expanded, setExpanded] = useState(false);
+// ─── NATURE STUDY SECTION (folded into Reading & learning) ───────────
+function NatureStudySection({ isToday, viewDate }) {
   const [loopStep, setLoopStep] = useState(getNatureLoopStep);
   const [showBloom, setShowBloom] = useState(false);
 
@@ -556,87 +581,45 @@ function NatureStudy({ isToday, viewDate }) {
   return (
     <>
       <BloomEffect show={showBloom} />
-      <div
-        onClick={() => setExpanded((e) => !e)}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          margin: "4px 0 0",
-          padding: "6px 12px 6px 8px",
-          background: expanded ? "var(--sage-bg)" : "rgba(232, 226, 213, 0.35)",
-          borderRadius: 4,
-          cursor: "pointer",
-          transition: "background .2s",
-        }}
-      >
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, margin: 0, color: "var(--ink)" }}>
-          Nature study
-          {done && <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", color: "var(--sage)", marginLeft: 8 }}>done today</span>}
-        </p>
-        <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", color: "var(--ink-faint)" }}>
-          {expanded ? "close" : "open"}
-        </span>
-      </div>
+      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 3px" }}>
+        NATURE STUDY
+        {done && <span style={{ color: "var(--sage)", marginLeft: 8 }}>done today</span>}
+      </p>
+      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink)", margin: "0 0 8px" }}>
+        {natureCurrent.subject}
+      </p>
 
-      {expanded && (
-        <div
-          style={{
-            margin: "8px 0 4px",
-            padding: "14px 18px",
-            background: "rgba(232, 226, 213, 0.25)",
-            borderLeft: "1.5px solid var(--sage-md)",
-            borderRadius: "0 4px 4px 0",
-          }}
-        >
-          <div style={{ marginBottom: 14 }}>
-            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 3px" }}>THIS WEEK</p>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink)", margin: 0 }}>
-              {natureCurrent.subject}
-            </p>
-          </div>
-
-          <div style={{ height: "0.5px", background: "var(--rule)", margin: "0 0 14px" }}></div>
-
-          {done ? (
-            <>
-              <div style={{ marginBottom: 12 }}>
-                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 3px" }}>NEXT STEP</p>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink)", margin: 0 }}>
-                  {nextStep.icon} {nextStep.label}
-                </p>
-              </div>
-              {isToday && (
-                <button
-                  onClick={undoDone}
-                  style={{ background: "none", border: "1px solid var(--rule)", borderRadius: 20, padding: "5px 14px", cursor: "pointer", fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "lowercase", color: "var(--ink-faint)" }}
-                >
-                  tap to undo
-                </button>
-              )}
-            </>
-          ) : (
-            <>
-              <div style={{ marginBottom: 12 }}>
-                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".16em", color: "var(--ink-lt)", margin: "0 0 3px" }}>TODAY'S STEP</p>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink)", margin: "0 0 6px" }}>
-                  {step.icon} {step.label}
-                </p>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink-lt)", margin: 0 }}>
-                  {step.getInstruction(natureCurrent)}
-                </p>
-              </div>
-              {isToday && (
-                <button
-                  onClick={markDone}
-                  style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 20, padding: "5px 14px", cursor: "pointer", fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "lowercase", color: "var(--sage)" }}
-                >
-                  mark done
-                </button>
-              )}
-            </>
+      {done ? (
+        <>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink-lt)", margin: "0 0 8px" }}>
+            Next step &middot; {nextStep.icon} {nextStep.label}
+          </p>
+          {isToday && (
+            <button
+              onClick={undoDone}
+              style={{ background: "none", border: "1px solid var(--rule)", borderRadius: 20, padding: "4px 12px", cursor: "pointer", fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "lowercase", color: "var(--ink-faint)" }}
+            >
+              tap to undo
+            </button>
           )}
-        </div>
+        </>
+      ) : (
+        <>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.5, color: "var(--ink)", margin: "0 0 2px" }}>
+            {step.icon} {step.label}
+          </p>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, lineHeight: 1.6, color: "var(--ink-lt)", margin: "0 0 8px" }}>
+            {step.getInstruction(natureCurrent)}
+          </p>
+          {isToday && (
+            <button
+              onClick={markDone}
+              style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 20, padding: "4px 12px", cursor: "pointer", fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "lowercase", color: "var(--sage)" }}
+            >
+              mark done
+            </button>
+          )}
+        </>
       )}
     </>
   );
@@ -1232,8 +1215,8 @@ const MoonMarker = (
   </svg>
 );
 
-// ─── RHYTHM ACCORDION SHELL (side marker + connecting rail) ──────────
-function RhythmAccordion({ marker, title, isOpen, onToggle, showLine, children }) {
+// ─── RHYTHM SECTION (side marker + connecting rail, always open) ─────
+function RhythmSection({ marker, title, showLine, children }) {
   return (
     <div style={{ display: "flex" }}>
       {/* left marker rail */}
@@ -1243,22 +1226,10 @@ function RhythmAccordion({ marker, title, isOpen, onToggle, showLine, children }
       </div>
       {/* body */}
       <div style={{ flex: 1, paddingBottom: 4 }}>
-        <div
-          onClick={onToggle}
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 0 9px", cursor: "pointer" }}
-        >
-          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 400, color: "var(--ink)", margin: 0 }}>
-            {title}
-          </p>
-          <svg
-            width="11" height="11" viewBox="0 0 24 24" fill="none"
-            stroke="var(--ink)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
-            style={{ opacity: 0.35, transform: isOpen ? "none" : "rotate(-90deg)", transition: "transform .3s ease" }}
-          >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </div>
-        {isOpen && <div style={{ paddingBottom: 8 }}>{children}</div>}
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 400, color: "var(--ink)", margin: 0, padding: "11px 0 9px" }}>
+          {title}
+        </p>
+        <div style={{ paddingBottom: 8 }}>{children}</div>
       </div>
     </div>
   );
@@ -1278,14 +1249,6 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
   const day = viewDate.getDay();
   const dayName = DAYS[day === 0 ? 6 : day - 1];
   const cmQuote = CM_QUOTES[day];
-
-  const [expandedSections, setExpandedSections] = useState({
-    morning: true,
-    afternoon: false,
-    evening: false,
-  });
-  const toggleSection = (key) =>
-    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const isVolunteerTue = dayName === "Tuesday" && isVolunteerTuesday(viewDate);
   const isNatureDay = NATURE_DAYS[dayName] === true;
@@ -1345,14 +1308,8 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
         our daily rhythm
       </p>
 
-      {/* ── MORNING (expanded by default) ── */}
-      <RhythmAccordion
-        marker={SunriseMarker}
-        title="Morning"
-        isOpen={expandedSections.morning}
-        onToggle={() => toggleSection("morning")}
-        showLine
-      >
+      {/* ── MORNING ── */}
+      <RhythmSection marker={SunriseMarker} title="Morning" showLine>
         <p style={rhythmItemStyle}>Slow beginnings</p>
         <p style={rhythmItemStyle}>Care for our home</p>
         <p style={rhythmItemStyle}>Outside early</p>
@@ -1378,42 +1335,28 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
           </div>
         )}
 
-        {isNatureDay && <NatureStudy isToday={isToday} viewDate={viewDate} />}
-
-        <ReadingAndLearning userId={userId} today={dayName} viewDate={viewDate} isToday={isToday} />
+        <ReadingAndLearning userId={userId} today={dayName} viewDate={viewDate} isToday={isToday} isNatureDay={isNatureDay} />
 
         <p style={{ ...rhythmItemStyle, margin: "4px 0 0" }}>Lunch together</p>
-      </RhythmAccordion>
+      </RhythmSection>
 
       {/* ── AFTERNOON ── */}
-      <RhythmAccordion
-        marker={SunMarker}
-        title="Afternoon"
-        isOpen={expandedSections.afternoon}
-        onToggle={() => toggleSection("afternoon")}
-        showLine
-      >
+      <RhythmSection marker={SunMarker} title="Afternoon" showLine>
         <p style={rhythmItemStyle}>Play &middot; Projects &middot; Adventure</p>
         <p style={rhythmItemStyle}>Friends are welcome</p>
         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13.5, lineHeight: 1.65, color: "var(--ink-faint)", margin: "7px 0 2px" }}>
           Room for wandering, library days, errands, and ordinary life.
         </p>
-      </RhythmAccordion>
+      </RhythmSection>
 
       {/* ── EVENING ── */}
-      <RhythmAccordion
-        marker={MoonMarker}
-        title="Evening"
-        isOpen={expandedSections.evening}
-        onToggle={() => toggleSection("evening")}
-        showLine={false}
-      >
+      <RhythmSection marker={MoonMarker} title="Evening" showLine={false}>
         <p style={rhythmItemStyle}>Dinner together</p>
         <p style={rhythmItemStyle}>Outside at dusk</p>
         <p style={rhythmItemStyle}>Quiet hours</p>
         <p style={rhythmItemStyle}>Read-alouds or family TV</p>
         <p style={rhythmItemStyle}>Rest</p>
-      </RhythmAccordion>
+      </RhythmSection>
 
       {/* ── SCREENS — standalone, always visible ── */}
       <div style={{ margin: "14px 0 2px", padding: "13px 0 12px", borderTop: "0.5px solid var(--rule)", borderBottom: "0.5px solid var(--rule)" }}>
