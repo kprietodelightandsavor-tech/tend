@@ -238,7 +238,8 @@ function AddBlockSheet({ onSave, onClose, allDays, defaultDay }) {
       <div style={{ width: "100%", maxWidth: 430, margin: "0 auto", background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px", maxHeight: "88vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
         <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
         <p className="serif" style={{ fontSize: 20, marginBottom: 20 }}>Add a Block</p>
-        <input className="input-line" type="time" placeholder="Time" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 14 }} />
+        <p className="eyebrow" style={{ marginBottom: 8 }}>Time</p>
+        <input className="input-line" type="time" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 18, fontSize: 16 }} />
         <input className="input-line" placeholder="Subject" value={subject} onChange={e => setSubject(e.target.value)} style={{ marginBottom: 14 }} />
         <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: 20 }} />
         <p className="eyebrow" style={{ marginBottom: 10 }}>Repeat on</p>
@@ -272,7 +273,8 @@ function EditBlockSheet({ block, onSave, onDelete, onClose }) {
       <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }} onClick={e => e.stopPropagation()}>
         <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
         <p className="serif" style={{ fontSize: 20, marginBottom: 20 }}>Edit Block</p>
-        <input className="input-line" type="time" placeholder="Time" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 14 }} />
+        <p className="eyebrow" style={{ marginBottom: 8 }}>Time</p>
+        <input className="input-line" type="time" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 18, fontSize: 16 }} />
         <input className="input-line" placeholder="Subject" value={subject} onChange={e => setSubject(e.target.value)} style={{ marginBottom: 14 }} />
         <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: timeChanged ? 18 : 28 }} />
         {timeChanged && (
