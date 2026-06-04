@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { PremiumModal } from "./HomeScreen";
 import { saveScheduleDay, seedScheduleIfEmpty } from "../lib/db";
+import { createPortal } from "react-dom";
 
 const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const isWeekend = (day) => day === "Saturday" || day === "Sunday";
 
 function parseTime(str) {
@@ -225,19 +227,35 @@ function WeekendRhythmView({ day, week }) {
   );
 }
 
-function AddBlockSheet({ onSave, onClose }) {
+function AddBlockSheet({ onSave, onClose, allDays, defaultDay }) {
   const [time, setTime] = useState("");
   const [subject, setSubject] = useState("");
   const [note, setNote] = useState("");
+  const [days, setDays] = useState([defaultDay]);
+  const toggleDay = (d) => setDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]);
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200 }} onClick={onClose}>
-      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }} onClick={e => e.stopPropagation()}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200, display: "flex", alignItems: "flex-end" }} onClick={onClose}>
+      <div style={{ width: "100%", maxWidth: 430, margin: "0 auto", background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px", maxHeight: "88vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
         <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
         <p className="serif" style={{ fontSize: 20, marginBottom: 20 }}>Add a Block</p>
         <input className="input-line" type="time" placeholder="Time" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 14 }} />
         <input className="input-line" placeholder="Subject" value={subject} onChange={e => setSubject(e.target.value)} style={{ marginBottom: 14 }} />
-        <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: 28 }} />
-        <button className="btn-sage" style={{ width: "100%" }} onClick={() => { if (subject.trim()) { onSave({ time, subject, note }); onClose(); } }}>Add Block</button>
+        <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: 20 }} />
+        <p className="eyebrow" style={{ marginBottom: 10 }}>Repeat on</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 28 }}>
+          {allDays.map(d => {
+            const on = days.includes(d);
+            return (
+              <button key={d} onClick={() => toggleDay(d)}
+                style={{ padding: "7px 13px", borderRadius: 20, border: `1px solid ${on ? "var(--sage)" : "var(--rule)"}`, background: on ? "var(--sage)" : "none", color: on ? "white" : "var(--ink-lt)", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase" }}>
+                {d.slice(0, 3)}
+              </button>
+            );
+          })}
+        </div>
+        <button className="btn-sage" style={{ width: "100%" }} onClick={() => { if (subject.trim() && days.length) { onSave({ time, subject, note }, days); onClose(); } }}>
+          {days.length > 1 ? `Add to ${days.length} days` : "Add Block"}
+        </button>
       </div>
     </div>
   );
@@ -428,14 +446,24 @@ export default function PlannerScreen({ settings }) {
     return { ...prev, [activeDay]: blocks };
   });
 
-  const addBlock = (newBlock) => {
-    const block = { ...newBlock, id: `custom-${Date.now()}` };
+  const addBlock = (newBlock, days) => {
+    const targetDays = (days && days.length) ? days : [activeDay];
+    const stamp = Date.now();
     setSchedule(prev => {
-      const blocks = [...prev[activeDay]];
-      const insertAt = addingAfterIdx === -1 ? 0 : addingAfterIdx + 1;
-      blocks.splice(insertAt, 0, block);
-      persistDay(activeDay, blocks);
-      return { ...prev, [activeDay]: blocks };
+      const next = { ...prev };
+      targetDays.forEach(d => {
+        const block = { ...newBlock, id: `custom-${stamp}-${d}` };
+        const blocks = [...(next[d] || [])];
+        if (d === activeDay) {
+          const insertAt = addingAfterIdx === -1 ? 0 : addingAfterIdx + 1;
+          blocks.splice(insertAt, 0, block);
+        } else {
+          blocks.push(block);
+        }
+        next[d] = blocks;
+        persistDay(d, blocks);
+      });
+      return next;
     });
     setAddingAfterIdx(null);
   };
@@ -584,10 +612,15 @@ export default function PlannerScreen({ settings }) {
         </>
       )}
 
-      {editingBlock      && <EditBlockSheet block={editingBlock} onSave={saveBlock} onDelete={deleteBlock} onClose={() => setEditingBlock(null)} />}
-      {addingAfterIdx !== null && <AddBlockSheet onSave={addBlock} onClose={() => setAddingAfterIdx(null)} />}
-      {copyingDay        && <CopyDaySheet fromDay={activeDay} onCopy={copyDay} onClose={() => setCopyingDay(false)} />}
-      {showPremium       && <PremiumModal onClose={() => setShowPremium(false)} />}
+      {createPortal(
+        <>
+          {editingBlock && <EditBlockSheet block={editingBlock} onSave={saveBlock} onDelete={deleteBlock} onClose={() => setEditingBlock(null)} />}
+          {addingAfterIdx !== null && <AddBlockSheet onSave={addBlock} onClose={() => setAddingAfterIdx(null)} allDays={WEEKDAYS} defaultDay={activeDay} />}
+          {copyingDay && <CopyDaySheet fromDay={activeDay} onCopy={copyDay} onClose={() => setCopyingDay(false)} />}
+          {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
+        </>,
+        document.body
+      )}
     </div>
   );
 }
