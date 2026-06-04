@@ -87,3 +87,49 @@ export async function addObservation(userId, observation) {
   const { error } = await supabase.from('observations').insert({ user_id: userId, ...observation });
   if (error) console.error('addObservation:', error);
 }
+
+
+// ─── SCHEDULE BLOCKS ──────────────────────────────────────────────────────────
+export async function getScheduleBlocks(userId) {
+  const { data, error } = await supabase
+    .from('schedule_blocks')
+    .select('*')
+    .eq('user_id', userId)
+    .order('day', { ascending: true })
+    .order('sort_order', { ascending: true });
+  if (error) console.error('getScheduleBlocks:', error);
+  return data || [];
+}
+
+export async function saveScheduleDay(userId, day, blocks) {
+  await supabase.from('schedule_blocks').delete().eq('user_id', userId).eq('day', day);
+  if (!blocks.length) return [];
+  const rows = blocks.map((b, i) => ({
+    user_id: userId, day,
+    subject: b.subject || 'Untitled',
+    time: b.time || '',
+    note: b.note || '',
+    sort_order: i,
+  }));
+  const { error } = await supabase.from('schedule_blocks').insert(rows);
+  if (error) console.error('saveScheduleDay:', error);
+  return rows;
+}
+
+export async function seedScheduleIfEmpty(userId, defaultSchedule) {
+  const existing = await getScheduleBlocks(userId);
+  if (existing.length) return existing;
+  const rows = [];
+  Object.entries(defaultSchedule).forEach(([day, blocks]) => {
+    blocks.forEach((b, i) => rows.push({
+      user_id: userId, day,
+      subject: b.subject || 'Untitled',
+      time: b.time || '',
+      note: b.note || '',
+      sort_order: i,
+    }));
+  });
+  const { error } = await supabase.from('schedule_blocks').insert(rows);
+  if (error) console.error('seedScheduleIfEmpty:', error);
+  return await getScheduleBlocks(userId);
+}
