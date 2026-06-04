@@ -1,9 +1,49 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect, useRef } from "react";
 import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { PremiumModal } from "./HomeScreen";
+import { saveScheduleDay, seedScheduleIfEmpty } from "../lib/db";
 
 const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const isWeekend = (day) => day === "Saturday" || day === "Sunday";
+
+function parseTime(str) {
+  if (!str) return null;
+  const m = String(str).trim().match(/^(\d{1,2}):?(\d{2})?\s*(am|pm)?$/i);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const min = m[2] ? parseInt(m[2], 10) : 0;
+  const ap = m[3] ? m[3].toLowerCase() : null;
+  if (ap === "pm" && h < 12) h += 12;
+  if (ap === "am" && h === 12) h = 0;
+  return h * 60 + min;
+}
+function to24(mins) {
+  mins = ((mins % 1440) + 1440) % 1440;
+  return `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
+}
+function displayTime(str) {
+  const m = parseTime(str);
+  if (m === null) return str || "";
+  const mm = ((m % 1440) + 1440) % 1440;
+  let hh = Math.floor(mm / 60) % 12;
+  if (hh === 0) hh = 12;
+  return `${hh}:${String(mm % 60).padStart(2, "0")}`;
+}
+function timeDelta(a, b) {
+  const pa = parseTime(a), pb = parseTime(b);
+  if (pa === null || pb === null) return null;
+  return pb - pa;
+}
+function normalizeDay(blocks) {
+  let prev = -1;
+  return blocks.map(b => {
+    let m = parseTime(b.time);
+    if (m === null) return { ...b };
+    while (prev >= 0 && m < prev) m += 720;
+    prev = m;
+    return { ...b, time: to24(m) };
+  });
+}
 
 const Icon = {
   Up:    () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6"/></svg>),
@@ -37,7 +77,7 @@ function FreePlanner({ onShowPremium }) {
       {blocks.map((b, i) => (
         <div key={i} className="planner-block" style={{ opacity: 0.7 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-            <span className="planner-time">{b.time}</span>
+            <span className="planner-time">{displayTime(b.time)}</span>
             <span className="planner-subject">{b.subject}</span>
           </div>
           {b.note && <p className="caption italic" style={{ marginTop: 4 }}>{b.note}</p>}
@@ -194,7 +234,7 @@ function AddBlockSheet({ onSave, onClose }) {
       <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }} onClick={e => e.stopPropagation()}>
         <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
         <p className="serif" style={{ fontSize: 20, marginBottom: 20 }}>Add a Block</p>
-        <input className="input-line" placeholder="Time (e.g. 10:00)" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 14 }} />
+        <input className="input-line" type="time" placeholder="Time" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 14 }} />
         <input className="input-line" placeholder="Subject" value={subject} onChange={e => setSubject(e.target.value)} style={{ marginBottom: 14 }} />
         <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: 28 }} />
         <button className="btn-sage" style={{ width: "100%" }} onClick={() => { if (subject.trim()) { onSave({ time, subject, note }); onClose(); } }}>Add Block</button>
@@ -207,16 +247,26 @@ function EditBlockSheet({ block, onSave, onDelete, onClose }) {
   const [time, setTime] = useState(block.time);
   const [subject, setSubject] = useState(block.subject);
   const [note, setNote] = useState(block.note || "");
+  const [shiftRest, setShiftRest] = useState(true);
+  const timeChanged = time !== block.time;
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200 }} onClick={onClose}>
       <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }} onClick={e => e.stopPropagation()}>
         <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 24px" }} />
         <p className="serif" style={{ fontSize: 20, marginBottom: 20 }}>Edit Block</p>
-        <input className="input-line" placeholder="Time" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 14 }} />
+        <input className="input-line" type="time" placeholder="Time" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 14 }} />
         <input className="input-line" placeholder="Subject" value={subject} onChange={e => setSubject(e.target.value)} style={{ marginBottom: 14 }} />
-        <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: 28 }} />
+        <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: timeChanged ? 18 : 28 }} />
+        {timeChanged && (
+          <div onClick={() => setShiftRest(s => !s)} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24, cursor: "pointer" }}>
+            <span style={{ width: 22, height: 22, borderRadius: "50%", border: `1.5px solid ${shiftRest ? "var(--sage)" : "var(--rule)"}`, background: shiftRest ? "var(--sage)" : "none", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {shiftRest && <Icon.Check />}
+            </span>
+            <span className="corm italic" style={{ fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.5 }}>Shift the rest of the day to match</span>
+          </div>
+        )}
         <div style={{ display: "flex", gap: 10 }}>
-          <button className="btn-sage" style={{ flex: 1 }} onClick={() => { onSave({ ...block, time, subject, note }); onClose(); }}>Save</button>
+          <button className="btn-sage" style={{ flex: 1 }} onClick={() => { onSave({ ...block, time, subject, note }, shiftRest); onClose(); }}>Save</button>
           <button onClick={() => { onDelete(block.id); onClose(); }}
             style={{ background: "none", border: "1px solid #E8C4BB", borderRadius: 2, padding: "12px 18px", cursor: "pointer", color: "var(--red)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase" }}>
             Delete
@@ -282,7 +332,7 @@ function WeekGrid({ schedule, onDayTap, todayDay }) {
                   return (
                     <div key={i} style={{ borderLeft: `3px solid ${color}`, paddingLeft: 4, paddingTop: 2, paddingBottom: 2, background: `${color}18`, borderRadius: "0 2px 2px 0" }}>
                       <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 8, color: "var(--ink)", lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 48 }}>{b.subject}</p>
-                      {b.time && <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 7, color: "var(--ink-faint)", lineHeight: 1.2 }}>{b.time}</p>}
+                      {b.time && <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 7, color: "var(--ink-faint)", lineHeight: 1.2 }}>{displayTime(b.time)}</p>}
                     </div>
                   );
                 })}
@@ -299,6 +349,7 @@ function WeekGrid({ schedule, onDayTap, todayDay }) {
 
 export default function PlannerScreen({ settings }) {
   const isPaid = settings?.isPaid || false;
+  const userId = settings?.userId;
   const todayIdx = new Date().getDay();
   const todayDay = todayIdx === 0 ? "Sunday" : todayIdx === 6 ? "Saturday" : DAYS[todayIdx - 1];
 
@@ -315,21 +366,31 @@ export default function PlannerScreen({ settings }) {
   const [addingAfterIdx, setAddingAfterIdx] = useState(null);
   const [copyingDay, setCopyingDay]     = useState(false);
 
-  const [wovenBeauty, setWovenBeauty] = useState(() => {
-    try { return localStorage.getItem("tend_beauty_woven") === "true"; } catch { return false; }
-  });
-
-  const toggleWoven = () => {
-    const next = !wovenBeauty;
-    setWovenBeauty(next);
-    try { localStorage.setItem("tend_beauty_woven", String(next)); } catch {}
-  };
-
   const [schedule, setSchedule] = useState(() => {
     const s = {};
-    DAYS.forEach(d => { s[d] = (DAY_SCHEDULE[d] || []).map((b, i) => ({ ...b, _idx: i })); });
+    DAYS.forEach(d => { s[d] = normalizeDay((DAY_SCHEDULE[d] || []).map((b, i) => ({ ...b, _idx: i }))); });
     return s;
   });
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    (async () => {
+      const rows = await seedScheduleIfEmpty(userId, DAY_SCHEDULE);
+      if (cancelled || !rows.length) return;
+      const s = {};
+      DAYS.forEach(d => { s[d] = []; });
+      rows.forEach(r => {
+        if (!s[r.day]) s[r.day] = [];
+        s[r.day].push({ id: r.id, subject: r.subject, time: r.time || "", note: r.note || "" });
+      });
+      DAYS.forEach(d => { s[d] = normalizeDay(s[d] || []); });
+      setSchedule(prev => ({ ...prev, ...s }));
+    })();
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  const persistDay = (day, blocks) => { if (userId) saveScheduleDay(userId, day, blocks); };
 
   const dayBlocks = schedule[activeDay] || [];
 
@@ -339,12 +400,33 @@ export default function PlannerScreen({ settings }) {
       const target = idx + dir;
       if (target < 0 || target >= blocks.length) return prev;
       [blocks[idx], blocks[target]] = [blocks[target], blocks[idx]];
+      persistDay(activeDay, blocks);
       return { ...prev, [activeDay]: blocks };
     });
   };
 
-  const saveBlock   = (updated) => setSchedule(prev => ({ ...prev, [activeDay]: prev[activeDay].map(b => b.id === updated.id ? updated : b) }));
-  const deleteBlock = (id)      => setSchedule(prev => ({ ...prev, [activeDay]: prev[activeDay].filter(b => b.id !== id) }));
+  const saveBlock = (updated, shiftRest) => setSchedule(prev => {
+    const list = prev[activeDay];
+    const idx = list.findIndex(b => b.id === updated.id);
+    const delta = idx === -1 ? null : timeDelta(list[idx].time, updated.time);
+    let blocks = list.map(b => b.id === updated.id ? updated : b);
+    if (shiftRest && delta !== null && delta !== 0) {
+      blocks = blocks.map((b, i) => {
+        if (i <= idx) return b;
+        const m = parseTime(b.time);
+        if (m === null) return b;
+        return { ...b, time: to24(m + delta) };
+      });
+    }
+    persistDay(activeDay, blocks);
+    return { ...prev, [activeDay]: blocks };
+  });
+
+  const deleteBlock = (id) => setSchedule(prev => {
+    const blocks = prev[activeDay].filter(b => b.id !== id);
+    persistDay(activeDay, blocks);
+    return { ...prev, [activeDay]: blocks };
+  });
 
   const addBlock = (newBlock) => {
     const block = { ...newBlock, id: `custom-${Date.now()}` };
@@ -352,12 +434,17 @@ export default function PlannerScreen({ settings }) {
       const blocks = [...prev[activeDay]];
       const insertAt = addingAfterIdx === -1 ? 0 : addingAfterIdx + 1;
       blocks.splice(insertAt, 0, block);
+      persistDay(activeDay, blocks);
       return { ...prev, [activeDay]: blocks };
     });
     setAddingAfterIdx(null);
   };
 
-  const copyDay  = (toDay) => setSchedule(prev => ({ ...prev, [toDay]: prev[activeDay].map(b => ({ ...b, id: `${b.id}-copy-${Date.now()}` })) }));
+  const copyDay = (toDay) => setSchedule(prev => {
+    const blocks = prev[activeDay].map(b => ({ ...b, id: `${b.id}-copy-${Date.now()}` }));
+    persistDay(toDay, blocks);
+    return { ...prev, [toDay]: blocks };
+  });
   const saveTerm = () => { setTerm(Number(draftTerm)); setWeek(Number(draftWeek)); setEditingTerm(false); };
 
   const getBlockColor = (subject) => {
@@ -384,22 +471,7 @@ export default function PlannerScreen({ settings }) {
           </div>
         )}
       </div>
-      <h1 className="display serif" style={{ marginBottom: 16 }}>Planner</h1>
-
-      {isPaid && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, padding: "10px 14px", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3 }}>
-          <div>
-            <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 2 }}>Beauty Loop Style</p>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)" }}>
-              {wovenBeauty ? "Woven — appears before anchor subjects" : "Separate — shown as its own card"}
-            </p>
-          </div>
-          <button onClick={toggleWoven}
-            style={{ flexShrink: 0, background: wovenBeauty ? "var(--sage)" : "none", border: "1px solid var(--sage-md)", borderRadius: 20, padding: "5px 12px", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: wovenBeauty ? "white" : "var(--sage)", transition: "all .2s" }}>
-            {wovenBeauty ? "Woven ✦" : "Separate"}
-          </button>
-        </div>
-      )}
+      <h1 className="display serif" style={{ marginBottom: 20 }}>Planner</h1>
 
       {!isPaid ? (
         <FreePlanner onShowPremium={() => setShowPremium(true)} />
@@ -473,8 +545,7 @@ export default function PlannerScreen({ settings }) {
                       <Icon.Copy /> Copy {activeDay}
                     </button>
                   </div>
-                  
-                  <BeautyLoopSection day={activeDay} />
+                  <BeautyLoopSection key={activeDay} day={activeDay} />
                   <div className="rule" style={{ margin: "0 0 20px" }} />
                   <button onClick={() => setAddingAfterIdx(-1)}
                     style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: "4px 0 12px", color: "var(--sage)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase" }}>
@@ -489,7 +560,7 @@ export default function PlannerScreen({ settings }) {
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                            <span className="planner-time">{b.time}</span>
+                            <span className="planner-time">{displayTime(b.time)}</span>
                             <span className="planner-subject">{b.subject}</span>
                           </div>
                           {b.note && <p className="caption italic" style={{ marginTop: 4 }}>{b.note}</p>}
@@ -512,7 +583,7 @@ export default function PlannerScreen({ settings }) {
           )}
         </>
       )}
-    
+
       {editingBlock      && <EditBlockSheet block={editingBlock} onSave={saveBlock} onDelete={deleteBlock} onClose={() => setEditingBlock(null)} />}
       {addingAfterIdx !== null && <AddBlockSheet onSave={addBlock} onClose={() => setAddingAfterIdx(null)} />}
       {copyingDay        && <CopyDaySheet fromDay={activeDay} onCopy={copyDay} onClose={() => setCopyingDay(false)} />}
