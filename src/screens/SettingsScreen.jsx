@@ -56,6 +56,8 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
     ["motherCulture", "Mother Culture"],
     ["habit", "Habit focus"],
   ];
+  const [summerMode, setSummerMode] = useState(() => { try { return localStorage.getItem("tend_summer_mode") === "true"; } catch { return false; } });
+  const toggleSummer = () => setSummerMode(v => { const n = !v; try { localStorage.setItem("tend_summer_mode", String(n)); } catch {} return n; });
 
   const loadCalendar = async () => {
     const url = icsUrl.trim();
@@ -180,6 +182,26 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
             </button>
           ))}
         </div>
+      </div>
+
+      <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
+
+      {/* Schedule Mode */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <Icon.Calendar />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Schedule Mode</p>
+        </div>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
+          Switch to your summer rhythm. Your school-year schedule stays saved and untouched.
+        </p>
+        <div onClick={() => toggleSummer()} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid var(--rule)", cursor: "pointer" }}>
+          <span style={{ fontSize: 16, fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}>Summer school mode</span>
+          <span style={{ width: 44, height: 26, borderRadius: 20, background: summerMode ? "var(--gold)" : "var(--rule)", position: "relative", transition: "background .2s", flexShrink: 0 }}>
+            <span style={{ position: "absolute", top: 3, left: summerMode ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left .2s" }} />
+          </span>
+        </div>
+        <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.6 }}>Changes show next time you open the planner.</p>
       </div>
 
       <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
