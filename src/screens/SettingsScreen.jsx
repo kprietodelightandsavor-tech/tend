@@ -1,5 +1,4 @@
 import { useState } from "react";
-import SummerModeToggle from "../components/SummerModeToggle";
 
 const Icon = {
   User: () => (
@@ -21,14 +20,6 @@ const Icon = {
       <line x1="3" y1="10" x2="21" y2="10"/>
     </svg>
   ),
-  Sprout: () => (
-    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M7 20h10"/>
-      <path d="M12 20V10"/>
-      <path d="M12 10C12 10 8 9 7 5c3 0 5 2 5 5z"/>
-      <path d="M12 10C12 10 16 9 17 5c-3 0-5 2-5 5z"/>
-    </svg>
-  ),
   Tend: () => (
     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 22V12"/>
@@ -37,39 +28,45 @@ const Icon = {
       <path d="M8 22h8"/>
     </svg>
   ),
-  Sun: () => (
-    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#7A95B5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="5"/>
-      <line x1="12" y1="1" x2="12" y2="3"/>
-      <line x1="12" y1="21" x2="12" y2="23"/>
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-      <line x1="1" y1="12" x2="3" y2="12"/>
-      <line x1="21" y1="12" x2="23" y2="12"/>
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-    </svg>
-  ),
 };
 
-const HABITS = [
-  { key: "attention", label: "Attention",  desc: "Training the mind to focus and observe" },
-  { key: "narration", label: "Narration",  desc: "Telling back what was read or learned" },
-  { key: "outdoor",   label: "Outdoor",    desc: "Daily time in nature and open air" },
-  { key: "stillness", label: "Stillness",  desc: "Quiet, rest, and unhurried presence" },
-  { key: "orderly",   label: "Orderly",    desc: "Order in work, space, and habit" },
-];
-
 export default function SettingsScreen({ settings, onSave, onNavigate }) {
-  const [name, setName]             = useState(settings?.name || "");
-  const [outdoorGoal, setGoal]      = useState(settings?.outdoorGoal || 15);
-  const [term, setTerm]             = useState(settings?.term || 1);
-  const [week, setWeek]             = useState(settings?.week || 1);
-  const [activeHabit, setHabit]     = useState(settings?.activeHabit || "attention");
-  const [saved, setSaved]           = useState(false);
+  const [name, setName]           = useState(settings?.name || "");
+  const [outdoorGoal, setGoal]    = useState(settings?.outdoorGoal || 15);
+  const [term, setTerm]           = useState(settings?.term || 1);
+  const [week, setWeek]           = useState(settings?.week || 1);
+  const [saved, setSaved]         = useState(false);
+  const [icsUrl, setIcsUrl]       = useState(() => { try { return localStorage.getItem("tend_ics_url") || ""; } catch { return ""; } });
+  const [calEvents, setCalEvents] = useState([]);
+  const [calMsg, setCalMsg]       = useState("");
+  const [calLoading, setCalLoading] = useState(false);
+
+  const loadCalendar = async () => {
+    const url = icsUrl.trim();
+    if (!url) { setCalMsg("Paste your calendar link first."); return; }
+    setCalLoading(true); setCalMsg("");
+    try {
+      localStorage.setItem("tend_ics_url", url);
+      if (settings?.saveToMeta) settings.saveToMeta({ ics_url: url });
+      const res = await fetch("/.netlify/functions/sync-calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, days: 30 }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Something went wrong");
+      setCalEvents(data.events || []);
+      setCalMsg(`Connected — found ${(data.events || []).length} events in the next 30 days.`);
+    } catch (e) {
+      setCalEvents([]);
+      setCalMsg("Couldn't load: " + e.message);
+    } finally {
+      setCalLoading(false);
+    }
+  };
 
   const save = () => {
-    onSave({ name, outdoorGoal, term, week, activeHabit });
+    onSave({ name, outdoorGoal, term, week });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -78,17 +75,6 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
     <div className="screen">
       <p className="eyebrow" style={{ marginBottom: 6 }}>Preferences</p>
       <h1 className="display serif" style={{ marginBottom: 28 }}>Settings</h1>
-
-      {/* Summer Mode Toggle */}
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-          <Icon.Sun />
-          <p className="eyebrow" style={{ marginBottom: 0 }}>Rhythm</p>
-        </div>
-        <SummerModeToggle settings={settings} />
-      </div>
-
-      <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
 
       {/* Name */}
       <div style={{ marginBottom: 32 }}>
@@ -105,48 +91,6 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
         <p className="caption italic" style={{ marginTop: 8 }}>
           This is how Tend greets you each morning.
         </p>
-      </div>
-
-      <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
-
-      {/* Habit in Focus */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-          <Icon.Sprout />
-          <p className="eyebrow" style={{ marginBottom: 0 }}>Habit in Focus</p>
-        </div>
-        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
-          Choose one Charlotte Mason habit to tend this season. It will appear each day on your home screen.
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {HABITS.map(h => (
-            <button key={h.key} onClick={() => setHabit(h.key)}
-              style={{
-                display: "flex", alignItems: "flex-start", gap: 12,
-                padding: "12px 14px", borderRadius: 3, textAlign: "left",
-                border: "1px solid " + (activeHabit === h.key ? "var(--sage)" : "var(--rule)"),
-                background: activeHabit === h.key ? "var(--sage-bg)" : "none",
-                cursor: "pointer", transition: "all .2s",
-              }}>
-              <div style={{
-                width: 18, height: 18, borderRadius: "50%", flexShrink: 0, marginTop: 2,
-                border: "1.5px solid " + (activeHabit === h.key ? "var(--sage)" : "var(--rule)"),
-                background: activeHabit === h.key ? "var(--sage)" : "none",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                {activeHabit === h.key && (
-                  <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 13l4 4L19 7"/>
-                  </svg>
-                )}
-              </div>
-              <div>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: activeHabit === h.key ? "var(--sage)" : "var(--ink)", marginBottom: 2 }}>{h.label}</p>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", lineHeight: 1.5 }}>{h.desc}</p>
-              </div>
-            </button>
-          ))}
-        </div>
       </div>
 
       <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
@@ -194,7 +138,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
             <button key={n} onClick={() => setTerm(n)}
               style={{
                 flex: 1, padding: "12px 0", borderRadius: 2,
-                border: "1px solid " + (term === n ? "var(--sage)" : "var(--rule)"),
+                border: `1px solid ${term === n ? "var(--sage)" : "var(--rule)"}`,
                 background: term === n ? "var(--sage-bg)" : "none",
                 cursor: "pointer", fontFamily: "'Playfair Display', serif",
                 fontSize: 18, color: term === n ? "var(--sage)" : "var(--ink)",
@@ -210,7 +154,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
             <button key={n} onClick={() => setWeek(n)}
               style={{
                 width: 40, height: 40, borderRadius: 2,
-                border: "1px solid " + (week === n ? "var(--sage)" : "var(--rule)"),
+                border: `1px solid ${week === n ? "var(--sage)" : "var(--rule)"}`,
                 background: week === n ? "var(--sage)" : "none",
                 cursor: "pointer", fontSize: 13,
                 color: week === n ? "white" : "var(--ink)",
@@ -223,6 +167,33 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
       </div>
 
       <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
+
+      {/* Calendar Sync */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <Icon.Calendar />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Calendar Sync</p>
+        </div>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
+          Paste the public link from your Apple/iCloud calendar to pull in co-op, tennis, and other commitments.
+        </p>
+        <input className="input-line" placeholder="webcal://… or https://…"
+          value={icsUrl} onChange={e => setIcsUrl(e.target.value)} style={{ marginBottom: 14, fontSize: 14 }} />
+        <button className="btn-sage" style={{ width: "100%", opacity: calLoading ? 0.6 : 1 }} disabled={calLoading} onClick={loadCalendar}>
+          {calLoading ? "Loading…" : "Connect & load events"}
+        </button>
+        {calMsg && <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.6 }}>{calMsg}</p>}
+        {calEvents.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            {calEvents.slice(0, 12).map((ev, i) => (
+              <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid var(--rule)" }}>
+                <p style={{ fontSize: 14, color: "var(--ink)", fontFamily: "'Playfair Display', serif" }}>{ev.title}</p>
+                <p className="caption">{new Date(ev.start).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* About */}
       <div style={{ marginBottom: 32 }}>
@@ -246,20 +217,20 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
       </button>
 
       <button onClick={() => onNavigate("home")}
-        style={{ width: "100%", background: "none", border: "none", cursor: "pointer", marginTop: 16, fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", padding: "10px 0" }}>
-        Back to Home
-      </button>
+  style={{ width: "100%", background: "none", border: "none", cursor: "pointer", marginTop: 16, fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", padding: "10px 0" }}>
+  Back to Home
+</button>
 
-      <div style={{ height: 1, background: "var(--rule)", margin: "24px 0" }} />
+<div style={{ height: 1, background: "var(--rule)", margin: "24px 0" }} />
 
-      <button onClick={async () => {
-        const { supabase } = await import("../lib/supabase");
-        localStorage.removeItem("tend_user");
-        await supabase.auth.signOut();
-      }}
-        style={{ width: "100%", background: "none", border: "1px solid #E8C4BB", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--red)" }}>
-        Sign Out
-      </button>
+<button onClick={async () => {
+  const { supabase } = await import("../lib/supabase");
+  localStorage.removeItem("tend_user");
+  await supabase.auth.signOut();
+}}
+  style={{ width: "100%", background: "none", border: "1px solid #E8C4BB", borderRadius: 2, padding: "11px 0", cursor: "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--red)" }}>
+  Sign Out
+</button>
     </div>
   );
 }
