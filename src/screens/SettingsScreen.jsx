@@ -51,7 +51,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
   });
   const HOME_SECTIONS = [
     ["quote", "Daily quote"],
-    ["outdoor", "Outdoor time tracker"],
+    ["outdoor", "Nature study (outdoor)"],
     ["beautyLoop", "Beauty Loop"],
     ["motherCulture", "Mother Culture"],
     ["habit", "Habit focus"],
