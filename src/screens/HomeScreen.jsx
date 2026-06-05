@@ -593,10 +593,21 @@ export default function HomeScreen({ onNavigate, settings }) {
   const dayOfYear  = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
   const cmQuote    = CM_QUOTES[dayOfYear % CM_QUOTES.length];
   const isWeekend  = today === "Saturday" || today === "Sunday";
-  const homePrefs = (() => {
+  const [homePrefs, setHomePrefs] = useState(() => {
     const d = { quote: true, outdoor: true, beautyLoop: true, motherCulture: false, habit: false };
     try { return { ...d, ...JSON.parse(localStorage.getItem("tend_home_prefs") || "{}") }; } catch { return d; }
-  })();
+  });
+  const showCard = (k) => setHomePrefs(prev => {
+    const next = { ...prev, [k]: true };
+    try { localStorage.setItem("tend_home_prefs", JSON.stringify(next)); } catch {}
+    return next;
+  });
+  const reminderLine = (k, label) => (
+    <div onClick={() => showCard(k)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 0", borderBottom: "1px solid var(--rule)", cursor: "pointer" }}>
+      <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: 15, color: "var(--ink-faint)" }}>{label}</span>
+      <span style={{ fontSize: 16, color: "var(--sage-md)" }}>›</span>
+    </div>
+  );
 
   return (
     <div className="screen">
@@ -604,14 +615,14 @@ export default function HomeScreen({ onNavigate, settings }) {
         {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
       </p>
       <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
-      {homePrefs.quote && (
+      {homePrefs.quote ? (
       <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
         <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
-      )}
+      ) : reminderLine("quote", "Daily quote")}
 
-      {homePrefs.outdoor && (
+      {homePrefs.outdoor ? (
       <>
       <NatureOutdoorCard
         onNavigate={onNavigate}
@@ -623,7 +634,7 @@ export default function HomeScreen({ onNavigate, settings }) {
 
       <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
       </>
-      )}
+      ) : <div style={{ marginBottom: 24 }}>{reminderLine("outdoor", "Nature study")}</div>}
 
       {isRestWeek ? (
         <RestWeekHome />
@@ -632,9 +643,9 @@ export default function HomeScreen({ onNavigate, settings }) {
       ) : (
         <>
           <TodaySchedule key={scheduleLoaded ? "saved" : "default"} today={today} blocks={todayBlocks} onNavigate={onNavigate} />
-          {homePrefs.beautyLoop && <BeautyLoopHome today={today} />}
-          {homePrefs.motherCulture && <MotherCulture />}
-          {homePrefs.habit && <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />}
+          {homePrefs.beautyLoop ? <BeautyLoopHome today={today} /> : reminderLine("beautyLoop", "Beauty Loop")}
+          {homePrefs.motherCulture ? <MotherCulture /> : reminderLine("motherCulture", "Mother Culture")}
+          {homePrefs.habit ? <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} /> : reminderLine("habit", "Habit focus")}
         </>
       )}
     </div>
