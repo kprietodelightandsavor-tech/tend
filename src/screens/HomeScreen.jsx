@@ -178,11 +178,11 @@ function getSeason() {
 }
 
 const NATURE_DAYS = {
-  Monday:    { step: "Read",    label: "Nature Lore Reading",        getInstruction: (t) => `Read aloud from your nature lore book. This week: ${t.title}. ${t.subtitle}.` },
-  Tuesday:   { step: "Observe", label: "Nature Walk",               getInstruction: (t) => t.observe },
+  Monday:    { step: "Read",    label: "Nature Lore Reading",        getInstruction: (t) => `Read aloud from your nature lore book. This week: ${t?.subject || t?.title || "your current topic"}.` },
+  Tuesday:   { step: "Observe", label: "Nature Walk",               getInstruction: (t) => t?.observe || "Take a slow nature walk and notice what has changed since last week." },
   Wednesday: { step: "Record",  label: "Consider the Lilies Entry",  getInstruction: () => "Words or sentences, a sketch, and watercolor. Let the page be a living record of what you noticed this week." },
-  Thursday:  { step: "Finish",  label: "Continue Nature Lore",      getInstruction: (t) => `Finish any remaining reading on ${t.title}, or revisit Tuesday's walk through narration or quiet conversation.` },
-  Friday:    { step: "Watch",   label: "Nature Clip",               getInstruction: (t) => `Find a short video about ${t.title.toLowerCase()}. Let the children see it in motion before the weekend.` },
+  Thursday:  { step: "Finish",  label: "Continue Nature Lore",      getInstruction: (t) => `Finish any remaining reading on ${t?.subject || t?.title || "this week's topic"}, or revisit Tuesday's walk through narration or quiet conversation.` },
+  Friday:    { step: "Watch",   label: "Nature Clip",               getInstruction: (t) => `Find a short video about ${(t?.subject || t?.title || "this week's topic").toLowerCase()}. Let the children see it in motion before the weekend.` },
 };
 
 function NatureOutdoorCard({ onNavigate, initialMinutes, saveToMeta, today, isPaid }) {
