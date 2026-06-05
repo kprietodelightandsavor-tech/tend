@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, BEAUTY_LOOP, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { seedScheduleIfEmpty } from "../lib/db";
+import { getSummerDayBlocks, SUMMER_MORNING_ANCHORS, getEveningAnchors, getTodayActivity } from "../data/summer-seed";
 
 function fmt12(str) {
   if (!str) return "";
@@ -566,6 +567,54 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
 }
 
 // ─── HOME SCREEN ──────────────────────────────────────────────────────────────
+function SummerHome({ today }) {
+  const blocks = getSummerDayBlocks(today);
+  const morning = SUMMER_MORNING_ANCHORS;
+  const evening = getEveningAnchors(today);
+  const activity = getTodayActivity();
+  const row = (key, label, note) => (
+    <div key={key} style={{ padding: "10px 0", borderBottom: "1px solid var(--rule)" }}>
+      <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)" }}>{label}</p>
+      {note && <p className="caption italic" style={{ marginTop: 3, lineHeight: 1.5 }}>{note}</p>}
+    </div>
+  );
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+        <Icon.Sun />
+        <p className="eyebrow" style={{ marginBottom: 0 }}>Summer · {today}</p>
+      </div>
+
+      <p className="eyebrow" style={{ marginBottom: 8 }}>Morning Anchors</p>
+      {morning.map(a => row(a.id, a.label, a.note))}
+
+      <p className="eyebrow" style={{ margin: "22px 0 8px" }}>The Day</p>
+      {blocks.length === 0
+        ? <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)" }}>A free, open day.</p>
+        : blocks.map(b => (
+            <div key={b.id} style={{ padding: "10px 0", borderBottom: "1px solid var(--rule)" }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "baseline" }}>
+                {b.time && <span style={{ fontSize: 11, color: "var(--ink-faint)", fontFamily: "'Lato', sans-serif" }}>{b.time}</span>}
+                <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)" }}>{b.subject}</span>
+              </div>
+              {b.note && <p className="caption italic" style={{ marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
+            </div>
+          ))}
+
+      <p className="eyebrow" style={{ margin: "22px 0 8px" }}>Evening</p>
+      {evening.map(a => row(a.id, a.label, a.note))}
+
+      {activity && (
+        <div className="card-sage" style={{ marginTop: 22 }}>
+          <p className="eyebrow" style={{ marginBottom: 6 }}>Today's Idea</p>
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 4 }}>{activity.label}</p>
+          {activity.setup && <p className="caption italic" style={{ lineHeight: 1.6 }}>{activity.setup}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function HomeScreen({ onNavigate, settings }) {
   const hour       = new Date().getHours();
   const greeting   = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
@@ -593,6 +642,7 @@ export default function HomeScreen({ onNavigate, settings }) {
   const dayOfYear  = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
   const cmQuote    = CM_QUOTES[dayOfYear % CM_QUOTES.length];
   const isWeekend  = today === "Saturday" || today === "Sunday";
+  const summerMode = (() => { try { return localStorage.getItem("tend_summer_mode") === "true"; } catch { return false; } })();
   const [homePrefs, setHomePrefs] = useState(() => {
     const d = { quote: true, outdoor: true, beautyLoop: true, motherCulture: false, habit: false };
     try { return { ...d, ...JSON.parse(localStorage.getItem("tend_home_prefs") || "{}") }; } catch { return d; }
@@ -649,7 +699,9 @@ export default function HomeScreen({ onNavigate, settings }) {
       </>
       )) : <div style={{ marginBottom: 24 }}>{reminderLine("outdoor", "Nature study")}</div>}
 
-      {isRestWeek ? (
+      {summerMode ? (
+        <SummerHome today={today} />
+      ) : isRestWeek ? (
         <RestWeekHome />
       ) : isWeekend ? (
         <WeekendRhythmHome today={today} week={settings?.week || 1} />
