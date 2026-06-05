@@ -3,6 +3,7 @@ import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, 
 import { PremiumModal } from "./HomeScreen";
 import { saveScheduleDay, seedScheduleIfEmpty } from "../lib/db";
 import { createPortal } from "react-dom";
+import { getSummerDayBlocks, SUMMER_MORNING_ANCHORS, getEveningAnchors } from "../data/summer-seed";
 
 const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -367,9 +368,60 @@ function WeekGrid({ schedule, onDayTap, todayDay }) {
   );
 }
 
+function SummerPlannerView({ activeDay, setActiveDay }) {
+  const blocks = getSummerDayBlocks(activeDay);
+  const morning = SUMMER_MORNING_ANCHORS;
+  const evening = getEveningAnchors(activeDay);
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  return (
+    <div>
+      <div style={{ padding: "12px 16px", background: "var(--gold-bg)", border: "1px solid #E0CBA8", borderRadius: 3, marginBottom: 20 }}>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 3 }}>Summer School</p>
+        <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-lt)", lineHeight: 1.6 }}>Your summer rhythm. Turn off Summer School in Settings to return to your school year.</p>
+      </div>
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 16, marginBottom: 4 }}>
+        {days.map(d => (
+          <button key={d} className={`day-pill ${activeDay === d ? "active" : ""}`} onClick={() => setActiveDay(d)}>{d.slice(0, 3)}</button>
+        ))}
+      </div>
+      <div className="rule-gold" style={{ margin: "0 0 20px" }} />
+
+      <p className="eyebrow" style={{ marginBottom: 12 }}>Morning Anchors</p>
+      {morning.map(a => (
+        <div key={a.id} className="planner-block">
+          <span className="planner-subject">{a.label}</span>
+          {a.note && <p className="caption italic" style={{ marginTop: 4 }}>{a.note}</p>}
+        </div>
+      ))}
+
+      <p className="eyebrow" style={{ margin: "24px 0 12px" }}>The Day</p>
+      {blocks.length === 0 ? (
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)" }}>A free, open day.</p>
+      ) : blocks.map(b => (
+        <div key={b.id} className="planner-block">
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+            {b.time && <span className="planner-time">{b.time}</span>}
+            <span className="planner-subject">{b.subject}</span>
+          </div>
+          {b.note && <p className="caption italic" style={{ marginTop: 4 }}>{b.note}</p>}
+        </div>
+      ))}
+
+      <p className="eyebrow" style={{ margin: "24px 0 12px" }}>Evening</p>
+      {evening.map(a => (
+        <div key={a.id} className="planner-block">
+          <span className="planner-subject">{a.label}</span>
+          {a.note && <p className="caption italic" style={{ marginTop: 4 }}>{a.note}</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function PlannerScreen({ settings }) {
   const isPaid = settings?.isPaid || false;
   const userId = settings?.userId;
+  const summerMode = (() => { try { return localStorage.getItem("tend_summer_mode") === "true"; } catch { return false; } })();
   const todayIdx = new Date().getDay();
   const todayDay = todayIdx === 0 ? "Sunday" : todayIdx === 6 ? "Saturday" : DAYS[todayIdx - 1];
 
@@ -503,7 +555,9 @@ export default function PlannerScreen({ settings }) {
       </div>
       <h1 className="display serif" style={{ marginBottom: 20 }}>Planner</h1>
 
-      {!isPaid ? (
+      {summerMode ? (
+        <SummerPlannerView activeDay={activeDay} setActiveDay={setActiveDay} />
+      ) : !isPaid ? (
         <FreePlanner onShowPremium={() => setShowPremium(true)} />
       ) : (
         <>
