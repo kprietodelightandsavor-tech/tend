@@ -568,49 +568,47 @@ function HabitFocusCard({ activeHabit, onNavigate }) {
 
 // ─── HOME SCREEN ──────────────────────────────────────────────────────────────
 function SummerHome({ today }) {
-  const blocks = getSummerDayBlocks(today);
-  const morning = SUMMER_MORNING_ANCHORS;
-  const evening = getEveningAnchors(today);
-  const activity = getTodayActivity();
-  const row = (key, label, note) => (
-    <div key={key} style={{ padding: "10px 0", borderBottom: "1px solid var(--rule)" }}>
-      <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)" }}>{label}</p>
-      {note && <p className="caption italic" style={{ marginTop: 3, lineHeight: 1.5 }}>{note}</p>}
+  const head = (color, label) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+      <span style={{ width: 7, height: 7, borderRadius: "50%", background: color, flexShrink: 0 }} />
+      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", color, margin: 0 }}>{label}</p>
     </div>
   );
+  const rule = () => <div style={{ height: 1, background: "var(--rule)", margin: "26px 0" }} />;
   return (
     <div style={{ marginBottom: 28 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-        <Icon.Sun />
-        <p className="eyebrow" style={{ marginBottom: 0 }}>Summer · {today}</p>
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <p className="serif" style={{ fontSize: 30, lineHeight: 1.1, color: "#5F6F52", marginBottom: 6 }}>Summer Rhythm</p>
+        <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)" }}>a gentle shape for our days</p>
+        <div style={{ width: 54, height: 1, background: "var(--gold)", opacity: .5, margin: "14px auto 0" }} />
       </div>
 
-      <p className="eyebrow" style={{ marginBottom: 8 }}>Morning Anchors</p>
-      {morning.map(a => row(a.id, a.label, a.note))}
+      {head("var(--gold)", "Morning")}
+      <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 8, padding: "12px 14px", marginBottom: 14 }}>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--sage)", margin: "0 0 3px" }}>Together</p>
+        <p className="serif" style={{ fontSize: 17, color: "var(--ink)", margin: 0 }}>Bible &amp; Morning Basket</p>
+      </div>
+      <p className="corm" style={{ fontSize: 18, color: "var(--ink)", lineHeight: 1.9, margin: 0 }}>Slow beginnings<br />Care for our home<br />Outside early<br />Reading &amp; learning<br />Lunch together</p>
 
-      <p className="eyebrow" style={{ margin: "22px 0 8px" }}>The Day</p>
-      {blocks.length === 0
-        ? <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)" }}>A free, open day.</p>
-        : blocks.map(b => (
-            <div key={b.id} style={{ padding: "10px 0", borderBottom: "1px solid var(--rule)" }}>
-              <div style={{ display: "flex", gap: 10, alignItems: "baseline" }}>
-                {b.time && <span style={{ fontSize: 11, color: "var(--ink-faint)", fontFamily: "'Lato', sans-serif" }}>{b.time}</span>}
-                <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)" }}>{b.subject}</span>
-              </div>
-              {b.note && <p className="caption italic" style={{ marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
-            </div>
-          ))}
+      {rule()}
 
-      <p className="eyebrow" style={{ margin: "22px 0 8px" }}>Evening</p>
-      {evening.map(a => row(a.id, a.label, a.note))}
+      {head("var(--sage)", "Afternoon")}
+      <p className="corm" style={{ fontSize: 18, color: "var(--ink)", lineHeight: 1.9, margin: "0 0 8px" }}>Play · Projects · Adventure<br />Friends are welcome</p>
+      <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.6, margin: "0 0 18px" }}>Room for wandering, errands, library days, outings, rest, and ordinary life.</p>
+      <div style={{ border: "1px solid #E0CBA8", borderRadius: 6, padding: "14px 16px", background: "var(--gold-bg)" }}>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".22em", textTransform: "uppercase", color: "var(--gold)", margin: "0 0 6px" }}>Screens</p>
+        <p className="corm" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.7, margin: 0 }}>Weekdays&nbsp;&nbsp;2:00 – 4:00<br />Weekends&nbsp;&nbsp;11:00 – 4:00</p>
+      </div>
 
-      {activity && (
-        <div className="card-sage" style={{ marginTop: 22 }}>
-          <p className="eyebrow" style={{ marginBottom: 6 }}>Today's Idea</p>
-          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 4 }}>{activity.label}</p>
-          {activity.setup && <p className="caption italic" style={{ lineHeight: 1.6 }}>{activity.setup}</p>}
-        </div>
-      )}
+      {rule()}
+
+      {head("#7E94A6", "Evening")}
+      <p className="corm" style={{ fontSize: 18, color: "var(--ink)", lineHeight: 1.9, margin: 0 }}>Dinner together<br />Outside at dusk<br />Quiet rhythms<br />Read-alouds or family TV<br />Rest</p>
+
+      <div style={{ textAlign: "center", marginTop: 32, paddingTop: 24, borderTop: "1px solid var(--rule)" }}>
+        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", color: "var(--sage)", margin: "0 0 10px" }}>Our Summer Values</p>
+        <p className="corm italic" style={{ fontSize: 18, color: "#5F6F52", margin: 0 }}>inspire wonder · connection · restoration</p>
+      </div>
     </div>
   );
 }
