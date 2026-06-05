@@ -593,6 +593,10 @@ export default function HomeScreen({ onNavigate, settings }) {
   const dayOfYear  = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
   const cmQuote    = CM_QUOTES[dayOfYear % CM_QUOTES.length];
   const isWeekend  = today === "Saturday" || today === "Sunday";
+  const homePrefs = (() => {
+    const d = { quote: true, outdoor: true, beautyLoop: true, motherCulture: false, habit: false };
+    try { return { ...d, ...JSON.parse(localStorage.getItem("tend_home_prefs") || "{}") }; } catch { return d; }
+  })();
 
   return (
     <div className="screen">
@@ -600,11 +604,15 @@ export default function HomeScreen({ onNavigate, settings }) {
         {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
       </p>
       <h1 className="display serif" style={{ marginBottom: 4 }}>{greeting},<br />{name}.</h1>
+      {homePrefs.quote && (
       <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.85, marginBottom: 4 }}>"{cmQuote.quote}"</p>
         <p className="caption">— Charlotte Mason, {cmQuote.source}</p>
       </div>
+      )}
 
+      {homePrefs.outdoor && (
+      <>
       <NatureOutdoorCard
         onNavigate={onNavigate}
         initialMinutes={settings?.outdoorMinutes || 0}
@@ -614,6 +622,8 @@ export default function HomeScreen({ onNavigate, settings }) {
       />
 
       <div style={{ height: 1, background: "var(--rule)", margin: "4px 0 24px" }} />
+      </>
+      )}
 
       {isRestWeek ? (
         <RestWeekHome />
@@ -622,9 +632,9 @@ export default function HomeScreen({ onNavigate, settings }) {
       ) : (
         <>
           <TodaySchedule key={scheduleLoaded ? "saved" : "default"} today={today} blocks={todayBlocks} onNavigate={onNavigate} />
-          <BeautyLoopHome today={today} />
-          <MotherCulture />
-          <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />
+          {homePrefs.beautyLoop && <BeautyLoopHome today={today} />}
+          {homePrefs.motherCulture && <MotherCulture />}
+          {homePrefs.habit && <HabitFocusCard activeHabit={activeHabit} onNavigate={onNavigate} />}
         </>
       )}
     </div>
