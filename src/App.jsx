@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./styles/globals.css";
 import { supabase } from "./lib/supabase";
 
@@ -13,8 +13,180 @@ import LiliesScreen     from "./screens/LiliesScreen";
 import StudentsScreen   from "./screens/StudentsScreen";
 import MenuScreen       from "./screens/MenuScreen";
 import SettingsScreen   from "./screens/SettingsScreen";
+import NatureStudyScreen from "./screens/NatureStudyScreen";
+import TeachingLogScreen from "./screens/TeachingLogScreen";
+import AnnualReportScreen from "./screens/AnnualReportScreen";
+import BooksScreen from "./screens/BooksScreen";
+import BibleReadingScreen from "./screens/BibleReadingScreen";
+import BeautyLoopEditorScreen from "./screens/BeautyLoopEditorScreen";
+import MemoryBookScreen from "./screens/MemoryBookScreen";
 
 const NAV_SCREENS = ["home", "planner", "narration", "menu"];
+
+const NOTES_KEY = "tend_quick_notes";
+const SUBJECTS  = ["General", "Math", "Language Arts", "History", "Science", "Geography", "Nature Study", "Read Aloud", "Spanish", "Co-op", "Other"];
+
+function QuickNotesSheet({ onClose, students, userId }) {
+  const [notes, setNotes]         = useState([]);
+  const [text, setText]           = useState("");
+  const [subject, setSubject]     = useState("General");
+  const [child, setChild]         = useState("All");
+  const [listening, setListening] = useState(false);
+  const [saving, setSaving]       = useState(false);
+  const [loading, setLoading]     = useState(true);
+  const [view, setView]           = useState("add");
+  const recogRef                  = useRef(null);
+
+  const childOptions = ["All", ...(students || []).map(s => s.name)];
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const hasVoice = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  const voiceOk  = hasVoice && !isSafari;
+
+  const callNotes = async (body) => {
+    const res = await fetch("/.netlify/functions/notes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return res.json();
+  };
+
+  useEffect(() => {
+    if (!userId) { setLoading(false); return; }
+    callNotes({ method: "list", userId })
+      .then(({ notes }) => { setNotes(notes || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [userId]);
+
+  const startListening = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const r  = new SR();
+    r.continuous = true; r.interimResults = true; r.lang = "en-US";
+    r.onresult = (e) => { let t = ""; for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript; setText(t); };
+    r.onerror = r.onend = () => setListening(false);
+    recogRef.current = r; r.start(); setListening(true);
+  };
+  const stopListening = () => { recogRef.current?.stop(); setListening(false); };
+
+  const save = async () => {
+    if (!text.trim() || !userId) return;
+    setSaving(true);
+    const { note, error } = await callNotes({ method: "insert", userId, text: text.trim(), subject, childName: child });
+    if (note) {
+      setNotes(prev => [note, ...prev]);
+      setText("");
+      setView("list");
+    }
+    if (error) console.error("Note save error:", error);
+    setSaving(false);
+  };
+
+  const deleteNote = async (id) => {
+    await callNotes({ method: "delete", userId, noteId: id });
+    setNotes(prev => prev.filter(n => n.id !== id));
+  };
+
+  const formatDate = (ts) => {
+    const d = new Date(ts);
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
+      " · " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.45)", zIndex: 400 }} onClick={onClose}>
+      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "24px 24px 52px", maxHeight: "88dvh", overflowY: "auto" }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ width: 34, height: 3, background: "var(--rule)", borderRadius: 2, margin: "0 auto 20px" }} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <p className="serif" style={{ fontSize: 20 }}>Quick Notes</p>
+          <div style={{ display: "flex", gap: 8 }}>
+            {["add", "list"].map(v => (
+              <button key={v} onClick={() => setView(v)}
+                style={{ padding: "5px 12px", borderRadius: 20, border: `1px solid ${view === v ? "var(--sage)" : "var(--rule)"}`, background: view === v ? "var(--sage-bg)" : "none", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: view === v ? "var(--sage)" : "var(--ink-faint)" }}>
+                {v === "add" ? "+ Add" : `Notes (${notes.length})`}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {view === "add" && (
+          <>
+            <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 6 }}>Subject</p>
+                <select value={subject} onChange={e => setSubject(e.target.value)}
+                  style={{ width: "100%", background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "7px 8px", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink)", outline: "none" }}>
+                  {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              {childOptions.length > 1 && (
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)", marginBottom: 6 }}>Child</p>
+                  <select value={child} onChange={e => setChild(e.target.value)}
+                    style={{ width: "100%", background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "7px 8px", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink)", outline: "none" }}>
+                    {childOptions.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            <textarea className="textarea" placeholder="What do you want to remember?"
+              value={text} onChange={e => setText(e.target.value)} rows={4}
+              style={{ marginBottom: 14 }} />
+
+            <div style={{ display: "flex", gap: 10 }}>
+              {voiceOk && (
+                <button onClick={listening ? stopListening : startListening}
+                  style={{ width: 44, height: 44, borderRadius: "50%", background: listening ? "#c0392b" : "var(--sage-bg)", border: `1px solid ${listening ? "#c0392b" : "var(--sage-md)"}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .2s" }}>
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke={listening ? "white" : "var(--sage)"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+                    <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                  </svg>
+                </button>
+              )}
+              {!voiceOk && (
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", alignSelf: "center" }}>
+                  Voice requires Chrome
+                </p>
+              )}
+              <button className="btn-sage" style={{ flex: 1 }} onClick={save} disabled={!text.trim() || saving}>
+                {saving ? "Saving…" : "Save Note"}
+              </button>
+            </div>
+          </>
+        )}
+
+        {view === "list" && (
+          <>
+            {loading ? (
+              <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)", textAlign: "center", padding: "24px 0" }}>Loading notes…</p>
+            ) : notes.length === 0 ? (
+              <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)", textAlign: "center", padding: "24px 0", lineHeight: 1.7 }}>
+                No notes yet. Tap + Add to capture something.
+              </p>
+            ) : notes.map(n => (
+              <div key={n.id} style={{ padding: "14px 0", borderBottom: "1px solid var(--rule)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--sage)", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 20, padding: "2px 7px" }}>{n.subject}</span>
+                    {n.child_name !== "All" && <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--gold)", background: "var(--gold-bg)", border: "1px solid #EFE7D6", borderRadius: 20, padding: "2px 7px" }}>{n.child_name}</span>}
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, color: "var(--ink-faint)" }}>{formatDate(n.created_at)}</p>
+                    <button onClick={() => deleteNote(n.id)}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)", fontSize: 11, fontFamily: "'Lato', sans-serif", padding: 0 }}>✕</button>
+                  </div>
+                </div>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, color: "var(--ink)", lineHeight: 1.7 }}>{n.text}</p>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const SCREENS = {
   home:      HomeScreen,
@@ -26,6 +198,13 @@ const SCREENS = {
   students:  StudentsScreen,
   menu:      MenuScreen,
   settings:  SettingsScreen,
+  naturestudy:  NatureStudyScreen,
+  teachinglog:  TeachingLogScreen,
+  annualreport: AnnualReportScreen,
+  books:        BooksScreen,
+  scripture:    BibleReadingScreen,
+  "beauty-loop-editor": BeautyLoopEditorScreen,
+  "memory-book":        MemoryBookScreen,
 };
 
 const STORAGE_KEY = 'tend_user';
@@ -41,7 +220,6 @@ function loadLocal() {
   } catch(e) { return null; }
 }
 
-// ─── AUTH SCREEN ─────────────────────────────────────────────────────────────
 function AuthScreen() {
   const [mode, setMode]         = useState("signin");
   const [email, setEmail]       = useState("");
@@ -66,24 +244,7 @@ function AuthScreen() {
   return (
     <div style={{ minHeight: "100dvh", background: "var(--cream)", display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px 32px", maxWidth: 430, margin: "0 auto" }}>
       <div style={{ textAlign: "center", marginBottom: 48 }}>
-        <svg width="52" height="52" viewBox="0 0 64 64" fill="none" style={{ margin: "0 auto 16px", display: "block" }}>
-          <circle cx="32" cy="32" r="30" stroke="#93A388" strokeWidth="1" fill="#F7F3EC"/>
-          <line x1="32" y1="52" x2="32" y2="14" stroke="#93A388" strokeWidth="1.2" strokeLinecap="round"/>
-          <line x1="32" y1="44" x2="24" y2="40" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="44" x2="40" y2="40" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="38" x2="23" y2="33" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="38" x2="41" y2="33" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="32" x2="24" y2="27" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="32" x2="40" y2="27" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="26" x2="25" y2="21" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-          <line x1="32" y1="26" x2="39" y2="21" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-          <circle cx="32" cy="14" r="2" fill="#93A388"/>
-          <circle cx="24" cy="40" r="1.2" fill="#93A388"/><circle cx="40" cy="40" r="1.2" fill="#93A388"/>
-          <circle cx="23" cy="33" r="1.2" fill="#93A388"/><circle cx="41" cy="33" r="1.2" fill="#93A388"/>
-          <circle cx="24" cy="27" r="1.2" fill="#93A388"/><circle cx="40" cy="27" r="1.2" fill="#93A388"/>
-          <circle cx="25" cy="21" r="1.2" fill="#93A388"/><circle cx="39" cy="21" r="1.2" fill="#93A388"/>
-          <text x="32" y="58" textAnchor="middle" fontFamily="Georgia, serif" fontSize="5" fill="#93A388" fontStyle="italic" letterSpacing="0.08em">tend</text>
-        </svg>
+        <img src="/tend.icon.png" alt="Tend" style={{ width: 72, height: 72, borderRadius: 16, display: "block", margin: "0 auto 16px" }} />
         <h1 className="display serif" style={{ fontSize: 32, marginBottom: 4 }}>Tend</h1>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)" }}>A daily rhythm for Charlotte Mason families</p>
       </div>
@@ -137,14 +298,14 @@ function AuthScreen() {
   );
 }
 
-// ─── APP ─────────────────────────────────────────────────────────────────────
 export default function App() {
   const [session, setSession]   = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading]   = useState(true);
   const [screen, setScreen]     = useState("home");
+  const [showNotes, setShowNotes] = useState(false);
+  const [navIntent, setNavIntent] = useState(null);
 
-  // ── Save to both localStorage and Supabase metadata ──────────────────────
   const persistData = async (data) => {
     saveLocal(data);
     setUserData(data);
@@ -155,13 +316,11 @@ export default function App() {
     }
   };
 
-  // ── Load user data fresh from Supabase ────────────────────────────────────
   const loadUserData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const meta   = user?.user_metadata || {};
       const cached = loadLocal();
-      // Supabase wins on conflicts so is_paid always comes through
       const merged = { ...cached, ...meta };
       if (merged.onboarded) {
         saveLocal(merged);
@@ -170,7 +329,6 @@ export default function App() {
         setUserData(meta);
       }
     } catch(e) {
-      // Fall back to cache if Supabase unreachable
       const cached = loadLocal();
       if (cached) setUserData(cached);
     } finally {
@@ -178,7 +336,6 @@ export default function App() {
     }
   };
 
-  // ── Load on mount ─────────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -204,7 +361,6 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Onboarding complete ───────────────────────────────────────────────────
   const completeOnboarding = async ({ name, activeHabit, term, week }) => {
     const data = {
       name,
@@ -220,7 +376,6 @@ export default function App() {
     setScreen("home");
   };
 
-  // ── Save settings ─────────────────────────────────────────────────────────
   const saveSettings = async (updated) => {
     const newData = {
       ...userData,
@@ -233,13 +388,17 @@ export default function App() {
     await persistData(newData);
   };
 
-  // ── Save to meta (used by HomeScreen for outdoor minutes) ─────────────────
   const saveToMeta = async (updates) => {
     const newData = { ...userData, ...updates };
     await persistData(newData);
   };
 
-  // ── Loading ───────────────────────────────────────────────────────────────
+  // Navigate with optional intent (e.g. "camera" to auto-launch camera in Memory Book)
+  const handleNavigate = (id, intent = null) => {
+    setNavIntent(intent);
+    setScreen(id);
+  };
+
   if (loading) {
     return (
       <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--cream)" }}>
@@ -248,15 +407,12 @@ export default function App() {
     );
   }
 
-  // ── Not logged in ─────────────────────────────────────────────────────────
   if (!session) return <AuthScreen />;
 
-  // ── Onboarding ────────────────────────────────────────────────────────────
   if (!userData?.onboarded) {
     return <OnboardingScreen onComplete={completeOnboarding} />;
   }
 
-  // ── Main app ──────────────────────────────────────────────────────────────
   const ScreenComponent = SCREENS[screen] || HomeScreen;
   const showNav = NAV_SCREENS.includes(screen);
 
@@ -271,15 +427,39 @@ export default function App() {
     outdoorMinutes: userData?.outdoor_minutes || 0,
     saveToMeta,
     isPaid:         userData?.is_paid      || false,
+    students:       userData?.children     || [],
+    mode:           userData?.mode         || "school",
   };
+
+  const screenProps = {
+    onNavigate: handleNavigate,
+    settings,
+    onSave: saveSettings,
+  };
+
+  if (screen === "memory-book" && navIntent === "camera") {
+    screenProps.autoOpenCamera = true;
+  }
 
   return (
     <div className="shell">
       <div key={screen} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
-        <ScreenComponent onNavigate={id => setScreen(id)} settings={settings} onSave={saveSettings} />
+        <ScreenComponent {...screenProps} />
       </div>
-      <div style={{ position: "fixed", bottom: showNav ? 90 : 22, right: 22, fontFamily: "'Playfair Display', serif", fontSize: 56, color: "var(--sage)", opacity: .05, pointerEvents: "none", userSelect: "none", lineHeight: 1 }}>❧</div>
-      {showNav && <BottomNav active={screen} onNavigate={id => setScreen(id)} />}
+      <div style={{ position: "fixed", bottom: showNav ? 90 : 22, right: 16, opacity: .06, pointerEvents: "none", userSelect: "none" }}>
+        <img src="/ds-logo.png" alt="" style={{ width: 52, height: 52 }} />
+      </div>
+
+      <button onClick={() => setShowNotes(true)}
+        style={{ position: "fixed", bottom: showNav ? 104 : 24, left: 22, width: 44, height: 44, borderRadius: "50%", background: "var(--cream)", border: "1.5px solid var(--sage-md)", boxShadow: "0 2px 12px rgba(0,0,0,.1)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, transition: "all .2s" }}>
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--sage)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+      </button>
+
+      {showNav && <BottomNav active={screen} onNavigate={handleNavigate} />}
+      {showNotes && <QuickNotesSheet onClose={() => setShowNotes(false)} students={userData?.children || []} userId={session?.user?.id} />}
     </div>
   );
 }

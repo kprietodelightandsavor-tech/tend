@@ -1,5 +1,3 @@
-import { CHAPTERS } from "../data/seed";
-
 // Inline Tend logo — no external component dependency
 function TendMark() {
   return (
@@ -24,14 +22,50 @@ function TendMark() {
   );
 }
 
+// Everything that isn't Home or Planner, in four calm groups.
+const GROUPS = [
+  {
+    heading: "Rhythm & Journals",
+    items: [
+      { title: "Consider the Lilies", sub: "Commonplace & nature journal", screen: "lilies" },
+      { title: "Nature Study",        sub: "Topics & the nature loop",     screen: "naturestudy" },
+      { title: "Outdoors",            sub: "Time outside & observation",    screen: "outdoors" },
+      { title: "Habits",              sub: "The tended life",               screen: "habits" },
+      { title: "Bible Reading",       sub: "Family scripture streams",      screen: "scripture" },
+    ],
+  },
+  {
+    heading: "Children",
+    items: [
+      { title: "Students",  sub: "Profiles & narration history", screen: "students" },
+      { title: "Narration", sub: "Telling back what was read",   screen: "narration" },
+    ],
+  },
+  {
+    heading: "Records & Keepsakes",
+    items: [
+      { title: "Teaching Record", sub: "What we taught, week by week",   screen: "teachinglog" },
+      { title: "Annual Report",   sub: "CM transcript & evaluation",     screen: "annualreport" },
+      { title: "Memory Book",     sub: "The year in images & moments",   screen: "memory-book" },
+    ],
+  },
+  {
+    heading: "Library & Setup",
+    items: [
+      { title: "Books & Curriculum", sub: "Your year in books",                screen: "books" },
+      { title: "Beauty Loop",        sub: "Edit your daily beauty moments",    screen: "beauty-loop-editor" },
+      { title: "Settings",           sub: "Name, goals, schedule mode",        screen: "settings" },
+    ],
+  },
+];
+
 export default function MenuScreen({ onNavigate }) {
   return (
     <div className="screen">
-
       {/* Brand */}
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
-        <TendMark />
+          <TendMark />
         </div>
         <h1 className="display serif" style={{ fontSize: 36, marginBottom: 4 }}>Tend</h1>
         <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)" }}>
@@ -41,36 +75,23 @@ export default function MenuScreen({ onNavigate }) {
 
       <div className="rule-gold" />
 
-      {/* Contents */}
-      <p className="eyebrow" style={{ marginBottom: 4, textAlign: "center" }}>Contents</p>
-      <div style={{ marginTop: 8 }}>
-        {CHAPTERS.map((c, i) => (
-          <div key={i} className="chapter-row" onClick={() => onNavigate(c.screen)}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
-              <span className="chapter-num">{c.num}</span>
-              <div>
-                <p className="chapter-title">{c.title}</p>
-                <p className="chapter-sub">{c.sub}</p>
+      {/* Grouped contents */}
+      {GROUPS.map((g, gi) => (
+        <div key={gi} style={{ marginTop: gi === 0 ? 16 : 30 }}>
+          <p className="eyebrow" style={{ marginBottom: 4 }}>{g.heading}</p>
+          {g.items.map((it) => (
+            <div key={it.screen} className="chapter-row" onClick={() => onNavigate(it.screen)}>
+              <div style={{ flex: 1 }}>
+                <p className="chapter-title">{it.title}</p>
+                <p className="chapter-sub">{it.sub}</p>
               </div>
+              <span className="chapter-arrow">→</span>
             </div>
-            <span className="chapter-arrow">→</span>
-          </div>
-        ))}
-
-        {/* Settings row */}
-        <div className="chapter-row" onClick={() => onNavigate("settings")}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
-            <span className="chapter-num" style={{ fontStyle: "normal", fontSize: 11 }}>⚙</span>
-            <div>
-              <p className="chapter-title">Settings</p>
-              <p className="chapter-sub">Name, outdoor goal, term & week</p>
-            </div>
-          </div>
-          <span className="chapter-arrow">→</span>
+          ))}
         </div>
-      </div>
+      ))}
 
-      <div className="rule" style={{ marginTop: 8 }} />
+      <div className="rule" style={{ marginTop: 24 }} />
 
       {/* Philosophy */}
       <div className="card-gold" style={{ marginTop: 4 }}>
@@ -86,8 +107,6 @@ export default function MenuScreen({ onNavigate }) {
         <p className="eyebrow" style={{ marginBottom: 16, textAlign: "center" }}>
           Also from Delight & Savor
         </p>
-
-        {/* In the Margin */}
         <a
           href="https://in-the-margin.netlify.app"
           target="_blank"
@@ -105,29 +124,19 @@ export default function MenuScreen({ onNavigate }) {
             onMouseOver={e => e.currentTarget.style.opacity = ".8"}
             onMouseOut={e => e.currentTarget.style.opacity = "1"}
           >
-            {/* In the Margin real icon */}
             <img
               src="/margin_icon.png"
               alt="In the Margin"
               style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0, objectFit: "cover" }}
             />
-
             <div style={{ flex: 1 }}>
-              <p style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: 16, color: "var(--ink)", marginBottom: 3,
-              }}>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 3 }}>
                 In the Margin
               </p>
-              <p style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: 13, fontStyle: "italic",
-                color: "var(--ink-faint)", lineHeight: 1.5,
-              }}>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.5 }}>
                 A reading companion for parents — notes, quotes, and reflections alongside great books.
               </p>
             </div>
-
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
               <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
               <polyline points="15 3 21 3 21 9"/>
@@ -137,7 +146,7 @@ export default function MenuScreen({ onNavigate }) {
         </a>
       </div>
 
-      {/* Footer — D&S website link with real icon */}
+      {/* Footer — D&S website link */}
       <div style={{ marginTop: 28, paddingTop: 24, borderTop: "1px solid var(--rule)", textAlign: "center" }}>
         <a
           href="https://www.delightandsavor.com"
@@ -168,7 +177,6 @@ export default function MenuScreen({ onNavigate }) {
           Literature · Writing · Living Books
         </p>
       </div>
-
     </div>
   );
 }

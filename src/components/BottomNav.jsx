@@ -1,10 +1,10 @@
 import { Ic } from "./Icons";
 
+// Three calm tabs. Everything else lives in "More" (the grouped menu).
 const NAV = [
-  { id: "home",      label: "Home",    Icon: Ic.Home    },
-  { id: "planner",   label: "Planner", Icon: Ic.Plan    },
-  { id: "narration", label: "Narrate", Icon: Ic.Feather },
-  { id: "menu",      label: "Menu",    Icon: Ic.Menu    },
+  { id: "home",    label: "Home",    Icon: Ic.Home },
+  { id: "planner", label: "Planner", Icon: Ic.Plan },
+  { id: "menu",    label: "More",    Icon: Ic.Menu },
 ];
 
 export default function BottomNav({ active, onNavigate }) {
@@ -13,7 +13,7 @@ export default function BottomNav({ active, onNavigate }) {
       {NAV.map(({ id, label, Icon }) => (
         <button
           key={id}
-          className={`bnav-btn ${active === id ? "active" : ""}`}
+          className={"bnav-btn " + (active === id ? "active" : "")}
           onClick={() => onNavigate(id)}
         >
           <Icon />

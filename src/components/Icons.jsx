@@ -16,6 +16,11 @@ export const Ic = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
     </svg>
   ),
+  Flame: () => (
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 2c0 0-5 5.5-5 10a5 5 0 0010 0c0-3-2-5-2-5s-.5 2.5-2 3.5C12 10 11 8 12 5c0 0-1.5 1.5-1.5 4a2.5 2.5 0 005 0C15.5 6.5 12 2 12 2z" />
+    </svg>
+  ),
   Menu: () => (
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />

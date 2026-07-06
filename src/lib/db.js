@@ -88,10 +88,8 @@ export async function addObservation(userId, observation) {
   if (error) console.error('addObservation:', error);
 }
 
-// ─── SCHEDULE BLOCKS ──────────────────────────────────────────────────────────
-// Weekday planner blocks, persisted per day. Saved with a simple
-// "replace the whole day" strategy so reordering/adding/deleting just works.
 
+// ─── SCHEDULE BLOCKS ──────────────────────────────────────────────────────────
 export async function getScheduleBlocks(userId) {
   const { data, error } = await supabase
     .from('schedule_blocks')
@@ -107,8 +105,7 @@ export async function saveScheduleDay(userId, day, blocks) {
   await supabase.from('schedule_blocks').delete().eq('user_id', userId).eq('day', day);
   if (!blocks.length) return [];
   const rows = blocks.map((b, i) => ({
-    user_id: userId,
-    day,
+    user_id: userId, day,
     subject: b.subject || 'Untitled',
     time: b.time || '',
     note: b.note || '',
@@ -119,16 +116,13 @@ export async function saveScheduleDay(userId, day, blocks) {
   return rows;
 }
 
-// On first run (table empty for this user), seed from the default DAY_SCHEDULE
-// so the planner looks the same as before — but now it's editable and saved.
 export async function seedScheduleIfEmpty(userId, defaultSchedule) {
   const existing = await getScheduleBlocks(userId);
   if (existing.length) return existing;
   const rows = [];
   Object.entries(defaultSchedule).forEach(([day, blocks]) => {
     blocks.forEach((b, i) => rows.push({
-      user_id: userId,
-      day,
+      user_id: userId, day,
       subject: b.subject || 'Untitled',
       time: b.time || '',
       note: b.note || '',

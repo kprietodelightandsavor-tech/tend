@@ -20,6 +20,11 @@ const Icon = {
       <line x1="3" y1="10" x2="21" y2="10"/>
     </svg>
   ),
+  Sun: () => (
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#C49A4E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  ),
   Tend: () => (
     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 22V12"/>
@@ -36,6 +41,57 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
   const [term, setTerm]           = useState(settings?.term || 1);
   const [week, setWeek]           = useState(settings?.week || 1);
   const [saved, setSaved]         = useState(false);
+  const [mode, setMode]           = useState(settings?.mode || "school");
+  const [icsUrl, setIcsUrl]       = useState(() => { try { return localStorage.getItem("tend_ics_url") || ""; } catch { return ""; } });
+  const [calEvents, setCalEvents] = useState([]);
+  const [calMsg, setCalMsg]       = useState("");
+  const [calLoading, setCalLoading] = useState(false);
+  const [homePrefs, setHomePrefs] = useState(() => {
+    const d = { quote: true, outdoor: true, beautyLoop: true, motherCulture: false, habit: false };
+    try { return { ...d, ...JSON.parse(localStorage.getItem("tend_home_prefs") || "{}") }; } catch { return d; }
+  });
+  const toggleHome = (key) => setHomePrefs(prev => {
+    const next = { ...prev, [key]: !prev[key] };
+    try { localStorage.setItem("tend_home_prefs", JSON.stringify(next)); } catch {}
+    return next;
+  });
+  const HOME_SECTIONS = [
+    ["quote", "Daily quote"],
+    ["outdoor", "Nature study (outdoor)"],
+    ["beautyLoop", "Beauty Loop"],
+    ["motherCulture", "Mother Culture"],
+    ["habit", "Habit focus"],
+  ];
+
+  const toggleSummer = async () => {
+    const next = mode === "summer" ? "school" : "summer";
+    setMode(next);
+    if (settings?.saveToMeta) await settings.saveToMeta({ mode: next });
+  };
+
+  const loadCalendar = async () => {
+    const url = icsUrl.trim();
+    if (!url) { setCalMsg("Paste your calendar link first."); return; }
+    setCalLoading(true); setCalMsg("");
+    try {
+      localStorage.setItem("tend_ics_url", url);
+      if (settings?.saveToMeta) settings.saveToMeta({ ics_url: url });
+      const res = await fetch("/.netlify/functions/sync-calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, days: 30 }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Something went wrong");
+      setCalEvents(data.events || []);
+      setCalMsg(`Connected — found ${(data.events || []).length} events in the next 30 days.`);
+    } catch (e) {
+      setCalEvents([]);
+      setCalMsg("Couldn't load: " + e.message);
+    } finally {
+      setCalLoading(false);
+    }
+  };
 
   const save = () => {
     onSave({ name, outdoorGoal, term, week });
@@ -47,6 +103,28 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
     <div className="screen">
       <p className="eyebrow" style={{ marginBottom: 6 }}>Preferences</p>
       <h1 className="display serif" style={{ marginBottom: 28 }}>Settings</h1>
+
+      {/* Schedule Mode */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <Icon.Sun />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Schedule Mode</p>
+        </div>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
+          Switch to your summer rhythm. Your school-year schedule stays exactly as it is.
+        </p>
+        <div onClick={toggleSummer} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid var(--rule)", cursor: "pointer" }}>
+          <span style={{ fontSize: 16, fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}>Summer School mode</span>
+          <span style={{ width: 44, height: 26, borderRadius: 20, background: mode === "summer" ? "var(--gold)" : "var(--rule)", position: "relative", transition: "background .2s", flexShrink: 0 }}>
+            <span style={{ position: "absolute", top: 3, left: mode === "summer" ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left .2s" }} />
+          </span>
+        </div>
+        <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.6 }}>
+          {mode === "summer" ? "Summer rhythm is on — your home shows the summer schedule." : "School year is on."}
+        </p>
+      </div>
+
+      <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
 
       {/* Name */}
       <div style={{ marginBottom: 32 }}>
@@ -139,6 +217,58 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
       </div>
 
       <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
+
+      {/* Home Screen */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <Icon.Tend />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Home Screen</p>
+        </div>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
+          Choose what shows on your home screen. Turn off anything you don't want for a calmer page.
+        </p>
+        {HOME_SECTIONS.map(([key, label]) => {
+          const on = homePrefs[key];
+          return (
+            <div key={key} onClick={() => toggleHome(key)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid var(--rule)", cursor: "pointer" }}>
+              <span style={{ fontSize: 16, fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}>{label}</span>
+              <span style={{ width: 44, height: 26, borderRadius: 20, background: on ? "var(--sage)" : "var(--rule)", position: "relative", transition: "background .2s", flexShrink: 0 }}>
+                <span style={{ position: "absolute", top: 3, left: on ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left .2s" }} />
+              </span>
+            </div>
+          );
+        })}
+        <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.6 }}>Changes show next time you open the home screen.</p>
+      </div>
+
+      <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
+
+      {/* Calendar Sync */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <Icon.Calendar />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Calendar Sync</p>
+        </div>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
+          Paste the public link from your Apple/iCloud calendar to pull in co-op, tennis, and other commitments.
+        </p>
+        <input className="input-line" placeholder="webcal://… or https://…"
+          value={icsUrl} onChange={e => setIcsUrl(e.target.value)} style={{ marginBottom: 14, fontSize: 14 }} />
+        <button className="btn-sage" style={{ width: "100%", opacity: calLoading ? 0.6 : 1 }} disabled={calLoading} onClick={loadCalendar}>
+          {calLoading ? "Loading…" : "Connect & load events"}
+        </button>
+        {calMsg && <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.6 }}>{calMsg}</p>}
+        {calEvents.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            {calEvents.slice(0, 12).map((ev, i) => (
+              <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid var(--rule)" }}>
+                <p style={{ fontSize: 14, color: "var(--ink)", fontFamily: "'Playfair Display', serif" }}>{ev.title}</p>
+                <p className="caption">{new Date(ev.start).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* About */}
       <div style={{ marginBottom: 32 }}>

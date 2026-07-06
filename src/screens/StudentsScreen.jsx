@@ -225,7 +225,7 @@ function StudentDetail({ student, onBack, onAddNarration, onDelete }) {
 }
 
 // ─── STUDENTS SCREEN ──────────────────────────────────────────────────────────
-export default function StudentsScreen() {
+export default function StudentsScreen({ onNavigate, settings }) {
   const [students, setStudents]     = useState(SEED_STUDENTS);
   const [activeIdx, setActiveIdx]   = useState(null);
   const [showAdd, setShowAdd]       = useState(false);
@@ -258,6 +258,10 @@ export default function StudentsScreen() {
 
   return (
     <div className="screen">
+      <button onClick={() => onNavigate("home")}
+        style={{ background: "none", border: "none", cursor: "pointer", color: "var(--sage)", fontSize: 13, letterSpacing: ".08em", textTransform: "uppercase", fontFamily: "'Lato', sans-serif", marginBottom: 24, display: "flex", alignItems: "center", gap: 6 }}>
+        ← Home
+      </button>
       <p className="eyebrow" style={{ marginBottom: 6 }}>Family</p>
       <h1 className="display serif" style={{ marginBottom: 24 }}>Students</h1>
 
