@@ -1,0 +1,82 @@
+// src/components/TodayAppointments.jsx
+//
+// Shows the day's appointments from a connected calendar (Apple, Google,
+// or any public iCal link saved in Settings). Read-only, quiet, and cached
+// for six hours so we're gentle on the calendar server.
+
+import { useState, useEffect } from "react";
+
+const URL_KEY = "tend_ics_url";
+const CACHE_KEY = "tend_ics_cache";
+const CACHE_HOURS = 6;
+
+function timeLabel(iso) {
+  const d = new Date(iso);
+  let h = d.getHours() % 12; if (h === 0) h = 12;
+  const m = String(d.getMinutes()).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
+async function loadEvents() {
+  const url = localStorage.getItem(URL_KEY);
+  if (!url) return null;
+  try {
+    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+    if (cached && cached.url === url && Date.now() - cached.ts < CACHE_HOURS * 3600000) {
+      return cached.events;
+    }
+  } catch {}
+  try {
+    const res = await fetch("/.netlify/functions/sync-calendar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, days: 14 }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ url, ts: Date.now(), events: data.events || [] }));
+    return data.events || [];
+  } catch {
+    return null;
+  }
+}
+
+export default function TodayAppointments({ viewDate }) {
+  const [events, setEvents] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    loadEvents().then(evs => { if (alive) setEvents(evs); });
+    return () => { alive = false; };
+  }, []);
+
+  if (!events || !events.length) return null;
+
+  const day = viewDate ? new Date(viewDate) : new Date();
+  const dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+  const todays = events.filter(e => {
+    const d = new Date(e.start);
+    const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    return k === dayKey;
+  });
+
+  if (!todays.length) return null;
+
+  return (
+    <div style={{ marginBottom: 22, padding: "12px 16px", background: "var(--cream)", border: "1px solid var(--rule)", borderLeft: "3px solid var(--gold)", borderRadius: 3 }}>
+      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--gold)", margin: "0 0 8px" }}>
+        On the calendar
+      </p>
+      {todays.map((e, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: i === todays.length - 1 ? 0 : 6 }}>
+          <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 12, color: "var(--ink-faint)", width: 44, flexShrink: 0, textAlign: "right" }}>
+            {timeLabel(e.start)}
+          </span>
+          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 14.5, color: "var(--ink)", lineHeight: 1.4 }}>
+            {e.title}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}

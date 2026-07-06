@@ -2,6 +2,7 @@ import SummerRhythm, { HabitFocus } from "../components/SummerRhythm";
 import MorningPlan from "../components/MorningPlan";
 import LunchIdea from "../components/LunchIdea";
 import SummerRest from "../components/SummerRest";
+import TodayAppointments from "../components/TodayAppointments";
 import { useState, useRef, useEffect } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm, NATURE_DAYS, NATURE_LOOP_STEPS, getNatureLoopStep, advanceNatureLoop } from "../data/seed";
 import {
@@ -910,6 +911,7 @@ export default function HomeScreen({ onNavigate, settings }) {
         </p>
       )}
 
+      <TodayAppointments viewDate={viewDate} />
       {isSummer ? (
         <>
           {isToday && <SummerRest />}
