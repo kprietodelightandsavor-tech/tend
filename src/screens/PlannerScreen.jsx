@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, COOP_DAY_TEMPLATE, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
+import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, COOP_DAY_TEMPLATE, COOP_HALF_TEMPLATE, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { PremiumModal } from "./HomeScreen";
 import { saveScheduleDay, seedScheduleIfEmpty, resetScheduleToDefault } from "../lib/db";
 import { createPortal } from "react-dom";
@@ -588,18 +588,26 @@ export default function PlannerScreen({ settings }) {
                 <WeekendRhythmView day={activeDay} week={week} />
               ) : (
                 <>
-                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 16 }}>
-                    <button
-                      onClick={() => {
-                        const isCoop = (schedule[activeDay] || []).some(b => String(b.subject).toLowerCase().includes("co-op"));
-                        const source = isCoop ? DAY_SCHEDULE[activeDay] || [] : COOP_DAY_TEMPLATE;
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+                    {(() => {
+                      const applyDay = (source) => {
                         const blocks = normalizeDay(source.map((b, i) => ({ ...b, id: `${activeDay}-sw-${Date.now()}-${i}` })));
                         setSchedule(prev => ({ ...prev, [activeDay]: blocks }));
                         persistDay(activeDay, blocks);
-                      }}
-                      style={{ display: "flex", alignItems: "center", gap: 6, background: (schedule[activeDay] || []).some(b => String(b.subject).toLowerCase().includes("co-op")) ? "var(--sage-bg)" : "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "6px 12px", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
-                      {(schedule[activeDay] || []).some(b => String(b.subject).toLowerCase().includes("co-op")) ? "↺ Rhythm day" : "Co-op day"}
-                    </button>
+                      };
+                      const isCoop = (schedule[activeDay] || []).some(b => String(b.subject).toLowerCase().includes("co-op"));
+                      const btnStyle = { display: "flex", alignItems: "center", gap: 6, background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "6px 12px", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" };
+                      return isCoop ? (
+                        <button onClick={() => applyDay(DAY_SCHEDULE[activeDay] || [])} style={{ ...btnStyle, background: "var(--sage-bg)" }}>
+                          ↺ Rhythm day
+                        </button>
+                      ) : (
+                        <>
+                          <button onClick={() => applyDay(COOP_DAY_TEMPLATE)} style={btnStyle}>Co-op day</button>
+                          <button onClick={() => applyDay(COOP_HALF_TEMPLATE)} style={btnStyle}>½ Co-op</button>
+                        </>
+                      );
+                    })()}
                     <button onClick={() => setCopyingDay(true)}
                       style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "1px solid var(--rule)", borderRadius: 2, padding: "6px 12px", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
                       <Icon.Copy /> Copy {activeDay}
