@@ -686,7 +686,7 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
 // ─── BLOOM EFFECT (nature study completion) ──────────────────────────
 function BloomEffect({ show }) {
   if (!show) return null;
-  const palette = ["#93A388", "#8FA374", "#C29B61", "#D4A574", "#E8C39E"];
+  const palette = ["#93A388", "#8FA374", "#C49A4E", "#D4A574", "#E8C39E"];
   const flowers = Array.from({ length: 10 }, (_, i) => ({
     id: i,
     left: Math.random() * 85 + 7,
@@ -742,7 +742,7 @@ function WatercolorWash({ show }) {
   if (!show) return null;
   const palette = [
     "#93A388", // sage
-    "#C29B61", // amber
+    "#C49A4E", // amber
     "#B5C7CC", // soft sky
     "#C49E97", // dusty rose
     "#D4A574", // gold
@@ -1328,7 +1328,7 @@ export function HabitFocus() {
               margin: "14px 0 0",
               padding: "10px 12px",
               background: "rgba(195, 155, 97, 0.10)",
-              borderLeft: "2px solid #C29B61",
+              borderLeft: "2px solid #C49A4E",
               borderRadius: "0 4px 4px 0",
             }}>
               <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "#A07F4C", margin: "0 0 4px" }}>

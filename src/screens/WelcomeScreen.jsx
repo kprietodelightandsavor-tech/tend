@@ -33,8 +33,8 @@ function TendLogo({ size = 56 }) {
 // ─── ACCURATE APP PREVIEW ─────────────────────────────────────────────────────
 function AppPreview() {
   const blocks = [
-    { time: "8:00",  subject: "Morning Focus",   color: "#C29B61", done: true },
-    { time: "9:00",  subject: "Morning Basket", color: "#C29B61", done: true },
+    { time: "8:00",  subject: "Morning Focus",   color: "#C49A4E", done: true },
+    { time: "9:00",  subject: "Morning Basket", color: "#C49A4E", done: true },
     { time: "9:45",  subject: "Narration",       color: "#93A388", done: false },
     { time: "10:30", subject: "Mathematics",     color: "#7a8f9e", done: false },
     { time: "11:15", subject: "Nature Study",    color: "#93A388", done: false },

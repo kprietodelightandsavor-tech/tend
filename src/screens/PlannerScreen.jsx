@@ -342,7 +342,7 @@ function CopyDaySheet({ fromDay, onCopy, onClose }) {
 function WeekGrid({ schedule, onDayTap, todayDay }) {
   const getBlockColor = (subject) => {
     const s = subject.toLowerCase();
-    if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("morning")) return "#C29B61";
+    if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("morning")) return "#C49A4E";
     if (s.includes("nature") || s.includes("outdoor") || s.includes("narration")) return "#93A388";
     if (s.includes("co-op") || s.includes("chispa")) return "#C2876F";
     if (s.includes("lunch") || s.includes("free") || s.includes("rest")) return "#9a9488";
@@ -402,8 +402,6 @@ export default function PlannerScreen({ settings }) {
   const [editingBlock, setEditingBlock] = useState(null);
   const [addingAfterIdx, setAddingAfterIdx] = useState(null);
   const [copyingDay, setCopyingDay]     = useState(false);
-
-  const userId = settings?.userId;
 
   const [schedule, setSchedule] = useState(() => {
     const s = {};
@@ -498,7 +496,7 @@ export default function PlannerScreen({ settings }) {
 
   const getBlockColor = (subject) => {
     const s = subject.toLowerCase();
-    if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("morning")) return "#C29B61";
+    if (s.includes("rise") || s.includes("bible") || s.includes("memory") || s.includes("morning")) return "#C49A4E";
     if (s.includes("nature") || s.includes("outdoor") || s.includes("narration")) return "#93A388";
     if (s.includes("co-op") || s.includes("chispa")) return "#C2876F";
     if (s.includes("lunch") || s.includes("free") || s.includes("rest")) return "#9a9488";

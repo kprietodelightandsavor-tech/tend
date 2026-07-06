@@ -2,7 +2,7 @@ import { useState } from "react";
 import SproutMark from "../components/SproutMark";
 
 const GRADES = ["K", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th"];
-const COLORS  = ["#7E9B84", "#C49A4E", "#C2876F", "#6B8E9E", "#9E6B6B", "#7A9E8E", "#8E8A6B"];
+const COLORS  = ["#7E9B84", "#C49A4E", "#C2876F", "#6E8C88", "#9E6B6B", "#7E9B84", "#8E8A6B"];
 const HABITS  = [
   { key: "attention", label: "Attention",   desc: "Training the mind to focus fully on what is before it." },
   { key: "narration", label: "Narration",   desc: "Telling back in your own words — the act of knowing." },

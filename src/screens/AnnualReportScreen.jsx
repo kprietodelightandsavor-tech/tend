@@ -8,7 +8,7 @@ function getSchoolYear() {
 }
 
 function StatusDot({ status }) {
-  const colors = { strong: "#93A388", adequate: "#C29B61", light: "#C0847A" };
+  const colors = { strong: "#93A388", adequate: "#C49A4E", light: "#C0847A" };
   return <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: colors[status] || "#ccc", marginRight: 6, flexShrink: 0, marginTop: 4 }} />;
 }
 
@@ -53,7 +53,7 @@ function printReport(data, students) {
     .eval-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start;}
     .eval-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
     .eval-dot.strong{background:#93A388;}
-    .eval-dot.adequate{background:#C29B61;}
+    .eval-dot.adequate{background:#C49A4E;}
     .eval-dot.light{background:#C0847A;}
     .eval-content{flex:1;}
     .eval-label{font-family:'Playfair Display',serif;font-size:12px;color:#2B2724;margin-bottom:3px;}
