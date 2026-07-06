@@ -1560,50 +1560,15 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
         </>
       )}
 
-      {/* ── HEADER ── */}
-      <div style={{ textAlign: "center", marginBottom: 6 }}>
-        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 23, fontWeight: 400, letterSpacing: ".18em", margin: "0 0 5px", color: "var(--ink)" }}>
-          SUMMER RHYTHM
-        </h2>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", margin: "0 0 14px" }}>
-          a gentle shape for our days
-        </p>
-        <div style={{ display: "flex", justifyContent: "center", gap: 6, flexWrap: "wrap" }}>
-          {["inspire wonder", "connection", "restoration"].map((v) => (
-            <span
-              key={v}
-              style={{
-                fontFamily: "'Lato', sans-serif",
-                fontSize: 9,
-                letterSpacing: ".08em",
-                color: "var(--sage)",
-                background: "var(--sage-bg)",
-                border: "0.5px solid var(--sage-md)",
-                borderRadius: 11,
-                padding: "3px 10px",
-              }}
-            >
-              {v}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* ── HABIT FOCUS (term + month + lesson) ── */}
-      <div style={{ marginTop: 22 }}>
-        <HabitFocus />
-      </div>
-
-      {/* ── DAILY RHYTHM eyebrow ── */}
-      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".16em", textTransform: "lowercase", color: "var(--ink-faint)", margin: "26px 0 2px" }}>
-        our daily rhythm
+      {/* ── HEADER — one quiet line; summer needs less interface, not more ── */}
+      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--sage)", margin: "0 0 14px", textAlign: "center" }}>
+        Summer Rhythm
       </p>
+      {/* Habit focus lives on the Habits screen in summer — the day stays light */}
 
       {/* ── MORNING ── */}
       <RhythmSection marker={SunriseMarker} title="Morning" showLine>
-        <p style={rhythmItemStyle}>Slow beginnings</p>
-        <p style={rhythmItemStyle}>Care for our home</p>
-        <p style={rhythmItemStyle}>Outside early</p>
+        <p style={rhythmItemStyle}>Slow start · home cared for · outside before the heat</p>
 
         {isVolunteerTue && (
           <div style={{
@@ -1627,26 +1592,16 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
         )}
 
         <ReadingAndLearning userId={userId} today={dayName} viewDate={viewDate} isToday={isToday} isNatureDay={isNatureDay} />
-
-        <p style={{ ...rhythmItemStyle, margin: "4px 0 0" }}>Lunch together</p>
       </RhythmSection>
 
       {/* ── AFTERNOON ── */}
       <RhythmSection marker={SunMarker} title="Afternoon" showLine>
-        <p style={rhythmItemStyle}>Play &middot; Projects &middot; Adventure</p>
-        <p style={rhythmItemStyle}>Friends are welcome</p>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13.5, lineHeight: 1.65, color: "var(--ink-faint)", margin: "7px 0 2px" }}>
-          Room for wandering, library days, errands, and ordinary life.
-        </p>
+        <p style={rhythmItemStyle}>Play · adventure · friends welcome — room for ordinary life</p>
       </RhythmSection>
 
       {/* ── EVENING ── */}
       <RhythmSection marker={MoonMarker} title="Evening" showLine={false}>
-        <p style={rhythmItemStyle}>Dinner together</p>
-        <p style={rhythmItemStyle}>Outside at dusk</p>
-        <p style={rhythmItemStyle}>Quiet hours</p>
-        <p style={rhythmItemStyle}>Read-alouds or family TV</p>
-        <p style={rhythmItemStyle}>Rest</p>
+        <p style={rhythmItemStyle}>Dinner together · dusk outside · quiet · rest</p>
       </RhythmSection>
 
       {/* ── SCREENS — standalone card, always visible ── */}
