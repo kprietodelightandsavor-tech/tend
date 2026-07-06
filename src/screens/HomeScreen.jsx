@@ -917,29 +917,36 @@ export default function HomeScreen({ onNavigate, settings }) {
       ) : (
         <>
           {isToday && <MorningPlan />}
-          {/* Evening Close prompt — appears from 3pm; disappears once today is kept */}
-          {isToday && new Date().getHours() >= 15 && !(() => {
+          {/* Evening Close prompt — appears from 3pm; softens (but stays) once today is kept */}
+          {isToday && new Date().getHours() >= 15 && (() => {
+            let keptToday = false;
             try {
               const all = JSON.parse(localStorage.getItem("tend_evening_close")) || {};
               const d = new Date();
               const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-              return !!all[k];
-            } catch { return false; }
-          })() && (
-            <button onClick={() => onNavigate("evening-close")}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                width: "100%", padding: "14px 16px", marginBottom: 24,
-                background: "var(--gold-bg)", border: "1px solid var(--rule)",
-                borderRadius: 3, cursor: "pointer", textAlign: "left",
-              }}>
-              <span>
-                <span style={{ display: "block", fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 2 }}>Close the day</span>
-                <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)" }}>thirty seconds of keeping, then rest</span>
-              </span>
-              <span style={{ color: "var(--gold)", fontSize: 16 }}>→</span>
-            </button>
-          )}
+              keptToday = !!all[k];
+            } catch {}
+            return (
+              <button onClick={() => onNavigate("evening-close")}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  width: "100%", padding: keptToday ? "10px 16px" : "14px 16px", marginBottom: 24,
+                  background: keptToday ? "transparent" : "var(--gold-bg)",
+                  border: `1px solid ${keptToday ? "var(--rule)" : "var(--rule)"}`,
+                  borderRadius: 3, cursor: "pointer", textAlign: "left",
+                }}>
+                <span>
+                  <span style={{ display: "block", fontFamily: "'Playfair Display', serif", fontSize: keptToday ? 14 : 16, color: keptToday ? "var(--ink-faint)" : "var(--ink)", marginBottom: 2 }}>
+                    {keptToday ? "The day is kept" : "Close the day"}
+                  </span>
+                  <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)" }}>
+                    {keptToday ? "tap to add what happened since" : "thirty seconds of keeping, then rest"}
+                  </span>
+                </span>
+                <span style={{ color: keptToday ? "var(--sage)" : "var(--gold)", fontSize: 16 }}>{keptToday ? "✓" : "→"}</span>
+              </button>
+            );
+          })()}
           {/* CM quote (school year only; summer renders inside SummerRhythm) */}
           {isToday && (
             <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>

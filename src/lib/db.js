@@ -133,3 +133,21 @@ export async function seedScheduleIfEmpty(userId, defaultSchedule) {
   if (error) console.error('seedScheduleIfEmpty:', error);
   return await getScheduleBlocks(userId);
 }
+
+export async function resetScheduleToDefault(userId, defaultSchedule) {
+  // wipe the stored week and re-seed from the app's current default rhythm
+  await supabase.from('schedule_blocks').delete().eq('user_id', userId);
+  const rows = [];
+  Object.entries(defaultSchedule).forEach(([day, blocks]) => {
+    blocks.forEach((b, i) => rows.push({
+      user_id: userId, day,
+      subject: b.subject || 'Untitled',
+      time: b.time || '',
+      note: b.note || '',
+      sort_order: i,
+    }));
+  });
+  const { error } = await supabase.from('schedule_blocks').insert(rows);
+  if (error) console.error('resetScheduleToDefault:', error);
+  return await getScheduleBlocks(userId);
+}

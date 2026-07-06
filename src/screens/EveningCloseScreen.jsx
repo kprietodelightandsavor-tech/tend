@@ -81,6 +81,10 @@ export default function EveningCloseScreen({ onNavigate }) {
         <button className="btn-sage" style={{ maxWidth: 240, margin: "0 auto" }} onClick={() => onNavigate("home")}>
           Goodnight →
         </button>
+        <button onClick={() => setKept(false)}
+          style={{ background: "none", border: "none", cursor: "pointer", marginTop: 18, fontSize: 11, color: "var(--ink-faint)", fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase" }}>
+          ← something happened since — adjust the day
+        </button>
       </div>
     );
   }

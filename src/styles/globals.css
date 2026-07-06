@@ -23,8 +23,8 @@
 
   /* Layout widths */
   --shell-width:   430px;
-  --shell-tablet:  680px;
-  --shell-desktop: 860px;
+  --shell-tablet:  820px;
+  --shell-desktop: 1200px;
   --nav-width:     220px;
 }
 

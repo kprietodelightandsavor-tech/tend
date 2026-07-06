@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { PremiumModal } from "./HomeScreen";
-import { saveScheduleDay, seedScheduleIfEmpty } from "../lib/db";
+import { saveScheduleDay, seedScheduleIfEmpty, resetScheduleToDefault } from "../lib/db";
 import { createPortal } from "react-dom";
 
 const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -605,9 +605,17 @@ export default function PlannerScreen({ settings }) {
                   {dayBlocks.map((b, idx) => (
                     <div key={b.id}>
                       <div className="planner-block" style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 2, paddingTop: 2 }}>
-                          <button onClick={() => moveBlock(idx, -1)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, opacity: idx === 0 ? 0.2 : 1 }}><Icon.Up /></button>
-                          <button onClick={() => moveBlock(idx, 1)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, opacity: idx === dayBlocks.length - 1 ? 0.2 : 1 }}><Icon.Down /></button>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingTop: 2 }}>
+                          <button onClick={() => moveBlock(idx, -1)} disabled={idx === 0}
+                            aria-label="Move up"
+                            style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: idx === 0 ? 0.25 : 1, touchAction: "manipulation" }}>
+                            <Icon.Up />
+                          </button>
+                          <button onClick={() => moveBlock(idx, 1)} disabled={idx === dayBlocks.length - 1}
+                            aria-label="Move down"
+                            style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: idx === dayBlocks.length - 1 ? 0.25 : 1, touchAction: "manipulation" }}>
+                            <Icon.Down />
+                          </button>
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
@@ -626,6 +634,31 @@ export default function PlannerScreen({ settings }) {
                       </button>
                     </div>
                   ))}
+
+                  {/* Reset to the app's default six-block rhythm */}
+                  <div style={{ marginTop: 28, paddingTop: 18, borderTop: "1px solid var(--rule)", textAlign: "center" }}>
+                    <button
+                      onClick={async () => {
+                        if (!userId) return;
+                        const sure = window.confirm("Replace your whole week with the default six-block rhythm? Your current schedule will be overwritten.");
+                        if (!sure) return;
+                        const rows = await resetScheduleToDefault(userId, DAY_SCHEDULE);
+                        const s = {};
+                        DAYS.forEach(d => { s[d] = []; });
+                        rows.forEach(r => {
+                          if (!s[r.day]) s[r.day] = [];
+                          s[r.day].push({ id: r.id, subject: r.subject, time: r.time || "", note: r.note || "" });
+                        });
+                        DAYS.forEach(d => { s[d] = normalizeDay(s[d] || []); });
+                        setSchedule(prev => ({ ...prev, ...s }));
+                      }}
+                      style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, color: "var(--ink-faint)", fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase" }}>
+                      ↺ Reset week to the default rhythm
+                    </button>
+                    <p className="caption italic" style={{ marginTop: 6 }}>
+                      Morning focus · together time · the feast before lunch · afternoon focus · occupations
+                    </p>
+                  </div>
                 </>
               )}
               </>
