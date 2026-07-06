@@ -352,10 +352,11 @@ export const getSundayRhythm = (week = 1) =>
   SUNDAY_RHYTHMS[(week - 1) % SUNDAY_RHYTHMS.length];
 
 // ─── NATURE STUDY ─────────────────────────────────────────────────────────────
+// Nature Study lives on Tuesdays and Fridays.
 export const NATURE_DAYS = {
-  Monday:    true,
-  Tuesday:   false,
-  Wednesday: true,
+  Monday:    false,
+  Tuesday:   true,
+  Wednesday: false,
   Thursday:  false,
   Friday:    true,
   Saturday:  false,
