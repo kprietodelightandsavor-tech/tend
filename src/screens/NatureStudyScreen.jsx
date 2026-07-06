@@ -66,16 +66,54 @@ const CURRICULUM = {
   },
 };
 
+// ── season-aware pacing ──────────────────────────────────────────────────────
+// Your topic never changes on its own within a season - work at your own pace.
+// When the season outside turns, the app gently turns the page with it:
+// it advances to the first topic of the new season (flipping to the other
+// year of the rotation each time winter becomes spring).
+function seasonOf(d = new Date()) {
+  const m = d.getMonth(); // 0-11
+  if (m >= 2 && m <= 4) return "spring";
+  if (m >= 5 && m <= 7) return "summer";
+  if (m >= 8 && m <= 10) return "autumn";
+  return "winter";
+}
+
+function yearKeyOfTopic(topic) {
+  return topic?.id?.startsWith("y2") ? "year2" : "year1";
+}
+
+function persistNature(topic, season) {
+  try {
+    localStorage.setItem(NATURE_STORAGE_KEY, JSON.stringify({ topic, season, yearKey: yearKeyOfTopic(topic) }));
+  } catch {}
+}
+
 function getCurrentTopic() {
+  const cur = seasonOf();
   try {
     const saved = JSON.parse(localStorage.getItem(NATURE_STORAGE_KEY) || "null");
-    if (saved?.id) return saved;
+    if (saved?.topic?.id) {
+      // same season -> stay exactly where you left off
+      if (saved.season === cur) return saved.topic;
+      // season changed -> turn the page to the new season's first topic
+      let yearKey = saved.yearKey || yearKeyOfTopic(saved.topic);
+      if (saved.season === "winter" && cur === "spring") {
+        yearKey = yearKey === "year1" ? "year2" : "year1"; // rotate years each spring
+      }
+      const topics = (CURRICULUM[yearKey] && CURRICULUM[yearKey][cur]) || CURRICULUM.year1[cur];
+      const next = topics[0];
+      persistNature(next, cur);
+      return next;
+    }
   } catch {}
-  return CURRICULUM.year1.spring[0];
+  const first = CURRICULUM.year1[cur][0];
+  persistNature(first, cur);
+  return first;
 }
 
 function setCurrentTopic(topic) {
-  try { localStorage.setItem(NATURE_STORAGE_KEY, JSON.stringify(topic)); } catch {}
+  persistNature(topic, seasonOf());
 }
 
 const WEEKLY_STEPS = [

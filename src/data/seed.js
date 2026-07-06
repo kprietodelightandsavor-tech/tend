@@ -462,3 +462,14 @@ export function getBeautyForBlock(subject, today, week) {
   }
   return null;
 }
+
+// ─── CO-OP DAY TEMPLATE ───────────────────────────────────────────────────────
+// One tap in the Planner turns any weekday into this shape; one tap restores
+// the default rhythm. Edit freely — it is a starting point, not a rule.
+export const COOP_DAY_TEMPLATE = [
+  { subject: "Morning Focus Time",          time: "7:30",  note: "Quiet own work — pack and go", free: true, riseShine: true },
+  { subject: "Family Start · Together Time", time: "8:45",  note: "Bible & read aloud — the car counts" },
+  { subject: "Co-op Day",                    time: "9:50",  note: "All morning — lessons live at co-op today" },
+  { subject: "Afternoon Occupations",        time: "2:30",  note: "Rest, outside time, errands on the way home", free: true },
+  { subject: "House Reset & Animal Chores",  time: "4:30",  note: "", free: true },
+];

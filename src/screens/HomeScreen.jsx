@@ -916,7 +916,7 @@ export default function HomeScreen({ onNavigate, settings }) {
         />
       ) : (
         <>
-          {isToday && <MorningPlan />}
+          {isToday && <MorningPlan blocks={todayBlocks} />}
           {/* Evening Close prompt — appears from 3pm; softens (but stays) once today is kept */}
           {isToday && new Date().getHours() >= 15 && (() => {
             let keptToday = false;

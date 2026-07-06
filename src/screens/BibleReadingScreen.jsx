@@ -31,10 +31,11 @@ export default function BibleReadingScreen({ onNavigate, settings }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Try to fetch from API.Bible if key exists
-    if (process.env.VITE_BIBLE_API_KEY) {
+    // Try to fetch from API.Bible if key exists (Vite exposes env via import.meta.env, not process.env)
+    const apiKey = import.meta.env.VITE_BIBLE_API_KEY;
+    if (apiKey) {
       fetch(`https://api.api.bible/v1/bibles/de4e12af7f28f599-01/search?query=${encodeURIComponent(verseData.ref)}`, {
-        headers: { "api-key": process.env.VITE_BIBLE_API_KEY }
+        headers: { "api-key": apiKey }
       })
       .then(r => r.json())
       .then(data => {
