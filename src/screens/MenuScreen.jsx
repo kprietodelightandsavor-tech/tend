@@ -22,6 +22,10 @@ function TendMark() {
   );
 }
 
+// Where to buy the TEND Keeping Journal — paste your shop link between the quotes
+// when the journal is listed (e.g. your Etsy or website product page).
+const JOURNAL_URL = "";
+
 // Everything that isn't Home or Planner, in four calm groups.
 const GROUPS = [
   {
@@ -44,6 +48,7 @@ const GROUPS = [
   {
     heading: "Records & Keepsakes",
     items: [
+      { title: "Evening Close",   sub: "Thirty seconds of keeping",      screen: "evening-close" },
       { title: "Teaching Record", sub: "What we taught, week by week",   screen: "teachinglog" },
       { title: "Annual Report",   sub: "CM transcript & evaluation",     screen: "annualreport" },
       { title: "Memory Book",     sub: "The year in images & moments",   screen: "memory-book" },
@@ -107,6 +112,42 @@ export default function MenuScreen({ onNavigate }) {
         <p className="eyebrow" style={{ marginBottom: 16, textAlign: "center" }}>
           Also from Delight & Savor
         </p>
+
+        {/* TEND Keeping Journal — paste your shop link into JOURNAL_URL below when it's listed */}
+        <a
+          href={JOURNAL_URL || undefined}
+          target={JOURNAL_URL ? "_blank" : undefined}
+          rel="noopener noreferrer"
+          style={{ textDecoration: "none", display: "block", marginBottom: 12, cursor: JOURNAL_URL ? "pointer" : "default" }}
+        >
+          <div style={{
+            display: "flex", alignItems: "center", gap: 14,
+            padding: "14px 16px",
+            background: "var(--gold-bg)",
+            border: "1px solid var(--rule)",
+            borderRadius: 3,
+          }}>
+            <img
+              src="/ds_icon.png"
+              alt="TEND Keeping Journal"
+              style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0, objectFit: "cover" }}
+            />
+            <div style={{ flex: 1 }}>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: "var(--ink)", marginBottom: 3 }}>
+                TEND · The Keeping Journal
+              </p>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, fontStyle: "italic", color: "var(--ink-faint)", lineHeight: 1.5 }}>
+                The paper half of Tend — the app plans, the journal keeps. For GoodNotes or print.
+              </p>
+            </div>
+            {!JOURNAL_URL && (
+              <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--gold)", whiteSpace: "nowrap" }}>
+                coming soon
+              </span>
+            )}
+          </div>
+        </a>
+
         <a
           href="https://in-the-margin.netlify.app"
           target="_blank"
