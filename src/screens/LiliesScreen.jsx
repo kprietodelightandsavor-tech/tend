@@ -8,8 +8,8 @@ const Icon = {
   X: () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
   Camera: () => (<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>),
   Print: () => (<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>),
-  Leaf: () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>),
-  Book: () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#B8935A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>),
+  Leaf: () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>),
+  Book: () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#C49A4E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>),
   ExternalLink: () => (<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>),
   Home: () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>),
   Lock: () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>),
@@ -20,7 +20,7 @@ const LAYER_TWO_CRUMBS = ["What is the one thing from today you keep returning t
 const LAYER_THREE_CRUMBS = ["What question does this moment open in you? You don't have to answer it.", "Does this connect to anything you've been reading? A line from Scripture?", "Where do you see grace in this moment?", "What do you want to say thank you for?"];
 
 const buildOwners = () => {
-  const mother = { id: "mother", name: "Kim", color: "#8A9E89", initial: "K" };
+  const mother = { id: "mother", name: "Kim", color: "#7E9B84", initial: "K" };
   const students = STUDENTS.map(s => ({ id: `student-${s.id}`, name: s.name, color: s.color, initial: s.initial }));
   return [mother, ...students];
 };
@@ -28,7 +28,7 @@ const buildOwners = () => {
 function TypeBadge({ type }) {
   const isDaily = type === "daily";
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", fontFamily: "'Lato', sans-serif", color: isDaily ? "var(--sage)" : "var(--gold)", border: `1px solid ${isDaily ? "var(--sage-md)" : "#D4B07A"}`, borderRadius: 2, padding: "2px 7px" }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", fontFamily: "'Lato', sans-serif", color: isDaily ? "var(--sage)" : "var(--gold)", border: `1px solid ${isDaily ? "var(--sage-md)" : "#D9C8B0"}`, borderRadius: 2, padding: "2px 7px" }}>
       {isDaily ? <Icon.Leaf /> : <Icon.Book />}
       {isDaily ? "Daily" : "Commonplace"}
     </span>
@@ -81,7 +81,7 @@ function SketchBox({ image, onUpload, subject }) {
 function printEntry(entry, ownerName) {
   const win = window.open("", "_blank");
   const layerHtml = entry.type === "daily" ? `<div class="layer"><h3>Layer One</h3><p>${(entry.layer1||"").replace(/\n/g,"<br/>")}</p></div><div class="layer"><h3>Layer Two</h3><p>${(entry.layer2||"").replace(/\n/g,"<br/>")}</p></div><div class="layer"><h3>Layer Three</h3><p>${(entry.layer3||"").replace(/\n/g,"<br/>")}</p></div>` : `<div class="quote-block"><p class="quote">"${entry.quote||""}"</p><p class="source">— ${entry.source||""}</p></div><div class="layer"><h3>Response</h3><p>${(entry.response||"").replace(/\n/g,"<br/>")}</p></div>`;
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Consider the Lilies</title><style>body{font-family:Georgia,serif;max-width:580px;margin:60px auto;color:#2C2A27;padding:0 24px;}h1{font-size:28px;font-weight:400;}p{font-size:17px;line-height:1.85;color:#6B6760;font-style:italic;}.quote{font-size:20px;}.source{font-size:13px;color:#A8A49E;font-style:normal;}hr{border:none;border-top:1px solid #DDD8CF;margin:40px 0;}</style></head><body><p style="font-size:12px;color:#A8A49E;letter-spacing:.1em;text-transform:uppercase;">Consider the Lilies · ${ownerName} · ${entry.date}</p><h1>${entry.type==="daily"?"Daily Entry":"Commonplace"}</h1><hr/>${layerHtml}<hr/><p style="font-size:11px;color:#A8A49E;text-align:center;font-style:normal;">Delight & Savor · Consider the Lilies</p></body></html>`);
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Consider the Lilies</title><style>body{font-family:Georgia,serif;max-width:580px;margin:60px auto;color:#2B2724;padding:0 24px;}h1{font-size:28px;font-weight:400;}p{font-size:17px;line-height:1.85;color:#6B6760;font-style:italic;}.quote{font-size:20px;}.source{font-size:13px;color:#A8A49E;font-style:normal;}hr{border:none;border-top:1px solid #CBC2B4;margin:40px 0;}</style></head><body><p style="font-size:12px;color:#A8A49E;letter-spacing:.1em;text-transform:uppercase;">Consider the Lilies · ${ownerName} · ${entry.date}</p><h1>${entry.type==="daily"?"Daily Entry":"Commonplace"}</h1><hr/>${layerHtml}<hr/><p style="font-size:11px;color:#A8A49E;text-align:center;font-style:normal;">Delight & Savor · Consider the Lilies</p></body></html>`);
   win.document.close(); win.print();
 }
 
@@ -241,7 +241,7 @@ export default function LiliesScreen({ settings, onNavigate }) {
           {isAtLimit ? <Icon.Lock /> : <Icon.Plus />} Daily Entry
         </button>
         <button onClick={() => isAtLimit ? null : setView("new-commonplace")} disabled={isAtLimit}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: isAtLimit ? "rgba(0,0,0,.03)" : "var(--gold-bg)", border: `1px solid ${isAtLimit ? "var(--rule)" : "#D4B07A"}`, borderRadius: 2, padding: "11px 0", cursor: isAtLimit ? "default" : "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: isAtLimit ? "var(--ink-faint)" : "var(--gold)", opacity: isAtLimit ? 0.6 : 1 }}>
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: isAtLimit ? "rgba(0,0,0,.03)" : "var(--gold-bg)", border: `1px solid ${isAtLimit ? "var(--rule)" : "#D9C8B0"}`, borderRadius: 2, padding: "11px 0", cursor: isAtLimit ? "default" : "pointer", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: isAtLimit ? "var(--ink-faint)" : "var(--gold)", opacity: isAtLimit ? 0.6 : 1 }}>
           {isAtLimit ? <Icon.Lock /> : <Icon.Plus />} Commonplace
         </button>
       </div>

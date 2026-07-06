@@ -54,7 +54,7 @@ function NatureIdeaCard({ isPaid, onShowPremium }) {
         <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.8, marginBottom: 12 }}>
           Find one living thing and observe it for two full minutes before writing or sketching anything.
         </p>
-        <div style={{ height: 1, background: "#D4B07A", opacity: .3, marginBottom: 12 }} />
+        <div style={{ height: 1, background: "#D9C8B0", opacity: .3, marginBottom: 12 }} />
         <p className="caption italic" style={{ marginBottom: 10 }}>
           Unlock daily rotating nature ideas — observation, sketching, wonder, and nature journal prompts — with Tend Premium.
         </p>

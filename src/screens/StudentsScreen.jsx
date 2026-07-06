@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Ic } from "../components/Icons";
 
-const COLORS = ["#7A8F6F", "#B8935A", "#8A7A9E", "#6B8E9E", "#9E6B6B", "#7A9E8E"];
+const COLORS = ["#7E9B84", "#C49A4E", "#C2876F", "#6B8E9E", "#9E6B6B", "#7A9E8E"];
 const GRADES = ["K", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th"];
 
 const NARRATION_STAGES = {
@@ -11,9 +11,9 @@ const NARRATION_STAGES = {
 };
 
 const SEED_STUDENTS = [
-  { id: 1, name: "Nico",   color: "#7A8F6F", initial: "N", grade: "11th", narrations: [{ date: "March 14", text: "Macbeth sees the dagger and isn't sure if it's real. Shakespeare shows how guilt can make you see things that aren't there.", stage: "Frame It", book: "Macbeth" }] },
-  { id: 2, name: "Emma",   color: "#B8935A", initial: "E", grade: "9th",  narrations: [{ date: "March 13", text: "The dagger leads him toward Duncan's room. He knows what he's about to do is wrong but he goes anyway.", stage: "Follow It", book: "Macbeth" }] },
-  { id: 3, name: "Marcos", color: "#8A7A9E", initial: "M", grade: "7th",  narrations: [{ date: "March 12", text: "Macbeth talks to himself a lot. He seems scared of what he's going to do.", stage: "Find It", book: "Macbeth" }] },
+  { id: 1, name: "Nico",   color: "#7E9B84", initial: "N", grade: "11th", narrations: [{ date: "March 14", text: "Macbeth sees the dagger and isn't sure if it's real. Shakespeare shows how guilt can make you see things that aren't there.", stage: "Frame It", book: "Macbeth" }] },
+  { id: 2, name: "Emma",   color: "#C49A4E", initial: "E", grade: "9th",  narrations: [{ date: "March 13", text: "The dagger leads him toward Duncan's room. He knows what he's about to do is wrong but he goes anyway.", stage: "Follow It", book: "Macbeth" }] },
+  { id: 3, name: "Marcos", color: "#C2876F", initial: "M", grade: "7th",  narrations: [{ date: "March 12", text: "Macbeth talks to himself a lot. He seems scared of what he's going to do.", stage: "Find It", book: "Macbeth" }] },
 ];
 
 // ─── ADD STUDENT SHEET ────────────────────────────────────────────────────────
@@ -273,7 +273,7 @@ export default function StudentsScreen() {
               {s.grade} grade · {s.narrations.length} narration{s.narrations.length !== 1 ? "s" : ""}
             </p>
           </div>
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 18l6-6-6-6"/>
           </svg>
         </button>

@@ -239,9 +239,9 @@ export const NARRATION_PROMPTS = [
 ];
 
 export const STUDENTS = [
-  { id: 1, name: "Nico",   color: "#7A8F6F", initial: "N", grade: "11th" },
-  { id: 2, name: "Emma",   color: "#B8935A", initial: "E", grade: "9th"  },
-  { id: 3, name: "Marcos", color: "#8A7A9E", initial: "M", grade: "7th"  },
+  { id: 1, name: "Nico",   color: "#7E9B84", initial: "N", grade: "11th" },
+  { id: 2, name: "Emma",   color: "#C49A4E", initial: "E", grade: "9th"  },
+  { id: 3, name: "Marcos", color: "#C2876F", initial: "M", grade: "7th"  },
 ];
 
 export const STUDENT_NARRATIONS = {

@@ -5,27 +5,27 @@ function TendLogo({ size = 56 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none"
       style={{ display: "block", margin: "0 auto" }}>
-      <circle cx="32" cy="32" r="30" stroke="#A9B786" strokeWidth="1" fill="#F7F4EF"/>
-      <line x1="32" y1="52" x2="32" y2="14" stroke="#A9B786" strokeWidth="1.2" strokeLinecap="round"/>
-      <line x1="32" y1="44" x2="24" y2="40" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="44" x2="40" y2="40" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="38" x2="23" y2="33" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="38" x2="41" y2="33" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="32" x2="24" y2="27" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="32" x2="40" y2="27" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="26" x2="25" y2="21" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="26" x2="39" y2="21" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <circle cx="32" cy="14" r="2" fill="#A9B786"/>
-      <circle cx="24" cy="40" r="1.2" fill="#A9B786"/>
-      <circle cx="40" cy="40" r="1.2" fill="#A9B786"/>
-      <circle cx="23" cy="33" r="1.2" fill="#A9B786"/>
-      <circle cx="41" cy="33" r="1.2" fill="#A9B786"/>
-      <circle cx="24" cy="27" r="1.2" fill="#A9B786"/>
-      <circle cx="40" cy="27" r="1.2" fill="#A9B786"/>
-      <circle cx="25" cy="21" r="1.2" fill="#A9B786"/>
-      <circle cx="39" cy="21" r="1.2" fill="#A9B786"/>
+      <circle cx="32" cy="32" r="30" stroke="#93A388" strokeWidth="1" fill="#F7F3EC"/>
+      <line x1="32" y1="52" x2="32" y2="14" stroke="#93A388" strokeWidth="1.2" strokeLinecap="round"/>
+      <line x1="32" y1="44" x2="24" y2="40" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="44" x2="40" y2="40" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="38" x2="23" y2="33" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="38" x2="41" y2="33" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="32" x2="24" y2="27" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="32" x2="40" y2="27" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="26" x2="25" y2="21" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="26" x2="39" y2="21" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <circle cx="32" cy="14" r="2" fill="#93A388"/>
+      <circle cx="24" cy="40" r="1.2" fill="#93A388"/>
+      <circle cx="40" cy="40" r="1.2" fill="#93A388"/>
+      <circle cx="23" cy="33" r="1.2" fill="#93A388"/>
+      <circle cx="41" cy="33" r="1.2" fill="#93A388"/>
+      <circle cx="24" cy="27" r="1.2" fill="#93A388"/>
+      <circle cx="40" cy="27" r="1.2" fill="#93A388"/>
+      <circle cx="25" cy="21" r="1.2" fill="#93A388"/>
+      <circle cx="39" cy="21" r="1.2" fill="#93A388"/>
       <text x="32" y="58" textAnchor="middle" fontFamily="Georgia, serif" fontSize="5"
-        fill="#A9B786" fontStyle="italic" letterSpacing="0.08em">tend</text>
+        fill="#93A388" fontStyle="italic" letterSpacing="0.08em">tend</text>
     </svg>
   );
 }
@@ -35,9 +35,9 @@ function AppPreview() {
   const blocks = [
     { time: "8:00",  subject: "Rise & Shine",   color: "#C29B61", done: true },
     { time: "9:00",  subject: "Morning Basket", color: "#C29B61", done: true },
-    { time: "9:45",  subject: "Narration",       color: "#A9B786", done: false },
+    { time: "9:45",  subject: "Narration",       color: "#93A388", done: false },
     { time: "10:30", subject: "Mathematics",     color: "#7a8f9e", done: false },
-    { time: "11:15", subject: "Nature Study",    color: "#A9B786", done: false },
+    { time: "11:15", subject: "Nature Study",    color: "#93A388", done: false },
   ];
 
   const r = 22, circ = 2 * Math.PI * r, dash = circ * 0.37;
@@ -45,7 +45,7 @@ function AppPreview() {
   return (
     <div style={{
       width: "100%", maxWidth: 272, margin: "0 auto",
-      background: "#F7F4EF", borderRadius: 28,
+      background: "#F7F3EC", borderRadius: 28,
       boxShadow: "0 28px 72px rgba(44,54,40,.15), 0 6px 20px rgba(44,54,40,.07)",
       overflow: "hidden",
       border: "1px solid rgba(169,183,134,.18)",
@@ -62,7 +62,7 @@ function AppPreview() {
         <h3 style={{ fontSize: 18, color: "#2C2C2C", fontFamily: "'Playfair Display', serif", fontWeight: 400, margin: "0 0 2px", lineHeight: 1.15 }}>
           Good Morning,<br />Kim.
         </h3>
-        <p style={{ fontSize: 11, color: "#A9B786", fontStyle: "italic", margin: "0 0 14px" }}>
+        <p style={{ fontSize: 11, color: "#93A388", fontStyle: "italic", margin: "0 0 14px" }}>
           Begin with what is in front of you.
         </p>
 
@@ -70,11 +70,11 @@ function AppPreview() {
           <div style={{ position: "relative", width: 50, height: 50, flexShrink: 0 }}>
             <svg width="50" height="50" style={{ transform: "rotate(-90deg)" }}>
               <circle cx="25" cy="25" r={r} fill="none" stroke="#ede9e1" strokeWidth="4"/>
-              <circle cx="25" cy="25" r={r} fill="none" stroke="#A9B786" strokeWidth="4"
+              <circle cx="25" cy="25" r={r} fill="none" stroke="#93A388" strokeWidth="4"
                 strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"/>
             </svg>
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 11, color: "#A9B786", fontFamily: "'Playfair Display', serif" }}>5h</span>
+              <span style={{ fontSize: 11, color: "#93A388", fontFamily: "'Playfair Display', serif" }}>5h</span>
             </div>
           </div>
           <div style={{ flex: 1 }}>
@@ -82,7 +82,7 @@ function AppPreview() {
             <p style={{ fontSize: 12, color: "#2C2C2C", fontStyle: "italic", marginBottom: 5 }}>10 hrs to go</p>
             <div style={{ display: "flex", gap: 4 }}>
               {["+15m", "+30m", "+45m"].map(l => (
-                <span key={l} style={{ fontSize: 7.5, background: "rgba(169,183,134,.1)", border: "1px solid rgba(169,183,134,.28)", borderRadius: 2, padding: "2px 5px", color: "#A9B786", fontFamily: "'Lato', sans-serif" }}>{l}</span>
+                <span key={l} style={{ fontSize: 7.5, background: "rgba(169,183,134,.1)", border: "1px solid rgba(169,183,134,.28)", borderRadius: 2, padding: "2px 5px", color: "#93A388", fontFamily: "'Lato', sans-serif" }}>{l}</span>
               ))}
             </div>
           </div>
@@ -92,7 +92,7 @@ function AppPreview() {
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 9 }}>
           <p style={{ fontSize: 8.5, color: "#b8b0a5", letterSpacing: ".1em", fontFamily: "'Lato', sans-serif", textTransform: "uppercase" }}>Today · Wednesday</p>
-          <p style={{ fontSize: 8, color: "#A9B786", fontFamily: "'Lato', sans-serif" }}>Full week →</p>
+          <p style={{ fontSize: 8, color: "#93A388", fontFamily: "'Lato', sans-serif" }}>Full week →</p>
         </div>
 
         {blocks.map((b, i) => (
@@ -105,7 +105,7 @@ function AppPreview() {
           }}>
             <div style={{ width: 3, alignSelf: "stretch", minHeight: 22, background: b.done ? "#ddd8ce" : b.color, borderRadius: 2, marginRight: 8, flexShrink: 0 }}/>
             <span style={{ fontSize: 8.5, color: "#b8b0a5", fontFamily: "'Lato', sans-serif", width: 26, flexShrink: 0 }}>{b.time}</span>
-            <span style={{ fontSize: 13, color: b.done ? "#b8b0a5" : "#2C2C2C", fontFamily: "'Playfair Display', serif", flex: 1, textDecoration: b.done ? "line-through" : "none", textDecorationColor: "#A9B786" }}>{b.subject}</span>
+            <span style={{ fontSize: 13, color: b.done ? "#b8b0a5" : "#2C2C2C", fontFamily: "'Playfair Display', serif", flex: 1, textDecoration: b.done ? "line-through" : "none", textDecorationColor: "#93A388" }}>{b.subject}</span>
             {b.done && <span style={{ fontSize: 8, color: b.color }}>✓</span>}
           </div>
         ))}
@@ -122,7 +122,7 @@ function AppPreview() {
           { label: "Narrate", active: false, path: "M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z M19 10v2a7 7 0 01-14 0v-2" },
           { label: "Menu",    active: false, path: "M3 6h18 M3 12h18 M3 18h18" },
         ].map((item, i) => (
-          <div key={i} style={{ flex: 1, paddingTop: 8, textAlign: "center", color: item.active ? "#A9B786" : "#ccc5bb" }}>
+          <div key={i} style={{ flex: 1, paddingTop: 8, textAlign: "center", color: item.active ? "#93A388" : "#ccc5bb" }}>
             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", margin: "0 auto 2px" }}>
               <path d={item.path}/>
             </svg>
@@ -137,22 +137,22 @@ function AppPreview() {
 // ─── FEATURES ─────────────────────────────────────────────────────────────────
 const FEATURES = [
   {
-    svg: <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>,
+    svg: <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>,
     title: "Your daily rhythm, held",
     body: "A time-blocked planner built around Charlotte Mason's gentle pace — morning basket, lessons, outdoor time, and rest.",
   },
   {
-    svg: <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>,
+    svg: <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>,
     title: "Narration, guided",
     body: "An AI coach walking students through Find It · Follow It · Frame It — turning living books into living words.",
   },
   {
-    svg: <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>,
+    svg: <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>,
     title: "120 hours outdoors",
     body: "Track your family's time outside toward Charlotte Mason's 6-hours-a-day vision — a weekly rhythm, not a burden.",
   },
   {
-    svg: <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/></svg>,
+    svg: <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/></svg>,
     title: "Consider the Lilies",
     body: "A commonplace journal for beauty, wonder, and the things worth writing down — woven into your everyday.",
   },

@@ -1,22 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { PremiumModal } from "./HomeScreen";
+import { saveScheduleDay, seedScheduleIfEmpty } from "../lib/db";
 
 const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const isWeekend = (day) => day === "Saturday" || day === "Sunday";
 
+// ─── TIME HELPERS (for cascading shifts) ───────────────────────────────────────
+function parseTime(str) {
+  if (!str) return null;
+  const m = String(str).trim().match(/^(\d{1,2}):?(\d{2})?\s*(am|pm)?$/i);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const min = m[2] ? parseInt(m[2], 10) : 0;
+  const ap = m[3] ? m[3].toLowerCase() : null;
+  if (ap === "pm" && h < 12) h += 12;
+  if (ap === "am" && h === 12) h = 0;
+  return h * 60 + min;
+}
+function fmtTime(mins) {
+  mins = ((mins % 1440) + 1440) % 1440;
+  const h = Math.floor(mins / 60);
+  const min = mins % 60;
+  let hh = h % 12; if (hh === 0) hh = 12;
+  return `${hh}:${String(min).padStart(2, "0")}`;
+}
+function timeDelta(a, b) {
+  const pa = parseTime(a), pb = parseTime(b);
+  if (pa === null || pb === null) return null;
+  return pb - pa;
+}
+
 // ─── ICONS ────────────────────────────────────────────────────────────────────
 const Icon = {
-  Up:    () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6"/></svg>),
-  Down:  () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>),
-  Edit:  () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>),
-  Trash: () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#B5604A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>),
-  Plus:  () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>),
-  Copy:  () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>),
-  Leaf:  () => (<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>),
-  Moon:  () => (<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>),
+  Up:    () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6"/></svg>),
+  Down:  () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>),
+  Edit:  () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>),
+  Trash: () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#B96A4B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>),
+  Plus:  () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>),
+  Copy:  () => (<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#B96A4B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>),
+  Leaf:  () => (<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>),
+  Moon:  () => (<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#B96A4B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>),
   Check: () => (<svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>),
-  Lock:  () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#B8935A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>),
+  Lock:  () => (<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#C49A4E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>),
 };
 
 // ─── FREE TIER PLANNER ────────────────────────────────────────────────────────
@@ -76,7 +102,7 @@ function TermCounter({ isRestWeek, onToggleRest, term, week, onEdit }) {
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <button onClick={onEdit} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, color: "var(--ink-faint)", fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase" }}>Edit</button>
         <button onClick={onToggleRest}
-          style={{ display: "flex", alignItems: "center", gap: 6, background: isRestWeek ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${isRestWeek ? "#D4B07A" : "var(--sage-md)"}`, borderRadius: 20, padding: "5px 12px", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: isRestWeek ? "var(--gold)" : "var(--sage)" }}>
+          style={{ display: "flex", alignItems: "center", gap: 6, background: isRestWeek ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${isRestWeek ? "#D9C8B0" : "var(--sage-md)"}`, borderRadius: 20, padding: "5px 12px", cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: isRestWeek ? "var(--gold)" : "var(--sage)" }}>
           <Icon.Moon />{isRestWeek ? "Resume" : "Rest Week"}
         </button>
       </div>
@@ -171,7 +197,7 @@ function WeekendRhythmView({ day, week }) {
   const isSunday = day === "Sunday";
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20, padding: "14px 16px", background: isSunday ? "var(--gold-bg)" : "var(--sage-bg)", borderRadius: 3, border: `1px solid ${isSunday ? "#E0CBA8" : "var(--sage-md)"}` }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20, padding: "14px 16px", background: isSunday ? "var(--gold-bg)" : "var(--sage-bg)", borderRadius: 3, border: `1px solid ${isSunday ? "#EFE7D6" : "var(--sage-md)"}` }}>
         <div>
           <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: isSunday ? "var(--gold)" : "var(--sage)", marginBottom: 3 }}>
             {day} · {rhythm.theme}
@@ -225,6 +251,8 @@ function EditBlockSheet({ block, onSave, onDelete, onClose }) {
   const [time, setTime] = useState(block.time);
   const [subject, setSubject] = useState(block.subject);
   const [note, setNote] = useState(block.note || "");
+  const [shiftRest, setShiftRest] = useState(true);
+  const timeChanged = time !== block.time;
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.42)", zIndex: 200 }} onClick={onClose}>
       <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "var(--cream)", borderRadius: "12px 12px 0 0", padding: "28px 28px 48px" }} onClick={e => e.stopPropagation()}>
@@ -232,9 +260,17 @@ function EditBlockSheet({ block, onSave, onDelete, onClose }) {
         <p className="serif" style={{ fontSize: 20, marginBottom: 20 }}>Edit Block</p>
         <input className="input-line" placeholder="Time" value={time} onChange={e => setTime(e.target.value)} style={{ marginBottom: 14 }} />
         <input className="input-line" placeholder="Subject" value={subject} onChange={e => setSubject(e.target.value)} style={{ marginBottom: 14 }} />
-        <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: 28 }} />
+        <input className="input-line" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ marginBottom: timeChanged ? 18 : 28 }} />
+        {timeChanged && (
+          <div onClick={() => setShiftRest(s => !s)} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24, cursor: "pointer" }}>
+            <span style={{ width: 22, height: 22, borderRadius: "50%", border: `1.5px solid ${shiftRest ? "var(--sage)" : "var(--rule)"}`, background: shiftRest ? "var(--sage)" : "none", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .2s" }}>
+              {shiftRest && <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
+            </span>
+            <span className="corm italic" style={{ fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.5 }}>Shift the rest of the day to match</span>
+          </div>
+        )}
         <div style={{ display: "flex", gap: 10 }}>
-          <button className="btn-sage" style={{ flex: 1 }} onClick={() => { onSave({ ...block, time, subject, note }); onClose(); }}>Save</button>
+          <button className="btn-sage" style={{ flex: 1 }} onClick={() => { onSave({ ...block, time, subject, note }, shiftRest); onClose(); }}>Save</button>
           <button onClick={() => { onDelete(block.id); onClose(); }}
             style={{ background: "none", border: "1px solid #E8C4BB", borderRadius: 2, padding: "12px 18px", cursor: "pointer", color: "var(--red)", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase" }}>
             Delete
@@ -290,11 +326,35 @@ export default function PlannerScreen({ settings }) {
   const [addingAfterIdx, setAddingAfterIdx] = useState(null);
   const [copyingDay, setCopyingDay]     = useState(false);
 
+  const userId = settings?.userId;
+
   const [schedule, setSchedule] = useState(() => {
     const s = {};
     DAYS.forEach(d => { s[d] = DAY_SCHEDULE[d].map((b, i) => ({ ...b, _idx: i })); });
     return s;
   });
+
+  // Load the saved schedule from Supabase (seeding from defaults on first run).
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    (async () => {
+      const rows = await seedScheduleIfEmpty(userId, DAY_SCHEDULE);
+      if (cancelled || !rows.length) return;
+      const s = {};
+      DAYS.forEach(d => { s[d] = []; });
+      rows.forEach(r => {
+        if (!s[r.day]) s[r.day] = [];
+        s[r.day].push({ id: r.id, subject: r.subject, time: r.time || "", note: r.note || "" });
+      });
+      setSchedule(prev => ({ ...prev, ...s }));
+    })();
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  const persistDay = (day, blocks) => {
+    if (userId) saveScheduleDay(userId, day, blocks);
+  };
 
   const dayBlocks = schedule[activeDay] || [];
 
@@ -304,12 +364,33 @@ export default function PlannerScreen({ settings }) {
       const target = idx + dir;
       if (target < 0 || target >= blocks.length) return prev;
       [blocks[idx], blocks[target]] = [blocks[target], blocks[idx]];
+      persistDay(activeDay, blocks);
       return { ...prev, [activeDay]: blocks };
     });
   };
 
-  const saveBlock   = (updated) => setSchedule(prev => ({ ...prev, [activeDay]: prev[activeDay].map(b => b.id === updated.id ? updated : b) }));
-  const deleteBlock = (id)      => setSchedule(prev => ({ ...prev, [activeDay]: prev[activeDay].filter(b => b.id !== id) }));
+  const saveBlock = (updated, shiftRest) => setSchedule(prev => {
+    const list = prev[activeDay];
+    const idx = list.findIndex(b => b.id === updated.id);
+    const delta = idx === -1 ? null : timeDelta(list[idx].time, updated.time);
+    let blocks = list.map(b => b.id === updated.id ? updated : b);
+    if (shiftRest && delta !== null && delta !== 0) {
+      blocks = blocks.map((b, i) => {
+        if (i <= idx) return b;
+        const m = parseTime(b.time);
+        if (m === null) return b;
+        return { ...b, time: fmtTime(m + delta) };
+      });
+    }
+    persistDay(activeDay, blocks);
+    return { ...prev, [activeDay]: blocks };
+  });
+
+  const deleteBlock = (id) => setSchedule(prev => {
+    const blocks = prev[activeDay].filter(b => b.id !== id);
+    persistDay(activeDay, blocks);
+    return { ...prev, [activeDay]: blocks };
+  });
 
   const addBlock = (newBlock) => {
     const block = { ...newBlock, id: `custom-${Date.now()}` };
@@ -317,12 +398,17 @@ export default function PlannerScreen({ settings }) {
       const blocks = [...prev[activeDay]];
       const insertAt = addingAfterIdx === -1 ? 0 : addingAfterIdx + 1;
       blocks.splice(insertAt, 0, block);
+      persistDay(activeDay, blocks);
       return { ...prev, [activeDay]: blocks };
     });
     setAddingAfterIdx(null);
   };
 
-  const copyDay = (toDay) => setSchedule(prev => ({ ...prev, [toDay]: prev[activeDay].map(b => ({ ...b, id: `${b.id}-copy-${Date.now()}` })) }));
+  const copyDay = (toDay) => setSchedule(prev => {
+    const blocks = prev[activeDay].map(b => ({ ...b, id: `${b.id}-copy-${Date.now()}` }));
+    persistDay(toDay, blocks);
+    return { ...prev, [toDay]: blocks };
+  });
   const saveTerm = () => { setTerm(Number(draftTerm)); setWeek(Number(draftWeek)); setEditingTerm(false); };
 
   return (

@@ -3,23 +3,23 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --cream:     #F7F4EF;
+  --cream:     #F7F3EC;
   --parchment: #EDE9E1;
-  --ink:       #2C2A27;
+  --ink:       #2B2724;
   --ink-lt:    #3D3B38;
   --ink-faint: #6B6760;
-  --sage:      #8A9E89;
+  --sage:      #7E9B84;
   --sage-md:   #C4CFBF;
-  --sage-bg:   #EFF3EE;
-  --gold:      #B8935A;
-  --gold-bg:   #F5EDE0;
-  --rule:      #DDD8CF;
-  --red:       #B5604A;
-  --block-morning:  #8A9E89;
-  --block-academic: #4A5568;
-  --block-nature:   #7A9E7E;
-  --block-coop:     #8A7A9E;
-  --block-free:     #B8935A;
+  --sage-bg:   #E3EBE4;
+  --gold:      #C49A4E;
+  --gold-bg:   #F5EBD4;
+  --rule:      #CBC2B4;
+  --red:       #B96A4B;
+  --block-morning:  #7E9B84;
+  --block-academic: #B96A4B;
+  --block-nature:   #8B9469;
+  --block-coop:     #C2876F;
+  --block-free:     #C49A4E;
 
   /* Layout widths */
   --shell-width:   430px;
@@ -136,7 +136,7 @@ body {
 /* ── Cards ── */
 .card      { background: var(--parchment); border-radius: 3px; padding: 22px; border: 1px solid var(--rule); }
 .card-sage { background: var(--sage-bg);   border-radius: 3px; padding: 20px; border: 1px solid var(--sage-md); }
-.card-gold { background: var(--gold-bg);   border-radius: 3px; padding: 20px; border: 1px solid #E0CBA8; }
+.card-gold { background: var(--gold-bg);   border-radius: 3px; padding: 20px; border: 1px solid #EFE7D6; }
 
 /* ── Buttons ── */
 .btn-ghost {
@@ -328,7 +328,7 @@ body {
 
 /* ── Tag ── */
 .tag      { display: inline-block; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--sage); border: 1px solid var(--sage-md); border-radius: 2px; padding: 3px 8px; font-family: 'Lato', sans-serif; }
-.tag-gold { color: var(--gold); border-color: #D4B07A; }
+.tag-gold { color: var(--gold); border-color: #D9C8B0; }
 
 /* ── Habit ring ── */
 .habit-ring { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -418,9 +418,9 @@ body {
   font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
   font-family: 'Lato', sans-serif; font-weight: 400;
 }
-.stage-find   { background: #EFF3EE;      color: var(--sage); }
+.stage-find   { background: #E3EBE4;      color: var(--sage); }
 .stage-follow { background: var(--gold-bg); color: var(--gold); }
-.stage-frame  { background: #F0ECF5;      color: #8A7A9E; }
+.stage-frame  { background: #F0ECF5;      color: #C2876F; }
 
 /* ── Lilies entry ── */
 .lily-entry              { padding: 18px 0; border-bottom: 1px solid var(--rule); }

@@ -5,29 +5,29 @@ const FREE_HABIT = "attention";
 
 const HABIT_ICONS = {
   attention: () => (
-    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
     </svg>
   ),
   narration: () => (
-    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
       <path d="M19 10v2a7 7 0 01-14 0v-2"/>
       <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
     </svg>
   ),
   outdoor: () => (
-    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 17l4-8 4 5 3-3 4 6H3z"/><circle cx="18" cy="6" r="2"/>
     </svg>
   ),
   stillness: () => (
-    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#B96A4B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
     </svg>
   ),
   orderly: () => (
-    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#B96A4B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
       <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
     </svg>
@@ -43,22 +43,22 @@ const LockIcon = () => (
 function TendIcon({ size = 52 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-      <circle cx="32" cy="32" r="30" stroke="#A9B786" strokeWidth="1" fill="#F7F4EF"/>
-      <line x1="32" y1="52" x2="32" y2="14" stroke="#A9B786" strokeWidth="1.2" strokeLinecap="round"/>
-      <line x1="32" y1="44" x2="24" y2="40" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="44" x2="40" y2="40" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="38" x2="23" y2="33" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="38" x2="41" y2="33" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="32" x2="24" y2="27" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="32" x2="40" y2="27" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="26" x2="25" y2="21" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="26" x2="39" y2="21" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <circle cx="32" cy="14" r="2" fill="#A9B786"/>
-      <circle cx="24" cy="40" r="1.2" fill="#A9B786"/><circle cx="40" cy="40" r="1.2" fill="#A9B786"/>
-      <circle cx="23" cy="33" r="1.2" fill="#A9B786"/><circle cx="41" cy="33" r="1.2" fill="#A9B786"/>
-      <circle cx="24" cy="27" r="1.2" fill="#A9B786"/><circle cx="40" cy="27" r="1.2" fill="#A9B786"/>
-      <circle cx="25" cy="21" r="1.2" fill="#A9B786"/><circle cx="39" cy="21" r="1.2" fill="#A9B786"/>
-      <text x="32" y="58" textAnchor="middle" fontFamily="Georgia, serif" fontSize="5" fill="#A9B786" fontStyle="italic" letterSpacing="0.08em">tend</text>
+      <circle cx="32" cy="32" r="30" stroke="#93A388" strokeWidth="1" fill="#F7F3EC"/>
+      <line x1="32" y1="52" x2="32" y2="14" stroke="#93A388" strokeWidth="1.2" strokeLinecap="round"/>
+      <line x1="32" y1="44" x2="24" y2="40" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="44" x2="40" y2="40" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="38" x2="23" y2="33" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="38" x2="41" y2="33" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="32" x2="24" y2="27" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="32" x2="40" y2="27" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="26" x2="25" y2="21" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="26" x2="39" y2="21" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <circle cx="32" cy="14" r="2" fill="#93A388"/>
+      <circle cx="24" cy="40" r="1.2" fill="#93A388"/><circle cx="40" cy="40" r="1.2" fill="#93A388"/>
+      <circle cx="23" cy="33" r="1.2" fill="#93A388"/><circle cx="41" cy="33" r="1.2" fill="#93A388"/>
+      <circle cx="24" cy="27" r="1.2" fill="#93A388"/><circle cx="40" cy="27" r="1.2" fill="#93A388"/>
+      <circle cx="25" cy="21" r="1.2" fill="#93A388"/><circle cx="39" cy="21" r="1.2" fill="#93A388"/>
+      <text x="32" y="58" textAnchor="middle" fontFamily="Georgia, serif" fontSize="5" fill="#93A388" fontStyle="italic" letterSpacing="0.08em">tend</text>
     </svg>
   );
 }

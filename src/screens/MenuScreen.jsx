@@ -4,22 +4,22 @@ import { CHAPTERS } from "../data/seed";
 function TendMark() {
   return (
     <svg width="64" height="64" viewBox="0 0 64 64" fill="none" style={{ display: "block", margin: "0 auto" }}>
-      <circle cx="32" cy="32" r="30" stroke="#A9B786" strokeWidth="1" fill="#F7F4EF"/>
-      <line x1="32" y1="52" x2="32" y2="14" stroke="#A9B786" strokeWidth="1.2" strokeLinecap="round"/>
-      <line x1="32" y1="44" x2="24" y2="40" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="44" x2="40" y2="40" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="38" x2="23" y2="33" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="38" x2="41" y2="33" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="32" x2="24" y2="27" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="32" x2="40" y2="27" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="26" x2="25" y2="21" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="26" x2="39" y2="21" stroke="#A9B786" strokeWidth="1" strokeLinecap="round"/>
-      <circle cx="32" cy="14" r="2" fill="#A9B786"/>
-      <circle cx="24" cy="40" r="1.2" fill="#A9B786"/><circle cx="40" cy="40" r="1.2" fill="#A9B786"/>
-      <circle cx="23" cy="33" r="1.2" fill="#A9B786"/><circle cx="41" cy="33" r="1.2" fill="#A9B786"/>
-      <circle cx="24" cy="27" r="1.2" fill="#A9B786"/><circle cx="40" cy="27" r="1.2" fill="#A9B786"/>
-      <circle cx="25" cy="21" r="1.2" fill="#A9B786"/><circle cx="39" cy="21" r="1.2" fill="#A9B786"/>
-      <text x="32" y="58" textAnchor="middle" fontFamily="Georgia, serif" fontSize="5" fill="#A9B786" fontStyle="italic" letterSpacing="0.08em">tend</text>
+      <circle cx="32" cy="32" r="30" stroke="#93A388" strokeWidth="1" fill="#F7F3EC"/>
+      <line x1="32" y1="52" x2="32" y2="14" stroke="#93A388" strokeWidth="1.2" strokeLinecap="round"/>
+      <line x1="32" y1="44" x2="24" y2="40" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="44" x2="40" y2="40" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="38" x2="23" y2="33" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="38" x2="41" y2="33" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="32" x2="24" y2="27" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="32" x2="40" y2="27" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="26" x2="25" y2="21" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="32" y1="26" x2="39" y2="21" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
+      <circle cx="32" cy="14" r="2" fill="#93A388"/>
+      <circle cx="24" cy="40" r="1.2" fill="#93A388"/><circle cx="40" cy="40" r="1.2" fill="#93A388"/>
+      <circle cx="23" cy="33" r="1.2" fill="#93A388"/><circle cx="41" cy="33" r="1.2" fill="#93A388"/>
+      <circle cx="24" cy="27" r="1.2" fill="#93A388"/><circle cx="40" cy="27" r="1.2" fill="#93A388"/>
+      <circle cx="25" cy="21" r="1.2" fill="#93A388"/><circle cx="39" cy="21" r="1.2" fill="#93A388"/>
+      <text x="32" y="58" textAnchor="middle" fontFamily="Georgia, serif" fontSize="5" fill="#93A388" fontStyle="italic" letterSpacing="0.08em">tend</text>
     </svg>
   );
 }
@@ -128,7 +128,7 @@ export default function MenuScreen({ onNavigate }) {
               </p>
             </div>
 
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#A9B786" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
               <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
               <polyline points="15 3 21 3 21 9"/>
               <line x1="10" y1="14" x2="21" y2="3"/>

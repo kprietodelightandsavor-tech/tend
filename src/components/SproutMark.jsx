@@ -3,7 +3,7 @@
 // Matches the uploaded app icon: sprouting plant with two leaves rising from earth
 // Use this everywhere the botanical tree SVG was used
 
-export default function SproutMark({ size = 52, color = "#A9B786" }) {
+export default function SproutMark({ size = 52, color = "#93A388" }) {
   return (
     <svg
       width={size}
