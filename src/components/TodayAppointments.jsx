@@ -1,8 +1,9 @@
 // src/components/TodayAppointments.jsx
 //
-// Shows the day's appointments from a connected calendar (Apple, Google,
-// or any public iCal link saved in Settings). Read-only, quiet, and cached
-// for six hours so we're gentle on the calendar server.
+// The day's appointments from a connected calendar (Apple, Google, or any
+// public iCal link saved in Settings). Read-only, cached six hours.
+// No box — just a quiet typographic block with a hairline beneath it,
+// so the top of the day reads as one column, not a stack of cards.
 
 import { useState, useEffect } from "react";
 
@@ -63,16 +64,14 @@ export default function TodayAppointments({ viewDate }) {
   if (!todays.length) return null;
 
   return (
-    <div style={{ marginBottom: 22, padding: "12px 16px", background: "var(--cream)", border: "1px solid var(--rule)", borderLeft: "3px solid var(--gold)", borderRadius: 3 }}>
-      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--gold)", margin: "0 0 8px" }}>
-        On the calendar
-      </p>
+    <div style={{ marginBottom: 22, paddingBottom: 18, borderBottom: "0.5px solid var(--rule)" }}>
       {todays.map((e, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: i === todays.length - 1 ? 0 : 6 }}>
-          <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 12, color: "var(--ink-faint)", width: 44, flexShrink: 0, textAlign: "right" }}>
+        <div key={i} style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: i === todays.length - 1 ? 0 : 7 }}>
+          <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", flexShrink: 0, alignSelf: "center" }} />
+          <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 12, letterSpacing: ".04em", color: "var(--gold)", width: 40, flexShrink: 0 }}>
             {timeLabel(e.start)}
           </span>
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 14.5, color: "var(--ink)", lineHeight: 1.4 }}>
+          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)", lineHeight: 1.4 }}>
             {e.title}
           </span>
         </div>
