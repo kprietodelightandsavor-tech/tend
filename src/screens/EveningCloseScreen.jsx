@@ -40,7 +40,51 @@ const CLOSING_LINES = [
   "Small lines, faithfully kept, become a year.",
 ];
 
-export default function EveningCloseScreen({ onNavigate }) {
+function schoolYear() {
+  const now = new Date();
+  const y = now.getFullYear();
+  return now.getMonth() >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
+}
+
+// The quiet magic: what you keep here writes your Teaching Record for you.
+async function syncToRecords(userId, key, blocks, doneIds, delight, mc) {
+  if (!userId) return false;
+  try {
+    const doneBlocks = blocks.filter(b => doneIds.includes(b.id));
+    await Promise.all(doneBlocks.map(b =>
+      fetch("/.netlify/functions/teaching-log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          method: "upsert", userId, date: key,
+          subject: b.subject, timeBlock: b.time || null,
+          status: "completed", schoolYear: schoolYear(),
+        }),
+      })
+    ));
+    // delight + mother culture ride along in daily_state
+    const res = await fetch("/.netlify/functions/daily-state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ method: "get", userId, date: key }),
+    });
+    const { state } = await res.json();
+    await fetch("/.netlify/functions/daily-state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        method: "set", userId, date: key,
+        state: { ...(state || {}), eveningClose: { done: doneIds, delight, mc } },
+      }),
+    });
+    return true;
+  } catch (e) {
+    console.error("evening close sync:", e);
+    return false;
+  }
+}
+
+export default function EveningCloseScreen({ onNavigate, settings }) {
   const today = new Date();
   const key = dateKey(today);
   const todayIdx = today.getDay();
@@ -55,6 +99,7 @@ export default function EveningCloseScreen({ onNavigate }) {
   const [delight, setDelight] = useState(existing?.delight || "");
   const [mc, setMc]           = useState(existing?.mc || []);
   const [kept, setKept]       = useState(false);
+  const [synced, setSynced]   = useState(false);
 
   const toggle = (list, setList, id) =>
     setList(list.includes(id) ? list.filter(x => x !== id) : [...list, id]);
@@ -62,6 +107,8 @@ export default function EveningCloseScreen({ onNavigate }) {
   const keep = () => {
     saveEntry(key, { done, delight: delight.trim(), mc, keptAt: new Date().toISOString() });
     setKept(true);
+    // fire-and-forget: the kept day becomes Teaching Record entries
+    syncToRecords(settings?.userId, key, blocks, done, delight.trim(), mc).then(setSynced);
   };
 
   const dateLabel = today.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
@@ -76,6 +123,11 @@ export default function EveningCloseScreen({ onNavigate }) {
         {delight.trim() && (
           <p className="corm italic" style={{ fontSize: 15, color: "var(--gold)", lineHeight: 1.7, marginBottom: 40 }}>
             “{delight.trim()}”
+          </p>
+        )}
+        {synced && (
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 22 }}>
+            ✓ written into your teaching record
           </p>
         )}
         <button className="btn-sage" style={{ maxWidth: 240, margin: "0 auto" }} onClick={() => onNavigate("home")}>
