@@ -14,6 +14,7 @@ import {
 } from "../data/seed";
 import { HABIT_TERM, HABIT_MONTHS } from "../data/habit-term-seed";
 import { isVolunteerTuesday } from "../data/beauty-seed";
+import TodayAppointments from "./TodayAppointments";
 import {
   getActivityChoices,
   getTomorrowActivity,
@@ -1546,25 +1547,17 @@ export default function SummerRhythm({ userId, viewDate, isToday }) {
 
   return (
     <div>
-      {isToday && (
-        <>
-          {/* CM quote */}
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, lineHeight: 1.75, color: "var(--ink-lt)", margin: "0 0 4px", textAlign: "center" }}>
-            "{cmQuote.quote}"
-          </p>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "lowercase", color: "var(--ink-faint)", margin: 0, textAlign: "center" }}>
-            charlotte mason, {cmQuote.source}
-          </p>
-
-          <div style={{ height: "0.5px", background: "var(--rule)", margin: "24px 0 26px" }}></div>
-        </>
-      )}
+      {/* One guidance line lives above (the gentle nod) - so no CM quote here.
+          The quote still greets school-year mornings, where it's the only voice. */}
 
       {/* ── HEADER — one quiet line; summer needs less interface, not more ── */}
       <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--sage)", margin: "0 0 14px", textAlign: "center" }}>
         Summer Rhythm
       </p>
       {/* Habit focus lives on the Habits screen in summer — the day stays light */}
+
+      {/* Appointments sit with the day they belong to */}
+      <TodayAppointments viewDate={viewDate} />
 
       {/* ── MORNING ── */}
       <RhythmSection marker={SunriseMarker} title="Morning" showLine>

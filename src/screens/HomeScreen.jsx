@@ -911,7 +911,6 @@ export default function HomeScreen({ onNavigate, settings }) {
         </p>
       )}
 
-      <TodayAppointments viewDate={viewDate} />
       {isSummer ? (
         <>
           {isToday && <SummerRest />}
@@ -970,6 +969,7 @@ export default function HomeScreen({ onNavigate, settings }) {
 
           {isToday && <FamilyBibleStudy userId={settings?.userId} />}
 
+          <TodayAppointments viewDate={viewDate} />
           {isWeekend ? (
             <WeekendRhythm rhythm={weekendRhythm} />
           ) : (
