@@ -14,7 +14,7 @@ import {
 } from "../data/seed";
 import { HABIT_TERM, HABIT_MONTHS } from "../data/habit-term-seed";
 import { isVolunteerTuesday } from "../data/beauty-seed";
-import TodayAppointments from "./TodayAppointments";
+import { SummerApptRow } from "./TodayAppointments";
 import SomethingBeautiful from "./SomethingBeautiful";
 import {
   getActivityChoices,
@@ -1538,7 +1538,8 @@ const rhythmItemStyle = {
 };
 
 // ─── MAIN SUMMER RHYTHM COMPONENT ────────────────────────────────────
-export default function SummerRhythm({ userId, viewDate, isToday, onNavigate }) {
+export default function SummerRhythm({ userId, viewDate, isToday, onNavigate, appointments }) {
+  const appts = appointments || { allDay: [], morning: [], afternoon: [], evening: [] };
   const day = viewDate.getDay();
   const dayName = DAYS[day === 0 ? 6 : day - 1];
   const cmQuote = CM_QUOTES[day];
@@ -1557,11 +1558,10 @@ export default function SummerRhythm({ userId, viewDate, isToday, onNavigate }) 
       </p>
       {/* Habit focus lives on the Habits screen in summer — the day stays light */}
 
-      {/* Appointments sit with the day they belong to */}
-      <TodayAppointments viewDate={viewDate} />
-
       {/* ── MORNING ── */}
       <RhythmSection marker={SunriseMarker} title="Morning" showLine>
+        {appts.allDay.map((e, i) => <SummerApptRow key={`ad-${i}`} e={e} />)}
+        {appts.morning.map((e, i) => <SummerApptRow key={`am-${i}`} e={e} />)}
         <p style={rhythmItemStyle}>Slow start · home cared for · outside before the heat</p>
 
         {isVolunteerTue && (
@@ -1590,11 +1590,13 @@ export default function SummerRhythm({ userId, viewDate, isToday, onNavigate }) 
 
       {/* ── AFTERNOON ── */}
       <RhythmSection marker={SunMarker} title="Afternoon" showLine>
+        {appts.afternoon.map((e, i) => <SummerApptRow key={`pm-${i}`} e={e} />)}
         <p style={rhythmItemStyle}>Play · adventure · friends welcome — room for ordinary life</p>
       </RhythmSection>
 
       {/* ── EVENING ── */}
       <RhythmSection marker={MoonMarker} title="Evening" showLine={false}>
+        {appts.evening.map((e, i) => <SummerApptRow key={`ev-${i}`} e={e} />)}
         <p style={rhythmItemStyle}>Dinner together · dusk outside · quiet · rest</p>
       </RhythmSection>
 

@@ -1,17 +1,18 @@
 // src/components/TodayAppointments.jsx
 //
-// The day's appointments from a connected calendar (Apple, Google, or any
-// public iCal link saved in Settings). Read-only, cached six hours.
-// No box — just a quiet typographic block with a hairline beneath it,
-// so the top of the day reads as one column, not a stack of cards.
+// Shared calendar-appointment plumbing. No standalone block anymore —
+// appointments are woven into the daily rhythm at their actual time:
+//   • useDayAppointments(viewDate) → { allDay, timed, morning, afternoon, evening }
+//   • SummerApptRow — a quiet row for the summer rhythm sections
+// Events come from the connected iCal link (Settings), cached six hours.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 const URL_KEY = "tend_ics_url";
 const CACHE_KEY = "tend_ics_cache";
 const CACHE_HOURS = 6;
 
-function timeLabel(iso) {
+export function timeLabel(iso) {
   const d = new Date(iso);
   let h = d.getHours() % 12; if (h === 0) h = 12;
   const m = String(d.getMinutes()).padStart(2, "0");
@@ -42,7 +43,7 @@ async function loadEvents() {
   }
 }
 
-export default function TodayAppointments({ viewDate }) {
+export function useDayAppointments(viewDate) {
   const [events, setEvents] = useState(null);
 
   useEffect(() => {
@@ -51,32 +52,44 @@ export default function TodayAppointments({ viewDate }) {
     return () => { alive = false; };
   }, []);
 
-  if (!events || !events.length) return null;
+  return useMemo(() => {
+    const empty = { allDay: [], timed: [], morning: [], afternoon: [], evening: [] };
+    if (!events || !events.length) return empty;
+    const day = viewDate ? new Date(viewDate) : new Date();
+    const dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
 
-  const day = viewDate ? new Date(viewDate) : new Date();
-  const dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
-  const todays = events.filter(e => {
-    if (e.allDay) return e.date === dayKey;      // all-day events carry a plain date
-    const d = new Date(e.start);
-    const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    return k === dayKey;
-  });
+    const allDay = [], timed = [];
+    for (const e of events) {
+      if (e.allDay) {
+        if (e.date === dayKey) allDay.push(e);
+        continue;
+      }
+      const d = new Date(e.start);
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      if (k === dayKey) timed.push({ ...e, _min: d.getHours() * 60 + d.getMinutes() });
+    }
+    timed.sort((a, b) => a._min - b._min);
+    return {
+      allDay,
+      timed,
+      morning: timed.filter(e => e._min < 12 * 60),
+      afternoon: timed.filter(e => e._min >= 12 * 60 && e._min < 17 * 60),
+      evening: timed.filter(e => e._min >= 17 * 60),
+    };
+  }, [events, viewDate]);
+}
 
-  if (!todays.length) return null;
-
+// A quiet appointment row for the summer rhythm sections
+export function SummerApptRow({ e }) {
   return (
-    <div style={{ marginBottom: 22, paddingBottom: 18, borderBottom: "0.5px solid var(--rule)" }}>
-      {todays.map((e, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: i === todays.length - 1 ? 0 : 7 }}>
-          <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", flexShrink: 0, alignSelf: "center" }} />
-          <span style={{ fontFamily: e.allDay ? "'Cormorant Garamond', serif" : "'Lato', sans-serif", fontStyle: e.allDay ? "italic" : "normal", fontSize: 12, letterSpacing: ".04em", color: "var(--gold)", width: 40, flexShrink: 0 }}>
-            {e.allDay ? "all day" : timeLabel(e.start)}
-          </span>
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)", lineHeight: 1.4 }}>
-            {e.title}
-          </span>
-        </div>
-      ))}
+    <div style={{ display: "flex", alignItems: "baseline", gap: 9, margin: "2px 0 6px" }}>
+      <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", flexShrink: 0, alignSelf: "center" }} />
+      <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 11.5, letterSpacing: ".04em", color: "var(--gold)", width: 38, flexShrink: 0 }}>
+        {e.allDay ? "all day" : timeLabel(e.start)}
+      </span>
+      <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 14.5, color: "var(--ink)", lineHeight: 1.4 }}>
+        {e.title}
+      </span>
     </div>
   );
 }

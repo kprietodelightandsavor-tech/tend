@@ -2,7 +2,7 @@ import SummerRhythm, { HabitFocus } from "../components/SummerRhythm";
 import MorningPlan from "../components/MorningPlan";
 import LunchIdea from "../components/LunchIdea";
 import SummerRest from "../components/SummerRest";
-import TodayAppointments from "../components/TodayAppointments";
+import { useDayAppointments } from "../components/TodayAppointments";
 import { useState, useRef, useEffect } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm, NATURE_DAYS, NATURE_LOOP_STEPS, getNatureLoopStep, advanceNatureLoop } from "../data/seed";
 import {
@@ -442,7 +442,45 @@ function MemoryVerseBlock({ items, blockId, subChecked, onToggle, viewOnly }) {
   );
 }
 
-function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset, viewDate, isToday, isViewOnly }) {
+function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset, viewDate, isToday, isViewOnly, appointments }) {
+  // weave calendar appointments between blocks at their time position
+  const apptToMin = (t) => {
+    const m = String(t).match(/(\d{1,2}):(\d{2})/);
+    if (!m) return null;
+    let h = +m[1];
+    if (h <= 6) h += 12; // schedule times like "1:00" mean afternoon
+    return h * 60 + +m[2];
+  };
+  const { beforeBlock: apptBeforeBlock, tail: apptTail } = (() => {
+    const beforeBlock = {}, tail = [];
+    const timed = appointments?.timed || [];
+    for (const e of timed) {
+      let slotId = null;
+      for (const b of blocks || []) {
+        const bm = apptToMin(b.time);
+        if (bm !== null && bm > e._min) { slotId = b.id; break; }
+      }
+      if (slotId) (beforeBlock[slotId] = beforeBlock[slotId] || []).push(e);
+      else tail.push(e);
+    }
+    return { beforeBlock, tail };
+  })();
+  const ApptRow = ({ e }) => (
+    <div style={{ borderBottom: "1px solid var(--rule)" }}>
+      <div style={{ display: "flex", gap: 0, alignItems: "center", padding: "10px 0 8px" }}>
+        <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: "var(--gold)", marginRight: 12, flexShrink: 0, minHeight: 24 }} />
+        <div style={{ width: 18, display: "flex", justifyContent: "center", marginRight: 10, flexShrink: 0 }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", border: "1px solid var(--gold)", background: "var(--gold-bg)" }} />
+        </div>
+        <p style={{ fontSize: 15, color: "var(--ink)", fontFamily: "'Playfair Display', serif", margin: 0 }}>
+          {e.title}{" "}
+          <span style={{ fontSize: 12, color: "var(--gold)", fontFamily: "'Lato', sans-serif" }}>
+            {e.allDay ? "all day" : new Date(e.start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }).toLowerCase()}
+          </span>
+        </p>
+      </div>
+    </div>
+  );
   const dateKey = viewDate.toISOString().slice(0, 10);
   const userId  = settings?.userId;
   const [synced, setSynced] = useState(false);
@@ -669,6 +707,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
         );
       })()}
 
+      {(appointments?.allDay || []).map((e, ai) => <ApptRow key={`appt-allday-${ai}`} e={e} />)}
       {items.map(b => {
         const isDone = b.status === "done", isSkipped = b.status === "skipped";
         const showMother = isFreeBlock(b.subject) && !isSkipped && isToday;
@@ -682,6 +721,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
 
         return (
           <div key={b.id}>
+            {(apptBeforeBlock[b.id] || []).map((e, ai) => <ApptRow key={`appt-${b.id}-${ai}`} e={e} />)}
             <div style={{ borderBottom: "1px solid var(--rule)" }}>
               <div onClick={() => setExpandedBlock(isExpanded ? null : b.id)}
                 onTouchStart={() => { if (b.status === "pending" && !isViewOnly) startLP(b.id); }} onTouchEnd={cancelLP}
@@ -754,6 +794,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
           </div>
         );
       })}
+      {apptTail.map((e, ai) => <ApptRow key={`appt-tail-${ai}`} e={e} />)}
       {isToday && <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap checkbox to complete · Long press to skip · Tap to expand for notes</p>}
       {isViewOnly && <p className="caption italic" style={{ marginTop: 12, textAlign: "center", color: "var(--ink-faint)" }}>Viewing another day · tap a block to add or edit notes</p>}
     </div>
@@ -885,6 +926,7 @@ export default function HomeScreen({ onNavigate, settings }) {
   };
 
   const openCamera = () => onNavigate("memory-book", "camera");
+  const dayAppts = useDayAppointments(viewDate);
 
   return (
     <div className={`screen${isSummer ? " summer" : ""}`}>
@@ -919,6 +961,7 @@ export default function HomeScreen({ onNavigate, settings }) {
             viewDate={viewDate}
             isToday={isToday}
             onNavigate={onNavigate}
+            appointments={dayAppts}
           />
         </>
       ) : (
@@ -970,11 +1013,11 @@ export default function HomeScreen({ onNavigate, settings }) {
 
           {isToday && <FamilyBibleStudy userId={settings?.userId} />}
 
-          <TodayAppointments viewDate={viewDate} />
           {isWeekend ? (
             <WeekendRhythm rhythm={weekendRhythm} />
           ) : (
             <TodaySchedule
+              appointments={dayAppts}
               today={today}
               blocks={todayBlocks}
               onNavigate={onNavigate}
