@@ -79,16 +79,27 @@ export function useDayAppointments(viewDate) {
   }, [events, viewDate]);
 }
 
-// A quiet appointment row for the summer rhythm sections
+// A quiet row for the summer rhythm sections — one grammar for everything
+// timed: calendar appointments and rhythm boundaries (like the screens window)
+// share the same dot · time · title shape so the eye learns it once.
 export function SummerApptRow({ e }) {
   return (
     <div style={{ display: "flex", alignItems: "baseline", gap: 9, margin: "2px 0 6px" }}>
-      <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", flexShrink: 0, alignSelf: "center" }} />
-      <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 11.5, letterSpacing: ".04em", color: "var(--gold)", width: 38, flexShrink: 0 }}>
-        {e.allDay ? "all day" : timeLabel(e.start)}
+      <span style={{
+        width: 5, height: 5, borderRadius: "50%", flexShrink: 0, alignSelf: "center",
+        background: e.boundary ? "var(--sage-bg)" : "var(--gold)",
+        border: e.boundary ? "1px solid var(--sage)" : "none",
+      }} />
+      <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 11.5, letterSpacing: ".04em", color: e.boundary ? "var(--sage)" : "var(--gold)", width: 38, flexShrink: 0 }}>
+        {e.timeLabel || (e.allDay ? "all day" : timeLabel(e.start))}
       </span>
       <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 14.5, color: "var(--ink)", lineHeight: 1.4 }}>
         {e.title}
+        {e.sub && (
+          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)" }}>
+            {" "}— {e.sub}
+          </span>
+        )}
       </span>
     </div>
   );

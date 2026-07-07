@@ -1564,47 +1564,26 @@ export default function SummerRhythm({ userId, viewDate, isToday, onNavigate, ap
         {appts.morning.map((e, i) => <SummerApptRow key={`am-${i}`} e={e} />)}
         <p style={rhythmItemStyle}>Slow start · home cared for · outside before the heat</p>
 
-        {isVolunteerTue && (
-          <div style={{
-            margin: "6px 0 4px",
-            padding: "8px 12px 8px 10px",
-            background: "rgba(232, 226, 213, 0.45)",
-            borderLeft: "2px solid var(--sage)",
-            borderRadius: "0 4px 4px 0",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}>
-            <div>
-              <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", color: "var(--sage)", margin: "0 0 2px" }}>VOLUNTEER WITH CHISPA</p>
-              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, color: "var(--ink)", margin: 0 }}>Cibolo Rehab Center</p>
-            </div>
-            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)" }}>
-              10:30&ndash;12:00
-            </span>
-          </div>
-        )}
-
+        {/* the volunteer card is gone — the calendar row above already says it once */}
         <ReadingAndLearning userId={userId} today={dayName} viewDate={viewDate} isToday={isToday} isNatureDay={isNatureDay} />
       </RhythmSection>
 
       {/* ── AFTERNOON ── */}
       <RhythmSection marker={SunMarker} title="Afternoon" showLine>
-        {appts.afternoon.map((e, i) => <SummerApptRow key={`pm-${i}`} e={e} />)}
+        {(() => {
+          // one chronological list: appointments + the screens boundary
+          const isWknd = dayName === "Saturday" || dayName === "Sunday";
+          const screens = {
+            title: "Screens on",
+            sub: `back on the counter at ${isWknd ? "4:00" : "5:00"}`,
+            timeLabel: isWknd ? "11:00" : "2:00",
+            _min: (isWknd ? 11 : 14) * 60,
+            boundary: true,
+          };
+          const rows = [...appts.afternoon, screens].sort((a, b) => a._min - b._min);
+          return rows.map((e, i) => <SummerApptRow key={`pm-${i}`} e={e} />);
+        })()}
         <p style={rhythmItemStyle}>Play · adventure · friends welcome — room for ordinary life</p>
-        {/* screens window lives in the rhythm, where it happens */}
-        <div style={{ display: "flex", alignItems: "baseline", gap: 9, margin: "6px 0 2px" }}>
-          <span style={{ width: 5, height: 5, borderRadius: "50%", border: "1px solid var(--sage)", background: "var(--sage-bg)", flexShrink: 0, alignSelf: "center" }} />
-          <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 11.5, letterSpacing: ".04em", color: "var(--sage)", width: 38, flexShrink: 0 }}>
-            {(dayName === "Saturday" || dayName === "Sunday") ? "11:00" : "2:00"}
-          </span>
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 14.5, color: "var(--ink)", lineHeight: 1.4 }}>
-            Screens on{" "}
-            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)" }}>
-              — back on the counter at {(dayName === "Saturday" || dayName === "Sunday") ? "4:00" : "5:00"}
-            </span>
-          </span>
-        </div>
       </RhythmSection>
 
       {/* ── EVENING ── */}
