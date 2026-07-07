@@ -918,6 +918,7 @@ export default function HomeScreen({ onNavigate, settings }) {
             userId={settings?.userId}
             viewDate={viewDate}
             isToday={isToday}
+            onNavigate={onNavigate}
           />
         </>
       ) : (

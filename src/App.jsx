@@ -304,7 +304,14 @@ export default function App() {
   const [session, setSession]   = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading]   = useState(true);
-  const [screen, setScreen]     = useState("home");
+  const [screen, setScreen]     = useState(() => {
+    // notifications can deep-link, e.g. /?screen=evening-close
+    try {
+      const q = new URLSearchParams(window.location.search).get("screen");
+      if (q && SCREENS[q]) return q;
+    } catch {}
+    return "home";
+  });
   const [showNotes, setShowNotes] = useState(false);
   const [navIntent, setNavIntent] = useState(null);
 

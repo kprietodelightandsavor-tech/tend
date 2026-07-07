@@ -6,3 +6,11 @@
   from = "/*"
   to = "/index.html"
   status = 200
+# ── Scheduled push nudges (times are UTC; Central Time is UTC-5 in summer) ──
+# Morning nudge: 7:25 AM CDT
+[functions."morning-nudge"]
+  schedule = "25 12 * * *"
+
+# Evening Close bell: 7:45 PM CDT
+[functions."evening-nudge"]
+  schedule = "45 0 * * *"

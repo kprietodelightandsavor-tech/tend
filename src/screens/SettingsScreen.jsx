@@ -43,6 +43,8 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
   const [saved, setSaved]         = useState(false);
   const [mode, setMode]           = useState(settings?.mode || "school");
   const [icsUrl, setIcsUrl]       = useState(() => { try { return localStorage.getItem("tend_ics_url") || ""; } catch { return ""; } });
+  const [nudgeBusy, setNudgeBusy] = useState(false);
+  const [nudgeMsg, setNudgeMsg]   = useState("");
   const [calEvents, setCalEvents] = useState([]);
   const [calMsg, setCalMsg]       = useState("");
   const [calLoading, setCalLoading] = useState(false);
@@ -79,7 +81,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
       const res = await fetch("/.netlify/functions/sync-calendar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, days: 30 }),
+        body: JSON.stringify({ url, days: 30, tz: Intl.DateTimeFormat().resolvedOptions().timeZone }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong");
@@ -263,11 +265,38 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
             {calEvents.slice(0, 12).map((ev, i) => (
               <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid var(--rule)" }}>
                 <p style={{ fontSize: 14, color: "var(--ink)", fontFamily: "'Playfair Display', serif" }}>{ev.title}</p>
-                <p className="caption">{new Date(ev.start).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</p>
+                <p className="caption">{ev.allDay
+                  ? new Date(ev.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) + " · all day"
+                  : new Date(ev.start).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</p>
               </div>
             ))}
           </div>
         )}
+      </div>
+
+      <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
+
+      {/* Gentle Nudges — push notifications */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <Icon.Leaf />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Gentle Nudges</p>
+        </div>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
+          Two quiet notifications a day: a good-morning at 7:25, and the Evening Close bell at 7:45.
+          Nothing else, ever. On iPhone, add Tend to your Home Screen first.
+        </p>
+        <button className="btn-sage" style={{ width: "100%", opacity: nudgeBusy ? 0.6 : 1 }} disabled={nudgeBusy}
+          onClick={async () => {
+            setNudgeBusy(true); setNudgeMsg("");
+            const { enableNudges } = await import("../lib/push");
+            const r = await enableNudges(settings?.userId);
+            setNudgeMsg(r.ok ? "Nudges enabled on this device. See you at 7:45." : r.reason);
+            setNudgeBusy(false);
+          }}>
+          {nudgeBusy ? "Setting up…" : "Enable nudges on this device"}
+        </button>
+        {nudgeMsg && <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.6 }}>{nudgeMsg}</p>}
       </div>
 
       {/* About */}

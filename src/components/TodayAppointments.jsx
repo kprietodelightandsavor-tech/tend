@@ -31,7 +31,7 @@ async function loadEvents() {
     const res = await fetch("/.netlify/functions/sync-calendar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, days: 14 }),
+      body: JSON.stringify({ url, days: 14, tz: Intl.DateTimeFormat().resolvedOptions().timeZone }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
@@ -56,6 +56,7 @@ export default function TodayAppointments({ viewDate }) {
   const day = viewDate ? new Date(viewDate) : new Date();
   const dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
   const todays = events.filter(e => {
+    if (e.allDay) return e.date === dayKey;      // all-day events carry a plain date
     const d = new Date(e.start);
     const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     return k === dayKey;
@@ -68,8 +69,8 @@ export default function TodayAppointments({ viewDate }) {
       {todays.map((e, i) => (
         <div key={i} style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: i === todays.length - 1 ? 0 : 7 }}>
           <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", flexShrink: 0, alignSelf: "center" }} />
-          <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 12, letterSpacing: ".04em", color: "var(--gold)", width: 40, flexShrink: 0 }}>
-            {timeLabel(e.start)}
+          <span style={{ fontFamily: e.allDay ? "'Cormorant Garamond', serif" : "'Lato', sans-serif", fontStyle: e.allDay ? "italic" : "normal", fontSize: 12, letterSpacing: ".04em", color: "var(--gold)", width: 40, flexShrink: 0 }}>
+            {e.allDay ? "all day" : timeLabel(e.start)}
           </span>
           <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)", lineHeight: 1.4 }}>
             {e.title}
