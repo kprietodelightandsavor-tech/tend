@@ -15,8 +15,7 @@ import {
 import { HABIT_TERM, HABIT_MONTHS } from "../data/habit-term-seed";
 import { isVolunteerTuesday } from "../data/beauty-seed";
 import TodayAppointments from "./TodayAppointments";
-import CurrentlyReading from "./CurrentlyReading";
-import BrushPrompt from "./BrushPrompt";
+import SomethingBeautiful from "./SomethingBeautiful";
 import {
   getActivityChoices,
   getTomorrowActivity,
@@ -1626,11 +1625,10 @@ export default function SummerRhythm({ userId, viewDate, isToday, onNavigate }) 
         </p>
       </div>
 
-      {/* ── CURRENTLY READING + BRUSH PROMPT (replace the activity suggestions) ── */}
+      {/* ── SOMETHING BEAUTIFUL — one enrichment invitation a day ── */}
       {isToday && (
         <div style={{ margin: "22px 0 4px" }}>
-          <CurrentlyReading userId={userId} />
-          <BrushPrompt onNavigate={onNavigate} />
+          <SomethingBeautiful userId={userId} onNavigate={onNavigate} />
         </div>
       )}
     </div>
