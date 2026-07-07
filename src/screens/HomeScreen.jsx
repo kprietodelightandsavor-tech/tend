@@ -2,6 +2,7 @@ import SummerRhythm, { HabitFocus } from "../components/SummerRhythm";
 import MorningPlan from "../components/MorningPlan";
 import LunchIdea from "../components/LunchIdea";
 import SummerRest from "../components/SummerRest";
+import FocusTimer from "../components/FocusTimer";
 import { useDayAppointments } from "../components/TodayAppointments";
 import { useState, useRef, useEffect } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm, NATURE_DAYS, NATURE_LOOP_STEPS, getNatureLoopStep, advanceNatureLoop } from "../data/seed";
@@ -956,6 +957,7 @@ export default function HomeScreen({ onNavigate, settings }) {
       {isSummer ? (
         <>
           {isToday && <SummerRest />}
+          {isToday && <FocusTimer />}
           <SummerRhythm
             userId={settings?.userId}
             viewDate={viewDate}
@@ -967,6 +969,7 @@ export default function HomeScreen({ onNavigate, settings }) {
       ) : (
         <>
           {isToday && <MorningPlan blocks={todayBlocks} />}
+          {isToday && <FocusTimer />}
           {isToday && <LunchIdea />}
           {/* Evening Close prompt — appears from 3pm; softens (but stays) once today is kept */}
           {isToday && new Date().getHours() >= 15 && (() => {

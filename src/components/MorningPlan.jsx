@@ -35,17 +35,24 @@ function isNarrated(subject = "") {
 }
 
 function fromBlocks(blocks) {
-  const morning = (blocks || [])
+  // the whole day, in order — so "min left" follows you past noon
+  const day = (blocks || [])
     .map(b => ({ ...b, _m: toMin(b.time) }))
-    .filter(b => b._m !== null && b._m < 12 * 60 && b.subject !== "Lunch")
+    .filter(b => b._m !== null)
     .sort((a, b) => a._m - b._m);
-  return morning.map((b, i) => ({
+  return day.map((b, i) => ({
     id: b.id || `mp-${i}`,
     label: String(b.subject).replace(/^Core\s*[—-]\s*/, ""),
     start: b.time,
-    end: morning[i + 1] ? morning[i + 1].time : "12:00",
+    end: day[i + 1] ? day[i + 1].time : to12(b._m + 45),
     narrate: isNarrated(b.subject),
   }));
+}
+
+function to12(mins) {
+  mins = ((mins % 1440) + 1440) % 1440;
+  let h = Math.floor(mins / 60) % 12; if (h === 0) h = 12;
+  return `${h}:${String(mins % 60).padStart(2, "0")}`;
 }
 
 export default function MorningPlan({ blocks = null, items = DEFAULT_MORNING, creative = CREATIVE_LINE }) {
@@ -65,12 +72,15 @@ export default function MorningPlan({ blocks = null, items = DEFAULT_MORNING, cr
   const current = allDone ? null : list[currentIdx];
   const next = (!allDone && currentIdx + 1 < list.length) ? list[currentIdx + 1] : null;
 
+  const hourNow = new Date().getHours();
+  const chapter = hourNow < 12 ? "This morning" : hourNow < 17 ? "This afternoon" : "This evening";
+
   return (
     <div style={{ marginBottom: 28 }}>
-      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--sage)", margin: "0 0 18px" }}>This morning</p>
+      <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--sage)", margin: "0 0 18px" }}>{chapter}</p>
 
       {allDone ? (
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, color: "var(--ink)", margin: "0 0 18px" }}>The morning is done.</p>
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, color: "var(--ink)", margin: "0 0 18px" }}>The day's blocks are done.</p>
       ) : (
         <>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink-faint)", margin: "0 0 6px" }}>now</p>
@@ -96,7 +106,7 @@ export default function MorningPlan({ blocks = null, items = DEFAULT_MORNING, cr
 
       <button onClick={() => setOpen(o => !o)}
         style={{ background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
-        {open ? "‹ just what's now" : "the whole morning ›"}
+        {open ? "‹ just what's now" : "the whole day ›"}
       </button>
 
       {open && (

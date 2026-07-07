@@ -1592,6 +1592,19 @@ export default function SummerRhythm({ userId, viewDate, isToday, onNavigate, ap
       <RhythmSection marker={SunMarker} title="Afternoon" showLine>
         {appts.afternoon.map((e, i) => <SummerApptRow key={`pm-${i}`} e={e} />)}
         <p style={rhythmItemStyle}>Play · adventure · friends welcome — room for ordinary life</p>
+        {/* screens window lives in the rhythm, where it happens */}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 9, margin: "6px 0 2px" }}>
+          <span style={{ width: 5, height: 5, borderRadius: "50%", border: "1px solid var(--sage)", background: "var(--sage-bg)", flexShrink: 0, alignSelf: "center" }} />
+          <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 11.5, letterSpacing: ".04em", color: "var(--sage)", width: 38, flexShrink: 0 }}>
+            {(dayName === "Saturday" || dayName === "Sunday") ? "11:00" : "2:00"}
+          </span>
+          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 14.5, color: "var(--ink)", lineHeight: 1.4 }}>
+            Screens on{" "}
+            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)" }}>
+              — back on the counter at {(dayName === "Saturday" || dayName === "Sunday") ? "4:00" : "5:00"}
+            </span>
+          </span>
+        </div>
       </RhythmSection>
 
       {/* ── EVENING ── */}
@@ -1600,32 +1613,7 @@ export default function SummerRhythm({ userId, viewDate, isToday, onNavigate, ap
         <p style={rhythmItemStyle}>Dinner together · dusk outside · quiet · rest</p>
       </RhythmSection>
 
-      {/* ── SCREENS — standalone card, always visible ── */}
-      <div style={{
-        margin: "16px 0 4px",
-        padding: "13px 16px",
-        background: "var(--sage-bg)",
-        border: "0.5px solid var(--sage-md)",
-        borderRadius: 8,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 7.5V12l3 2" />
-          </svg>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--sage)", margin: 0 }}>
-            Screens
-          </p>
-        </div>
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)", margin: "0 0 5px", paddingLeft: 23 }}>
-          Weekdays 2&ndash;5
-          <span style={{ color: "var(--sage-md)", margin: "0 8px" }}>&middot;</span>
-          Weekends 11&ndash;4
-        </p>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12.5, lineHeight: 1.6, color: "var(--ink-faint)", margin: 0, paddingLeft: 23 }}>
-          &ldquo;There&rsquo;s no WiFi in the forest, but you&rsquo;ll find a better connection.&rdquo;
-        </p>
-      </div>
+      {/* screens window now lives inside the Afternoon rhythm above */}
 
       {/* ── SOMETHING BEAUTIFUL — one enrichment invitation a day ── */}
       {isToday && (

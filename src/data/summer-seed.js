@@ -192,23 +192,27 @@ export const WORK_OPENS_AT  = "2:00";
 export const WORK_CLOSES_AT = "4:00";
 
 export const SUMMER_REST_NUDGES = [
-  { tag: "for the children", text: "Say yes to the next popsicle request." },
-  { tag: "for you",          text: "Sit outside for ten minutes with nothing in your hands." },
-  { tag: "for your marriage", text: "Send your husband something that isn't logistics." },
-  { tag: "for the children", text: "Ask each child at dinner: what was the best part of today?" },
-  { tag: "for you",          text: "One chapter of your own book before anyone needs you." },
-  { tag: "for your marriage", text: "A walk together after dinner — leave the phones on the counter." },
-  { tag: "for the children", text: "Swim with them instead of watching them swim." },
-  { tag: "for you",          text: "Go to bed before you're exhausted, not after." },
-  { tag: "for the children", text: "Tell one child one specific thing you love about who they're becoming." },
-  { tag: "for you",          text: "Let dinner be simple tonight. Presence over presentation." },
-  { tag: "for your marriage", text: "Ask him about something he's excited about. Just listen." },
-  { tag: "for the children", text: "Lie on a blanket and watch the sky with whoever joins you." },
-  { tag: "for you",          text: "The work will keep. It always keeps. That's the one thing it's good at." },
-  { tag: "for your marriage", text: "Plan nothing for tonight, together. Guard the empty evening." },
+  { tag: "for the children", when: "day",     text: "Say yes to the next popsicle request." },
+  { tag: "for you",          when: "day",     text: "Sit outside for ten minutes with nothing in your hands." },
+  { tag: "for your marriage", when: "day",    text: "Send your husband something that isn't logistics." },
+  { tag: "for the children", when: "evening", text: "Ask each child at dinner: what was the best part of today?" },
+  { tag: "for you",          when: "day",     text: "One chapter of your own book before anyone needs you." },
+  { tag: "for your marriage", when: "evening", text: "A walk together after dinner — leave the phones on the counter." },
+  { tag: "for the children", when: "day",     text: "Swim with them instead of watching them swim." },
+  { tag: "for you",          when: "evening", text: "Go to bed before you're exhausted, not after." },
+  { tag: "for the children", when: "day",     text: "Tell one child one specific thing you love about who they're becoming." },
+  { tag: "for you",          when: "evening", text: "Let dinner be simple tonight. Presence over presentation." },
+  { tag: "for your marriage", when: "day",    text: "Ask him about something he's excited about. Just listen." },
+  { tag: "for the children", when: "evening", text: "Lie on a blanket and watch the sky with whoever joins you." },
+  { tag: "for you",          when: "day",     text: "The work will keep. It always keeps. That's the one thing it's good at." },
+  { tag: "for your marriage", when: "evening", text: "Plan nothing for tonight, together. Guard the empty evening." },
 ];
 
 export function getTodayNudge(date = new Date()) {
+  // evening nudges wait for the evening; day nudges carry the daylight hours
+  const pool = SUMMER_REST_NUDGES.filter(n =>
+    date.getHours() >= 17 ? n.when === "evening" : n.when === "day"
+  );
   const dayIndex = Math.floor(date.getTime() / (24 * 60 * 60 * 1000));
-  return SUMMER_REST_NUDGES[dayIndex % SUMMER_REST_NUDGES.length];
+  return pool[dayIndex % pool.length];
 }
