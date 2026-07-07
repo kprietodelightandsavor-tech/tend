@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import { DAYS, DAY_SCHEDULE } from "../data/seed";
+import { MC_ITEMS as SHARED_MC_ITEMS, loadMC, saveMC } from "../lib/motherCulture";
 
 const STORE_KEY = "tend_evening_close";
 
@@ -28,11 +29,8 @@ function saveEntry(key, entry) {
   } catch {}
 }
 
-const MC_ITEMS = [
-  { id: "movement", label: "Movement" },
-  { id: "nature",   label: "Nature moment" },
-  { id: "rest",     label: "Rest / quiet" },
-];
+// shared with the home-screen check-in row, so both always agree
+const MC_ITEMS = SHARED_MC_ITEMS;
 
 const CLOSING_LINES = [
   "The day is kept. Let the rest go.",
@@ -97,7 +95,7 @@ export default function EveningCloseScreen({ onNavigate, settings }) {
 
   const [done, setDone]       = useState(existing?.done || []);
   const [delight, setDelight] = useState(existing?.delight || "");
-  const [mc, setMc]           = useState(existing?.mc || []);
+  const [mc, setMc]           = useState(() => loadMC(key)); // day's check-ins carry in
   const [kept, setKept]       = useState(false);
   const [synced, setSynced]   = useState(false);
 
@@ -105,6 +103,7 @@ export default function EveningCloseScreen({ onNavigate, settings }) {
     setList(list.includes(id) ? list.filter(x => x !== id) : [...list, id]);
 
   const keep = () => {
+    saveMC(mc, key); // keep the shared check-in record in agreement
     saveEntry(key, { done, delight: delight.trim(), mc, keptAt: new Date().toISOString() });
     setKept(true);
     // fire-and-forget: the kept day becomes Teaching Record entries
