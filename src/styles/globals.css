@@ -558,3 +558,36 @@ body {
   background: var(--sage-bg);
   border-color: var(--sage-md);
 }
+
+/* ─── ACCESSIBILITY ──────────────────────────────────────────────────────────
+   Comfort reading (dyslexia-friendly): body text becomes upright sans with
+   taller line spacing; Playfair headings stay. Toggled in Settings.        */
+.easy-read p,
+.easy-read span,
+.easy-read button,
+.easy-read input,
+.easy-read textarea,
+.easy-read label {
+  font-family: 'Lato', system-ui, sans-serif !important;
+  font-style: normal !important;
+}
+.easy-read p { line-height: 1.65 !important; letter-spacing: .01em; }
+.easy-read .caption,
+.easy-read .caption.italic { font-size: 13px !important; }
+.easy-read .eyebrow { letter-spacing: .08em !important; }
+/* keep the brand voice in headings */
+.easy-read h1, .easy-read h2, .easy-read h3,
+.easy-read .serif, .easy-read .display, .easy-read .display-sm {
+  font-family: 'Playfair Display', Georgia, serif !important;
+}
+
+/* Long lines are hard to track back — cap the reading measure on wide screens */
+@media (min-width: 900px) {
+  .screen p { max-width: 68ch; }
+}
+
+/* Honor the system's reduced-motion setting */
+@media (prefers-reduced-motion: reduce) {
+  .screen { animation: none !important; }
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}

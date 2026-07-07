@@ -304,6 +304,18 @@ export default function App() {
   const [session, setSession]   = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading]   = useState(true);
+  // Comfort reading (dyslexia-friendly type) — toggled in Settings
+  const [easyRead, setEasyRead] = useState(() => {
+    try { return localStorage.getItem("tend_easy_read") === "1"; } catch { return false; }
+  });
+  useEffect(() => {
+    const onToggle = () => {
+      try { setEasyRead(localStorage.getItem("tend_easy_read") === "1"); } catch {}
+    };
+    window.addEventListener("tend-easy-read", onToggle);
+    return () => window.removeEventListener("tend-easy-read", onToggle);
+  }, []);
+
   const [screen, setScreen]     = useState(() => {
     // notifications can deep-link, e.g. /?screen=evening-close
     try {
@@ -451,7 +463,7 @@ export default function App() {
   }
 
   return (
-    <div className="shell">
+    <div className={`shell${easyRead ? " easy-read" : ""}`}>
       <div key={screen} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
         <ScreenComponent {...screenProps} />
       </div>

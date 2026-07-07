@@ -45,6 +45,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
   const [icsUrl, setIcsUrl]       = useState(() => { try { return localStorage.getItem("tend_ics_url") || ""; } catch { return ""; } });
   const [nudgeBusy, setNudgeBusy] = useState(false);
   const [nudgeMsg, setNudgeMsg]   = useState("");
+  const [easyReadOn, setEasyReadOn] = useState(() => { try { return localStorage.getItem("tend_easy_read") === "1"; } catch { return false; } });
   const [calEvents, setCalEvents] = useState([]);
   const [calMsg, setCalMsg]       = useState("");
   const [calLoading, setCalLoading] = useState(false);
@@ -272,6 +273,31 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
             ))}
           </div>
         )}
+      </div>
+
+      <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
+
+      {/* Comfort Reading — dyslexia-friendly type */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <Icon.Leaf />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Comfort Reading</p>
+        </div>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
+          Swaps the italic serif body text for a clear, upright typeface with taller line spacing —
+          easier on dyslexic eyes and tired ones. Headings keep their serif.
+        </p>
+        <button className="btn-sage" style={{ width: "100%" }}
+          onClick={() => {
+            try {
+              const next = !easyReadOn;
+              localStorage.setItem("tend_easy_read", next ? "1" : "0");
+              setEasyReadOn(next);
+              window.dispatchEvent(new Event("tend-easy-read"));
+            } catch {}
+          }}>
+          {easyReadOn ? "Turn comfort reading off" : "Turn comfort reading on"}
+        </button>
       </div>
 
       <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />

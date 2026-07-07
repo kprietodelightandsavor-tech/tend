@@ -9,7 +9,7 @@
 //   • Reads from the real schedule when blocks are passed in, so co-op
 //     days and edits show up here automatically. Falls back to defaults.
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const DEFAULT_MORNING = [
   { id: "rise",  label: "Morning Focus",           start: "7:30", end: "8:45" },
@@ -50,6 +50,12 @@ function fromBlocks(blocks) {
 
 export default function MorningPlan({ blocks = null, items = DEFAULT_MORNING, creative = CREATIVE_LINE }) {
   const [open, setOpen] = useState(false);
+  // tick once a minute so "min left" stays honest (time-blindness aid)
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 60000);
+    return () => clearInterval(id);
+  }, []);
 
   const list = blocks && blocks.length ? fromBlocks(blocks) : items;
 
@@ -69,7 +75,16 @@ export default function MorningPlan({ blocks = null, items = DEFAULT_MORNING, cr
         <>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink-faint)", margin: "0 0 6px" }}>now</p>
           <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, lineHeight: 1.25, color: "var(--ink)", margin: "0 0 8px" }}>{current.label}</p>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 14, letterSpacing: ".04em", color: "var(--gold)", margin: "0 0 8px" }}>{current.start} – {current.end}</p>
+          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 14, letterSpacing: ".04em", color: "var(--gold)", margin: "0 0 8px" }}>
+            {current.start} – {current.end}
+            {(() => {
+              const e = toMin(current.end);
+              const left = e !== null ? e - nowMin : null;
+              return left !== null && left > 0 && left < 240
+                ? <span style={{ color: "var(--ink-faint)" }}>  ·  {left} min left</span>
+                : null;
+            })()}
+          </p>
           {current.narrate && (
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--sage)", margin: "0 0 16px" }}>
               …then a telling. A few sentences is plenty.
