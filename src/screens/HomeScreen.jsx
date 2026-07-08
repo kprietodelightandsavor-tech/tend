@@ -1,4 +1,5 @@
 import SummerRhythm, { HabitFocus } from "../components/SummerRhythm";
+import SproutMark from "../components/SproutMark";
 import MorningPlan from "../components/MorningPlan";
 import LunchIdea from "../components/LunchIdea";
 import SummerRest from "../components/SummerRest";
@@ -937,20 +938,22 @@ export default function HomeScreen({ onNavigate, settings }) {
     <div className={`screen${isSummer ? " summer" : ""}`}>
       <DayNavigator viewDate={viewDate} onChange={setViewDate} onSnapToday={snapToToday} onCamera={openCamera} />
       {isToday && (
-        <h1
-          className="serif"
-          style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontWeight: 400,
-            fontSize: 22,
-            lineHeight: 1.25,
-            color: "var(--ink)",
-            marginBottom: 14,
-            marginTop: 8,
-          }}
-        >
-          {greeting}, {name}.
-        </h1>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14, marginTop: 8 }}>
+          <h1
+            className="serif"
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontWeight: 400,
+              fontSize: 22,
+              lineHeight: 1.25,
+              color: "var(--ink)",
+              margin: 0,
+            }}
+          >
+            {greeting}, {name}.
+          </h1>
+          <SproutMark size={38} color="#5C6B4F" />
+        </div>
       )}
       {!isToday && (
         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", marginBottom: 18, marginTop: 8 }}>
