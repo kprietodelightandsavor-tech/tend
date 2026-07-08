@@ -26,6 +26,15 @@ export const Ic = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
     </svg>
   ),
+  Lantern: () => (
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 4h6" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 8c0-1.1.9-2 2-2h4a2 2 0 012 2l.6 7a2 2 0 01-2 2.2H9.4a2 2 0 01-2-2.2L8 8z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 10.5c-.8 1-1.2 1.8-1.2 2.6a1.2 1.2 0 002.4 0c0-.8-.4-1.6-1.2-2.6z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10 19.5h4M12 19.5V22" />
+    </svg>
+  ),
   Leaf: () => (
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />

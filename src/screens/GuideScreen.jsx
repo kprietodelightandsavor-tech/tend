@@ -1,10 +1,13 @@
 // src/screens/GuideScreen.jsx
 //
-// The Tend Guide — a gentle AI companion with two doors:
+// The Lantern — a small light for whichever stretch of the day needs it.
+// Three doors:
 //   • Change gears  — help stopping one thing and starting the next
 //                     (for the mother or a child; ADHD-aware, body-first)
 //   • Something's not working — troubleshooting the ordinary hard days,
 //                     in Charlotte Mason's spirit
+// Speak or type — the mic uses the browser's speech recognition where
+// available (on iPhone, the keyboard's dictation key always works too).
 //
 // Free tier: 5 exchanges a day. Premium: unhurried.
 
@@ -24,13 +27,13 @@ const MODES = {
   },
   troubleshoot: {
     title: "Something's not working",
-    sub: "The ordinary hard things of a homeschool day",
-    placeholder: "Tell the Guide what's happening — plainly is fine.",
+    sub: "The ordinary hard things of a homeschool day — or a fresh idea when the well runs dry",
+    placeholder: "Tell the Lantern what's happening — plainly is fine.",
     starters: [
       "My child fights narration every single time",
       "Math ends in tears more days than not",
       "We're so behind and I'm starting to panic",
-      "I've lost the thread of why we homeschool",
+      "Give me a fresh idea for our poetry tea time",
     ],
   },
 };
@@ -54,6 +57,72 @@ function bumpCount() {
     localStorage.setItem(COUNT_KEY, JSON.stringify({ date: todayKey(), n }));
     return n;
   } catch { return 0; }
+}
+
+// ── voice input (Web Speech API, graceful when absent) ──
+function getRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR();
+  r.lang = "en-US";
+  r.interimResults = true;
+  r.continuous = false;
+  return r;
+}
+
+function MicButton({ onText, disabled }) {
+  const [listening, setListening] = useState(false);
+  const recRef = useRef(null);
+  const supported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+  useEffect(() => () => { try { recRef.current?.abort(); } catch {} }, []);
+
+  if (!supported) return null; // iPhone keyboards still offer dictation in the textarea
+
+  const toggle = () => {
+    if (disabled) return;
+    if (listening) {
+      try { recRef.current?.stop(); } catch {}
+      setListening(false);
+      return;
+    }
+    const rec = getRecognition();
+    if (!rec) return;
+    recRef.current = rec;
+    let finalText = "";
+    rec.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalText += t;
+        else interim += t;
+      }
+      onText((finalText + interim).trim(), false);
+    };
+    rec.onend = () => {
+      setListening(false);
+      if (finalText.trim()) onText(finalText.trim(), true);
+    };
+    rec.onerror = () => setListening(false);
+    try { rec.start(); setListening(true); } catch { setListening(false); }
+  };
+
+  return (
+    <button onClick={toggle} disabled={disabled} aria-label={listening ? "stop listening" : "speak your question"}
+      style={{
+        background: listening ? "var(--gold-bg)" : "none",
+        border: `1px solid ${listening ? "var(--gold)" : "var(--sage-md)"}`,
+        borderRadius: "50%", width: 40, height: 40, flexShrink: 0,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        cursor: disabled ? "default" : "pointer", transition: "all .2s",
+      }}>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={listening ? "var(--gold)" : "var(--sage)"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="9" y="3" width="6" height="11" rx="3" />
+        <path d="M5 11a7 7 0 0 0 14 0" />
+        <path d="M12 18v3" />
+      </svg>
+    </button>
+  );
 }
 
 export default function GuideScreen({ onNavigate, settings }) {
@@ -86,10 +155,10 @@ export default function GuideScreen({ onNavigate, settings }) {
       const data = await res.json();
       setMessages(m => [...m, {
         role: "assistant",
-        content: data.reply || data.error || "The Guide is resting — try again in a moment.",
+        content: data.reply || data.error || "The Lantern flickered — try again in a moment.",
       }]);
     } catch {
-      setMessages(m => [...m, { role: "assistant", content: "The Guide is resting — try again in a moment." }]);
+      setMessages(m => [...m, { role: "assistant", content: "The Lantern flickered — try again in a moment." }]);
     }
     setBusy(false);
   };
@@ -98,10 +167,10 @@ export default function GuideScreen({ onNavigate, settings }) {
   if (!mode) {
     return (
       <div className="screen">
-        <p className="eyebrow" style={{ marginBottom: 6 }}>A companion, not a curriculum</p>
-        <h1 className="display serif" style={{ marginBottom: 8 }}>The Guide</h1>
+        <p className="eyebrow" style={{ marginBottom: 6 }}>A small light, when you need one</p>
+        <h1 className="display serif" style={{ marginBottom: 8 }}>The Lantern</h1>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.7, marginBottom: 28 }}>
-          Two doors. Walk through whichever one today needs.
+          Guide, muse, and troubleshooter. Speak or type — bring it whatever the day has brought you.
         </p>
 
         {Object.entries(MODES).map(([id, m]) => (
@@ -115,7 +184,7 @@ export default function GuideScreen({ onNavigate, settings }) {
         ))}
 
         <p className="caption italic" style={{ marginTop: 28, lineHeight: 1.7 }}>
-          The Guide is a thoughtful companion, not an expert on your child.
+          The Lantern is a thoughtful companion, not an expert on your child.
           You know them best — take what serves, leave the rest.
           {!isPaid && ` Free: ${FREE_DAILY_LIMIT} exchanges a day.`}
         </p>
@@ -130,7 +199,7 @@ export default function GuideScreen({ onNavigate, settings }) {
     <div className="screen" style={{ display: "flex", flexDirection: "column", minHeight: "70vh" }}>
       <button onClick={() => { setMode(null); setMessages([]); }}
         style={{ background: "none", border: "none", cursor: "pointer", padding: 0, textAlign: "left", marginBottom: 4, fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
-        ← the guide
+        ← the lantern
       </button>
       <h1 className="display serif" style={{ fontSize: 26, marginBottom: 4 }}>{m.title}</h1>
       <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", marginBottom: 20 }}>{m.sub}</p>
@@ -156,7 +225,7 @@ export default function GuideScreen({ onNavigate, settings }) {
                 {msg.content}
               </p>
             ) : (
-              <div style={{ borderLeft: "2px solid var(--sage-md)", paddingLeft: 14 }}>
+              <div style={{ borderLeft: "2px solid var(--gold)", paddingLeft: 14 }}>
                 <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15.5, color: "var(--ink)", lineHeight: 1.75, margin: 0, whiteSpace: "pre-wrap" }}>
                   {msg.content}
                 </p>
@@ -165,7 +234,7 @@ export default function GuideScreen({ onNavigate, settings }) {
           </div>
         ))}
         {busy && (
-          <p className="corm italic" style={{ fontSize: 13, color: "var(--ink-faint)" }}>the Guide is thinking…</p>
+          <p className="corm italic" style={{ fontSize: 13, color: "var(--ink-faint)" }}>the Lantern is thinking…</p>
         )}
         <div ref={endRef} />
       </div>
@@ -174,7 +243,7 @@ export default function GuideScreen({ onNavigate, settings }) {
       {atLimit && (
         <div style={{ padding: "14px 16px", marginBottom: 14, background: "var(--gold-bg)", border: "1px solid var(--rule)", borderRadius: 3, textAlign: "center" }}>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)", lineHeight: 1.6, margin: "0 0 4px" }}>
-            The Guide has given its five for today. With Premium, it stays as long as you need.
+            The Lantern has given its five for today. With Premium, it stays lit as long as you need.
           </p>
           <a href="https://delightnsavor.gumroad.com/l/qrxxi" target="_blank" rel="noopener noreferrer"
             style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", textDecoration: "none" }}>
@@ -183,8 +252,9 @@ export default function GuideScreen({ onNavigate, settings }) {
         </div>
       )}
 
-      {/* input */}
+      {/* input — type, or speak */}
       <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+        <MicButton disabled={busy || atLimit} onText={(t) => setInput(t)} />
         <textarea
           className="textarea"
           rows={2}

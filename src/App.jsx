@@ -23,7 +23,7 @@ import MemoryBookScreen from "./screens/MemoryBookScreen";
 import EveningCloseScreen from "./screens/EveningCloseScreen";
 import GuideScreen from "./screens/GuideScreen";
 
-const NAV_SCREENS = ["home", "planner", "narration", "menu"];
+const NAV_SCREENS = ["home", "planner", "guide", "narration", "menu"];
 
 const NOTES_KEY = "tend_quick_notes";
 const SUBJECTS  = ["General", "Math", "Language Arts", "History", "Science", "Geography", "Nature Study", "Read Aloud", "Spanish", "Co-op", "Other"];
