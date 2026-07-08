@@ -1511,18 +1511,26 @@ const MoonMarker = (
 );
 
 // ─── RHYTHM SECTION (side marker + connecting rail, always open) ─────
-function RhythmSection({ marker, title, showLine, children }) {
+// timeState: "past" recedes gently, "now" wears a quiet chip, "future"/null is normal.
+function RhythmSection({ marker, title, showLine, timeState, children }) {
+  const isPast = timeState === "past";
+  const isNow = timeState === "now";
   return (
-    <div style={{ display: "flex" }}>
+    <div style={{ display: "flex", opacity: isPast ? 0.45 : 1, transition: "opacity .4s ease" }}>
       {/* left marker rail */}
-      <div style={{ width: 30, flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={{ width: 30, flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", filter: isPast ? "grayscale(1)" : "none" }}>
         <div style={{ marginTop: 13 }}>{marker}</div>
-        {showLine && <div style={{ width: 1, flex: 1, background: "var(--rule)", marginTop: 7 }} />}
+        {showLine && <div style={{ width: 1, flex: 1, background: isNow ? "var(--sage-md)" : "var(--rule)", marginTop: 7 }} />}
       </div>
       {/* body */}
       <div style={{ flex: 1, paddingBottom: 4 }}>
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 400, color: "var(--ink)", margin: 0, padding: "11px 0 9px" }}>
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 400, color: isPast ? "var(--ink-faint)" : "var(--ink)", margin: 0, padding: "11px 0 9px", display: "flex", alignItems: "center", gap: 10 }}>
           {title}
+          {isNow && (
+            <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 8.5, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 999, padding: "2px 8px" }}>
+              now
+            </span>
+          )}
         </p>
         <div style={{ paddingBottom: 8 }}>{children}</div>
       </div>
@@ -1549,6 +1557,21 @@ export default function SummerRhythm({ userId, viewDate, isToday, onNavigate, ap
   const isVolunteerTue = dayName === "Tuesday" && isVolunteerTuesday(viewDate);
   const isNatureDay = NATURE_DAYS[dayName] === true;
 
+  // where the day sits — refreshed each minute so past chapters recede
+  const [nowHour, setNowHour] = useState(() => new Date().getHours() + new Date().getMinutes() / 60);
+  useEffect(() => {
+    if (!isToday) return;
+    const id = setInterval(() => setNowHour(new Date().getHours() + new Date().getMinutes() / 60), 60000);
+    return () => clearInterval(id);
+  }, [isToday]);
+  const chapterState = (chapter) => {
+    if (!isToday) return null;
+    const bounds = { morning: [0, 12], afternoon: [12, 17], evening: [17, 24] }[chapter];
+    if (nowHour >= bounds[1]) return "past";
+    if (nowHour >= bounds[0]) return "now";
+    return "future";
+  };
+
   return (
     <div>
       {/* One guidance line lives above (the gentle nod) - so no CM quote here.
@@ -1561,7 +1584,7 @@ export default function SummerRhythm({ userId, viewDate, isToday, onNavigate, ap
       {/* Habit focus lives on the Habits screen in summer — the day stays light */}
 
       {/* ── MORNING ── */}
-      <RhythmSection marker={SunriseMarker} title="Morning" showLine>
+      <RhythmSection marker={SunriseMarker} title="Morning" showLine timeState={chapterState("morning")}>
         {appts.allDay.map((e, i) => <SummerApptRow key={`ad-${i}`} e={e} />)}
         {appts.morning.map((e, i) => <SummerApptRow key={`am-${i}`} e={e} />)}
         <p style={rhythmItemStyle}>Slow start · home cared for · outside before the heat</p>
@@ -1571,7 +1594,7 @@ export default function SummerRhythm({ userId, viewDate, isToday, onNavigate, ap
       </RhythmSection>
 
       {/* ── AFTERNOON ── */}
-      <RhythmSection marker={SunMarker} title="Afternoon" showLine>
+      <RhythmSection marker={SunMarker} title="Afternoon" showLine timeState={chapterState("afternoon")}>
         {(() => {
           // one chronological list: appointments + the screens boundary
           const isWknd = dayName === "Saturday" || dayName === "Sunday";
@@ -1589,7 +1612,7 @@ export default function SummerRhythm({ userId, viewDate, isToday, onNavigate, ap
       </RhythmSection>
 
       {/* ── EVENING ── */}
-      <RhythmSection marker={MoonMarker} title="Evening" showLine={false}>
+      <RhythmSection marker={MoonMarker} title="Evening" showLine={false} timeState={chapterState("evening")}>
         {appts.evening.map((e, i) => <SummerApptRow key={`ev-${i}`} e={e} />)}
         <p style={rhythmItemStyle}>Dinner together · dusk outside · quiet · rest</p>
       </RhythmSection>

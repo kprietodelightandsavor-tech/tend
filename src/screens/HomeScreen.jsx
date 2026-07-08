@@ -471,10 +471,12 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
     }
     return { beforeBlock, tail };
   })();
-  const ApptRow = ({ e }) => (
-    <div style={{ borderBottom: "1px solid var(--rule)" }}>
+  const ApptRow = ({ e }) => {
+    const apptPast = isToday && !e.allDay && typeof e._min === "number" && (new Date().getHours() * 60 + new Date().getMinutes()) > e._min + 30;
+    return (
+    <div style={{ borderBottom: "1px solid var(--rule)", opacity: apptPast ? 0.45 : 1, transition: "opacity .4s ease" }}>
       <div style={{ display: "flex", gap: 0, alignItems: "center", padding: "10px 0 8px" }}>
-        <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: "var(--gold)", marginRight: 12, flexShrink: 0, minHeight: 24 }} />
+        <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: apptPast ? "var(--rule)" : "var(--gold)", marginRight: 12, flexShrink: 0, minHeight: 24 }} />
         <div style={{ width: 18, display: "flex", justifyContent: "center", marginRight: 10, flexShrink: 0 }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", border: "1px solid var(--gold)", background: "var(--gold-bg)" }} />
         </div>
@@ -486,10 +488,33 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
         </p>
       </div>
     </div>
-  );
+    );
+  };
   const dateKey = viewDate.toISOString().slice(0, 10);
   const userId  = settings?.userId;
   const [synced, setSynced] = useState(false);
+
+  // ── time-awareness: the schedule knows where the day sits ──
+  // Past blocks recede (grayed, even unchecked); the current one wears a quiet "now".
+  const [nowMin, setNowMin] = useState(() => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); });
+  useEffect(() => {
+    if (!isToday) return;
+    const id = setInterval(() => { const d = new Date(); setNowMin(d.getHours() * 60 + d.getMinutes()); }, 60000);
+    return () => clearInterval(id);
+  }, [isToday]);
+  // A block's window closes when the next timed block begins (last block: an hour).
+  const blockTimeState = (b, bi, list) => {
+    if (!isToday) return { past: false, now: false };
+    const start = apptToMin(b.time);
+    if (start === null) return { past: false, now: false };
+    let end = null;
+    for (let j = bi + 1; j < list.length; j++) {
+      const nm = apptToMin(list[j].time);
+      if (nm !== null) { end = nm; break; }
+    }
+    if (end === null) end = start + 60;
+    return { past: nowMin >= end, now: nowMin >= start && nowMin < end };
+  };
 
   const [subjectNotes, setSubjectNotes] = useState({});
   const [expandedBlock, setExpandedBlock] = useState(null);
@@ -714,8 +739,9 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
       })()}
 
       {(appointments?.allDay || []).map((e, ai) => <ApptRow key={`appt-allday-${ai}`} e={e} />)}
-      {items.map(b => {
+      {items.map((b, bi) => {
         const isDone = b.status === "done", isSkipped = b.status === "skipped";
+        const { past: isPastBlock, now: isNowBlock } = blockTimeState(b, bi, items);
         const showMother = isFreeBlock(b.subject) && !isSkipped && isToday;
         const blockColor = getBlockColor(b.subject);
         const isRise = b.riseShine === true;
@@ -732,15 +758,20 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
               <div onClick={() => setExpandedBlock(isExpanded ? null : b.id)}
                 onTouchStart={() => { if (b.status === "pending" && !isViewOnly) startLP(b.id); }} onTouchEnd={cancelLP}
                 onMouseDown={() => { if (b.status === "pending" && !isViewOnly) startLP(b.id); }} onMouseUp={cancelLP} onMouseLeave={cancelLP}
-                style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px", cursor: "pointer", opacity: isDone ? 0.35 : isSkipped ? 0.45 : 1, transition: "opacity .4s ease" }}>
-                <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: isDone || isSkipped ? "var(--rule)" : blockColor, marginRight: 12, flexShrink: 0, transition: "background .3s ease", minHeight: 36 }} />
+                style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px", cursor: "pointer", opacity: isDone ? 0.35 : isSkipped ? 0.45 : isPastBlock ? 0.45 : 1, transition: "opacity .4s ease" }}>
+                <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: isDone || isSkipped || isPastBlock ? "var(--rule)" : blockColor, marginRight: 12, flexShrink: 0, transition: "background .3s ease", minHeight: 36 }} />
                 <div onClick={e => { e.stopPropagation(); if (!isViewOnly) toggleDone(b.id); }} style={{ width: 18, height: 18, borderRadius: 2, border: `1.5px solid ${isDone ? "var(--sage)" : "var(--rule)"}`, background: isDone ? "var(--sage)" : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: isViewOnly ? "default" : "pointer", flexShrink: 0, transition: "all .2s", marginRight: 10, opacity: isViewOnly ? 0.5 : 1 }}>
                   {isDone && <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 16, color: isDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease", display: "flex", alignItems: "center", gap: 8 }}>
+                  <p style={{ fontSize: 16, color: isDone || isPastBlock ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease", display: "flex", alignItems: "center", gap: 8 }}>
                     {isBeautyBlock && <Icon.Flower size={14} color={isDone ? "var(--ink-faint)" : "var(--sage)"} />}
                     <span>{b.subject} <span style={{ fontSize: 12, color: "var(--ink-faint)", fontWeight: 400 }}>{displayTime}</span></span>
+                    {isNowBlock && !isDone && !isSkipped && (
+                      <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 8.5, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 999, padding: "2px 8px", flexShrink: 0 }}>
+                        now
+                      </span>
+                    )}
                   </p>
                   {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped · tap to restore</p>}
                   {b.note && !isSkipped && !isDone && !isBeautyBlock && <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
@@ -807,22 +838,47 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
   );
 }
 
-function WeekendRhythm({ rhythm }) {
+function WeekendRhythm({ rhythm, isToday }) {
   // Weekend days follow the same slim grammar as the rest of the app:
   // a theme, then one quiet line per part of the day. No boxes.
+  // The lines know where the day sits: past ones recede, the current one says "now".
+  const hour = new Date().getHours();
+  const timeWordState = (word) => {
+    if (!isToday) return null;
+    const w = String(word).toLowerCase();
+    const bounds =
+      w.includes("mid-morning") ? [10, 12] :
+      w.includes("morning")     ? [0, 10]  :
+      w.includes("afternoon")   ? [12, 17] :
+      w.includes("evening")     ? [17, 24] : null;
+    if (!bounds) return null;
+    if (hour >= bounds[1]) return "past";
+    if (hour >= bounds[0]) return "now";
+    return "future";
+  };
   return (
     <div style={{ marginBottom: 28 }}>
       <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 400, color: "var(--ink)", marginBottom: 16 }}>{rhythm.theme}</h2>
       <div>
-        {rhythm.items.map((item, idx) => (
-          <div key={idx} style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)", flexShrink: 0, width: 72 }}>{item.time}</span>
-            <span style={{ flex: 1, fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.55 }}>
-              <span style={{ fontStyle: "italic" }}>{item.label}</span>
-              {item.note && <span style={{ color: "var(--ink-faint)" }}> — {item.note}</span>}
-            </span>
-          </div>
-        ))}
+        {rhythm.items.map((item, idx) => {
+          const st = timeWordState(item.time);
+          return (
+            <div key={idx} style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12, opacity: st === "past" ? 0.45 : 1, transition: "opacity .4s ease" }}>
+              <span style={{ fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: st === "now" ? "var(--sage)" : st === "past" ? "var(--ink-faint)" : "var(--sage)", flexShrink: 0, width: 72 }}>
+                {item.time}
+              </span>
+              <span style={{ flex: 1, fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.55 }}>
+                <span style={{ fontStyle: "italic" }}>{item.label}</span>
+                {item.note && <span style={{ color: "var(--ink-faint)" }}> — {item.note}</span>}
+                {st === "now" && (
+                  <span style={{ fontFamily: "'Lato', sans-serif", fontStyle: "normal", fontSize: 8.5, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 999, padding: "2px 8px", marginLeft: 8 }}>
+                    now
+                  </span>
+                )}
+              </span>
+            </div>
+          );
+        })}
       </div>
       <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.7, marginTop: 16 }}>"{rhythm.quote}"</p>
     </div>
@@ -1029,7 +1085,7 @@ export default function HomeScreen({ onNavigate, settings }) {
           {isToday && <FamilyBibleStudy userId={settings?.userId} />}
 
           {isWeekend ? (
-            <WeekendRhythm rhythm={weekendRhythm} />
+            <WeekendRhythm rhythm={weekendRhythm} isToday={isToday} />
           ) : (
             <TodaySchedule
               appointments={dayAppts}
