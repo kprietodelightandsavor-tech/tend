@@ -15,7 +15,7 @@ import { useState, useRef, useEffect } from "react";
 
 const MODES = {
   transition: {
-    title: "Change gears",
+    title: "Transitions",
     sub: "Stopping one thing, starting the next — for you or a child",
     placeholder: "What are you (or they) in the middle of, and what needs to happen next?",
     starters: [
@@ -26,7 +26,7 @@ const MODES = {
     ],
   },
   troubleshoot: {
-    title: "Something's not working",
+    title: "Ideas & Untangling",
     sub: "The ordinary hard things of a homeschool day — or a fresh idea when the well runs dry",
     placeholder: "Tell the Lantern what's happening — plainly is fine.",
     starters: [
