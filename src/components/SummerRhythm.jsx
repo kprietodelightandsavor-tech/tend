@@ -497,33 +497,35 @@ function ReadingAndLearning({ userId, today, viewDate, isToday, isNatureDay }) {
 
   return (
     <>
-      <div
+      <button
         onClick={() => setExpanded((e) => !e)}
         style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          gap: 8,
           margin: "4px 0 0",
-          padding: "6px 12px 6px 8px",
-          background: expanded ? "var(--sage-bg)" : "rgba(232, 226, 213, 0.35)",
-          borderRadius: 4,
+          padding: expanded ? "4px 0 4px 8px" : "4px 0",
+          background: "none",
+          border: "none",
+          borderLeft: expanded ? "1.5px solid var(--sage-md)" : "none",
           cursor: "pointer",
-          transition: "background .2s",
+          width: "100%",
+          textAlign: "left",
         }}
       >
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, margin: 0, color: "var(--ink)", display: "flex", alignItems: "center", gap: 7 }}>
+        <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9.5, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", display: "inline-flex", alignItems: "center", gap: 6 }}>
           Reading &amp; learning
           {isNatureDay && (
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="nature day">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="nature day">
               <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" />
               <path d="M2 21c0-3 1.85-5.36 5.08-6" />
             </svg>
           )}
-        </p>
-        <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", color: "var(--ink-faint)" }}>
-          {expanded ? "close" : "open"}
         </span>
-      </div>
+        <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", color: "var(--ink-faint)" }}>
+          {expanded ? "close" : "open ›"}
+        </span>
+      </button>
 
       {expanded && (
         <div
@@ -1552,9 +1554,9 @@ export default function SummerRhythm({ userId, viewDate, isToday, onNavigate, ap
       {/* One guidance line lives above (the gentle nod) - so no CM quote here.
           The quote still greets school-year mornings, where it's the only voice. */}
 
-      {/* ── HEADER — one quiet line; summer needs less interface, not more ── */}
+      {/* ── HEADER — one quiet line; break needs less interface, not more ── */}
       <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--sage)", margin: "0 0 14px", textAlign: "center" }}>
-        Summer Rhythm
+        Break Rhythm
       </p>
       {/* Habit focus lives on the Habits screen in summer — the day stays light */}
 

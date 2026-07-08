@@ -114,16 +114,16 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
           <p className="eyebrow" style={{ marginBottom: 0 }}>Schedule Mode</p>
         </div>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
-          Switch to your summer rhythm. Your school-year schedule stays exactly as it is.
+          Switch to your break rhythm — summer, holidays, or a rest week mid-term. Your school-year schedule stays exactly as it is.
         </p>
         <div onClick={toggleSummer} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid var(--rule)", cursor: "pointer" }}>
-          <span style={{ fontSize: 16, fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}>Summer School mode</span>
+          <span style={{ fontSize: 16, fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}>Break mode</span>
           <span style={{ width: 44, height: 26, borderRadius: 20, background: mode === "summer" ? "var(--gold)" : "var(--rule)", position: "relative", transition: "background .2s", flexShrink: 0 }}>
             <span style={{ position: "absolute", top: 3, left: mode === "summer" ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left .2s" }} />
           </span>
         </div>
         <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.6 }}>
-          {mode === "summer" ? "Summer rhythm is on — your home shows the summer schedule." : "School year is on."}
+          {mode === "summer" ? "Break rhythm is on — your home shows the break schedule." : "School year is on."}
         </p>
       </div>
 

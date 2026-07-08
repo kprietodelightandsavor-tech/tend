@@ -808,22 +808,23 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
 }
 
 function WeekendRhythm({ rhythm }) {
+  // Weekend days follow the same slim grammar as the rest of the app:
+  // a theme, then one quiet line per part of the day. No boxes.
   return (
     <div style={{ marginBottom: 28 }}>
-      <div style={{ marginBottom: 20 }}>
-        <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 8 }}>Today's Rhythm</p>
-        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 400, color: "var(--ink)", marginBottom: 12 }}>{rhythm.theme}</h2>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.8 }}>"{rhythm.quote}"</p>
-      </div>
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 400, color: "var(--ink)", marginBottom: 16 }}>{rhythm.theme}</h2>
       <div>
         {rhythm.items.map((item, idx) => (
-          <div key={idx} style={{ borderBottom: "1px solid var(--rule)", paddingBottom: 16, marginBottom: 16 }}>
-            <p style={{ fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 6 }}>{item.time}</p>
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 400, color: "var(--ink)", marginBottom: 8 }}>{item.label}</h3>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.6 }}>{item.note}</p>
+          <div key={idx} style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 9, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)", flexShrink: 0, width: 72 }}>{item.time}</span>
+            <span style={{ flex: 1, fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: "var(--ink-lt)", lineHeight: 1.55 }}>
+              <span style={{ fontStyle: "italic" }}>{item.label}</span>
+              {item.note && <span style={{ color: "var(--ink-faint)" }}> — {item.note}</span>}
+            </span>
           </div>
         ))}
       </div>
+      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.7, marginTop: 16 }}>"{rhythm.quote}"</p>
     </div>
   );
 }

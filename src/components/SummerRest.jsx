@@ -18,43 +18,31 @@ export default function SummerRest() {
   const nudge = getTodayNudge();
 
   return (
-    <div style={{ marginBottom: 24 }}>
-      {/* ── your work, with edges ── */}
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
-        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--sage)", margin: 0 }}>
-          Your work, with edges
-        </p>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: workClosed ? "var(--gold)" : workOpen ? "var(--sage)" : "var(--ink-faint)", margin: 0 }}>
-          {workClosed ? "closed for today" : workOpen ? `open until ${WORK_CLOSES_AT}` : `${WORK_OPENS_AT} – ${WORK_CLOSES_AT}, with their screens`}
-        </p>
-      </div>
-
-      {workClosed ? (
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15.5, color: "var(--ink-lt)", lineHeight: 1.7, margin: 0 }}>
-          Screens are off and so are you. Whatever is unfinished will keep — it always does. The people in this house won't.
-        </p>
-      ) : (
-        <>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15.5, color: "var(--ink-lt)", lineHeight: 1.7, margin: "0 0 6px" }}>
-            {workOpen
-              ? "Two focused hours. What's the one piece of work that matters most right now?"
-              : "Before the day pulls you along: what's the one piece of work that matters most today?"}
-          </p>
-          <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", margin: 0 }}>
-            Name it in your planner.
-          </p>
-        </>
-      )}
-
-      {/* ── one gentle nod a day ── */}
-      <div style={{ marginTop: 16, paddingTop: 14, borderTop: "0.5px solid var(--rule)", paddingBottom: 18, borderBottom: "0.5px solid var(--rule)" }}>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "var(--ink-lt)", lineHeight: 1.65, margin: 0 }}>
-          {nudge.text}
-          <span style={{ fontFamily: "'Lato', sans-serif", fontStyle: "normal", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--gold)", marginLeft: 10 }}>
-            {nudge.tag}
+    <div style={{ marginBottom: 22 }}>
+      {/* ── your work, with edges — one line, same grammar as Lunch ── */}
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 10 }}>
+        <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--sage)", flexShrink: 0 }}>
+          Work
+        </span>
+        <span style={{ flex: 1, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14.5, color: "var(--ink-lt)", lineHeight: 1.6 }}>
+          {workClosed
+            ? "Closed for today. Whatever is unfinished will keep — it always does."
+            : workOpen
+              ? "Two focused hours — what's the one piece that matters most? Name it in your planner."
+              : "What's the one piece that matters most today? Name it in your planner."}
+          <span style={{ fontFamily: "'Lato', sans-serif", fontStyle: "normal", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: workClosed ? "var(--gold)" : "var(--ink-faint)", marginLeft: 8 }}>
+            {workClosed ? "closed" : workOpen ? `until ${WORK_CLOSES_AT}` : `${WORK_OPENS_AT} – ${WORK_CLOSES_AT}`}
           </span>
-        </p>
+        </span>
       </div>
+
+      {/* ── one gentle nod a day — a voice, not a box ── */}
+      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15.5, color: "var(--ink-lt)", lineHeight: 1.65, margin: 0 }}>
+        {nudge.text}
+        <span style={{ fontFamily: "'Lato', sans-serif", fontStyle: "normal", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--gold)", marginLeft: 10 }}>
+          {nudge.tag}
+        </span>
+      </p>
     </div>
   );
 }
