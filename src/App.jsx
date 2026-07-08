@@ -21,6 +21,7 @@ import BibleReadingScreen from "./screens/BibleReadingScreen";
 import BeautyLoopEditorScreen from "./screens/BeautyLoopEditorScreen";
 import MemoryBookScreen from "./screens/MemoryBookScreen";
 import EveningCloseScreen from "./screens/EveningCloseScreen";
+import GuideScreen from "./screens/GuideScreen";
 
 const NAV_SCREENS = ["home", "planner", "narration", "menu"];
 
@@ -207,6 +208,7 @@ const SCREENS = {
   "beauty-loop-editor": BeautyLoopEditorScreen,
   "memory-book":        MemoryBookScreen,
   "evening-close":      EveningCloseScreen,
+  "guide":              GuideScreen,
 };
 
 const STORAGE_KEY = 'tend_user';

@@ -503,13 +503,17 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
     return () => clearInterval(id);
   }, [isToday]);
   // A block's window closes when the next timed block begins (last block: an hour).
-  const blockTimeState = (b, bi, list) => {
+  // Uses the day's ORIGINAL order (blocks), not display order — done items sink
+  // to the Done section, which would otherwise scramble the time math.
+  const blockTimeState = (b) => {
     if (!isToday) return { past: false, now: false };
     const start = apptToMin(b.time);
     if (start === null) return { past: false, now: false };
+    const ordered = blocks || [];
+    const oi = ordered.findIndex(x => x.id === b.id);
     let end = null;
-    for (let j = bi + 1; j < list.length; j++) {
-      const nm = apptToMin(list[j].time);
+    for (let j = oi + 1; j < ordered.length; j++) {
+      const nm = apptToMin(ordered[j].time);
       if (nm !== null) { end = nm; break; }
     }
     if (end === null) end = start + 60;
@@ -741,7 +745,11 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
       {(appointments?.allDay || []).map((e, ai) => <ApptRow key={`appt-allday-${ai}`} e={e} />)}
       {items.map((b, bi) => {
         const isDone = b.status === "done", isSkipped = b.status === "skipped";
-        const { past: isPastBlock, now: isNowBlock } = blockTimeState(b, bi, items);
+        const { past: isPastBlock, now: isNowBlock } = blockTimeState(b);
+        // Completed & skipped blocks sink below this clearly marked line —
+        // so when something moves, it's obvious where it went.
+        const firstSunkIdx = items.findIndex(x => x.status !== "pending");
+        const showDoneDivider = firstSunkIdx === bi && (isDone || isSkipped);
         const showMother = isFreeBlock(b.subject) && !isSkipped && isToday;
         const blockColor = getBlockColor(b.subject);
         const isRise = b.riseShine === true;
@@ -753,6 +761,15 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
 
         return (
           <div key={b.id}>
+            {showDoneDivider && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "18px 0 6px" }}>
+                <div style={{ flex: 1, height: 1, background: "var(--rule)" }} />
+                <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--sage)" }}>
+                  ✓ done &amp; set aside
+                </span>
+                <div style={{ flex: 1, height: 1, background: "var(--rule)" }} />
+              </div>
+            )}
             {(apptBeforeBlock[b.id] || []).map((e, ai) => <ApptRow key={`appt-${b.id}-${ai}`} e={e} />)}
             <div style={{ borderBottom: "1px solid var(--rule)" }}>
               <div onClick={() => setExpandedBlock(isExpanded ? null : b.id)}

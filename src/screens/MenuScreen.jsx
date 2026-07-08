@@ -28,6 +28,7 @@ const GROUPS = [
       { title: "Nature Study",        sub: "Topics & the nature loop",     screen: "naturestudy" },
       { title: "Outdoors",            sub: "Time outside & observation",    screen: "outdoors" },
       { title: "Habits",              sub: "The tended life",               screen: "habits" },
+      { title: "The Guide",           sub: "Change gears · troubleshoot the hard days", screen: "guide" },
       { title: "Bible Reading",       sub: "Family scripture streams",      screen: "scripture" },
     ],
   },
