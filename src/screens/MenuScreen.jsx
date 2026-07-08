@@ -1,23 +1,16 @@
-// Inline Tend logo — no external component dependency
+// Tend logo — the wildflower sprig from the cover cards
+import { SprigPaths } from "../components/SproutMark";
+
 function TendMark() {
+  // The interior mark — deliberately bolder than the app icon's seedling:
+  // deep-sage sprig on warm cream, ringed in gold so it stands out on the page.
   return (
-    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" style={{ display: "block", margin: "0 auto" }}>
-      <circle cx="32" cy="32" r="30" stroke="#93A388" strokeWidth="1" fill="#F7F3EC"/>
-      <line x1="32" y1="52" x2="32" y2="14" stroke="#93A388" strokeWidth="1.2" strokeLinecap="round"/>
-      <line x1="32" y1="44" x2="24" y2="40" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="44" x2="40" y2="40" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="38" x2="23" y2="33" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="38" x2="41" y2="33" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="32" x2="24" y2="27" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="32" x2="40" y2="27" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="26" x2="25" y2="21" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="32" y1="26" x2="39" y2="21" stroke="#93A388" strokeWidth="1" strokeLinecap="round"/>
-      <circle cx="32" cy="14" r="2" fill="#93A388"/>
-      <circle cx="24" cy="40" r="1.2" fill="#93A388"/><circle cx="40" cy="40" r="1.2" fill="#93A388"/>
-      <circle cx="23" cy="33" r="1.2" fill="#93A388"/><circle cx="41" cy="33" r="1.2" fill="#93A388"/>
-      <circle cx="24" cy="27" r="1.2" fill="#93A388"/><circle cx="40" cy="27" r="1.2" fill="#93A388"/>
-      <circle cx="25" cy="21" r="1.2" fill="#93A388"/><circle cx="39" cy="21" r="1.2" fill="#93A388"/>
-      <text x="32" y="58" textAnchor="middle" fontFamily="Georgia, serif" fontSize="5" fill="#93A388" fontStyle="italic" letterSpacing="0.08em">tend</text>
+    <svg width="84" height="84" viewBox="0 0 84 84" fill="none" style={{ display: "block", margin: "0 auto" }}>
+      <circle cx="42" cy="42" r="40" stroke="#C49A4E" strokeWidth="1.25" fill="#FDF7EE"/>
+      <circle cx="42" cy="42" r="36" stroke="#E3D9C2" strokeWidth="0.75" fill="none"/>
+      <g transform="translate(9.5, 8) scale(0.65)">
+        <SprigPaths color="#5C6B4F" />
+      </g>
     </svg>
   );
 }

@@ -283,11 +283,23 @@ export default function StudentsScreen({ onNavigate, settings }) {
         </button>
       ))}
 
-      {/* Add student */}
-      <button onClick={() => setShowAdd(true)}
-        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "16px 0", marginTop: 8, background: "none", border: "1px dashed var(--rule)", borderRadius: 3, cursor: "pointer", color: "var(--ink-faint)", fontSize: 13, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}>
-        + Add a student
-      </button>
+      {/* Add student — one child free, the whole family with Premium */}
+      {(settings?.isPaid || students.length < 1) ? (
+        <button onClick={() => setShowAdd(true)}
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "16px 0", marginTop: 8, background: "none", border: "1px dashed var(--rule)", borderRadius: 3, cursor: "pointer", color: "var(--ink-faint)", fontSize: 13, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}>
+          + Add a student
+        </button>
+      ) : (
+        <div style={{ width: "100%", padding: "16px 18px", marginTop: 8, background: "var(--gold-bg)", border: "1px solid var(--rule)", borderRadius: 3, textAlign: "center" }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--ink-lt)", lineHeight: 1.6, margin: "0 0 4px" }}>
+            One student is free. The whole family comes with Premium —
+          </p>
+          <a href="https://delightnsavor.gumroad.com/l/qrxxi" target="_blank" rel="noopener noreferrer"
+            style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", textDecoration: "none" }}>
+            Join Tend Premium →
+          </a>
+        </div>
+      )}
 
       <p className="corm italic" style={{ textAlign: "center", marginTop: 32, fontSize: 15, color: "var(--ink-faint)", lineHeight: 1.7 }}>
         "Every child is a person."<br />— Charlotte Mason

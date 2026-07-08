@@ -97,26 +97,23 @@ function addDays(date, n) {
 }
 
 export function PremiumModal({ onClose }) {
+  // Free = live one beautiful day with Tend. Premium = keep a family's whole year.
   const FREE_FEATURES = [
-    "Daily schedule — one repeating template",
-    "Outdoor time tracker toward your weekly goal",
+    "The calm daily rhythm — what's now, what's next, minutes left",
+    "Evening Close — thirty seconds of keeping, every night",
+    "Focus timer, gentle nudges, and Mother Culture check-ins",
+    "Lunch decided for you · calendar appointments in your day",
+    "First month of habit training · starter nature topics",
     "Consider the Lilies — up to 3 journal entries",
-    "One habit focus (Attention) with today's ideas",
-    "5 free narration sessions",
     "One student profile",
-    "Daily Mother Culture prompt",
-    "CM quote of the day",
   ];
   const PREMIUM_FEATURES = [
-    "Full weekly planner — different schedule per day, editable blocks",
-    "Week grid view — see your whole week at a glance",
-    "Beauty Loop anchored to your daily subjects",
-    "Term counter with rest week gentle rhythm",
-    "All five Charlotte Mason habits with 12-week reflection",
+    "Records that write themselves — your Evening Close becomes the Teaching Record, and the Annual Report assembles your CM transcript",
+    "The full weekly planner — editable blocks, co-op day switch, rest weeks, term counter",
+    "Both habit-training terms — six months of Laying Down the Rails lessons",
+    "Two full years of seasonal nature study",
+    "Unlimited children, with narration history for each",
     "Unlimited Consider the Lilies entries for every family member",
-    "Unlimited narration sessions with AI coaching",
-    "Unlimited student profiles with narration history",
-    "Full rotating Mother Culture prompt bank",
   ];
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(44,42,39,.5)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
@@ -148,6 +145,12 @@ export function PremiumModal({ onClose }) {
             </div>
           ))}
         </div>
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, color: "var(--ink)", textAlign: "center", marginBottom: 2 }}>
+          $29 <span style={{ fontSize: 13, color: "var(--ink-faint)" }}>/ year</span>
+        </p>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--gold)", textAlign: "center", marginBottom: 16 }}>
+          founding price $24 for the first term — keep your family's whole year
+        </p>
         <a href="https://delightnsavor.gumroad.com/l/qrxxi" target="_blank" rel="noopener noreferrer" style={{ display: "block", background: "var(--sage)", borderRadius: 2, padding: "14px 0", width: "100%", fontSize: 11, fontFamily: "'Lato', sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "white", textAlign: "center", textDecoration: "none", marginBottom: 12 }}>
           Join Tend Premium {"→"}
         </a>

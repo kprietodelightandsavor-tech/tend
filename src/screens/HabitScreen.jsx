@@ -82,7 +82,10 @@ const isLessonComplete = (progress, monthId, lessonNum) => {
 // Months unlock in sequence WITHIN their own term. The first month of
 // each term is always open; later months unlock when the previous month
 // in that same term is fully complete.
-const isMonthUnlocked = (progress, termMonths, monthIdxInTerm) => {
+const isMonthUnlocked = (progress, termMonths, monthIdxInTerm, isPaid = true, termNumber = 1) => {
+  // Free tier: the first month of the first term is a complete, real taste.
+  // Everything beyond it is Premium.
+  if (!isPaid) return termNumber === 1 && monthIdxInTerm === 0;
   if (monthIdxInTerm === 0) return true;
   const prevMonth = termMonths[monthIdxInTerm - 1];
   const completed = progress[prevMonth.id] || [];
@@ -97,7 +100,7 @@ const getMonthProgress = (progress, month) => {
 // ─── TERM OVERVIEW ────────────────────────────────────────────────────
 // Renders every term in TERMS, each with its own header, arc strip,
 // and month list. Months unlock within their own term independently.
-function TermOverview({ progress, onSelectMonth }) {
+function TermOverview({ progress, onSelectMonth, isPaid = true }) {
   return (
     <div className="screen">
       <div style={{ marginBottom: 32 }}>
@@ -210,7 +213,7 @@ function TermOverview({ progress, onSelectMonth }) {
             {/* Month list */}
             <div>
               {termMonths.map((month, idx) => {
-                const unlocked = isMonthUnlocked(progress, termMonths, idx);
+                const unlocked = isMonthUnlocked(progress, termMonths, idx, isPaid, term.number);
                 const { completed, total } = getMonthProgress(progress, month);
                 const isComplete = total > 0 && completed === total;
                 const isCurrent = unlocked && !isComplete;
@@ -1202,7 +1205,7 @@ export default function HabitTermScreen({ settings }) {
   };
 
   if (view.level === "term") {
-    return <TermOverview progress={progress} onSelectMonth={handleSelectMonth} />;
+    return <TermOverview progress={progress} onSelectMonth={handleSelectMonth} isPaid={settings?.isPaid || false} />;
   }
 
   const month = HABIT_MONTHS.find((m) => m.id === view.monthId);

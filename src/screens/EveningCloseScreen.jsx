@@ -106,8 +106,10 @@ export default function EveningCloseScreen({ onNavigate, settings }) {
     saveMC(mc, key); // keep the shared check-in record in agreement
     saveEntry(key, { done, delight: delight.trim(), mc, keptAt: new Date().toISOString() });
     setKept(true);
-    // fire-and-forget: the kept day becomes Teaching Record entries
-    syncToRecords(settings?.userId, key, blocks, done, delight.trim(), mc).then(setSynced);
+    // Premium: the kept day becomes Teaching Record entries automatically
+    if (settings?.isPaid) {
+      syncToRecords(settings?.userId, key, blocks, done, delight.trim(), mc).then(setSynced);
+    }
   };
 
   const dateLabel = today.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
@@ -127,6 +129,12 @@ export default function EveningCloseScreen({ onNavigate, settings }) {
         {synced && (
           <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", marginBottom: 22 }}>
             ✓ written into your teaching record
+          </p>
+        )}
+        {!settings?.isPaid && (
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", marginBottom: 22, lineHeight: 1.6 }}>
+            With Premium, tonight's keeping is written into your Teaching Record for you —
+            records that write themselves, all year.
           </p>
         )}
         <button className="btn-sage" style={{ maxWidth: 240, margin: "0 auto" }} onClick={() => onNavigate("home")}>
