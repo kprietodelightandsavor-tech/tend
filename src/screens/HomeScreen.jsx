@@ -448,6 +448,63 @@ function MemoryVerseBlock({ items, blockId, subChecked, onToggle, viewOnly }) {
   );
 }
 
+// Evening Close prompt — appears from 3pm every day of the year (school or
+// break; keeping doesn't take summers off). Softens once today is kept.
+function EveningCloseNudge({ onNavigate }) {
+  if (new Date().getHours() < 15) return null;
+  let keptToday = false;
+  try {
+    const all = JSON.parse(localStorage.getItem("tend_evening_close")) || {};
+    const d = new Date();
+    const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    keptToday = !!all[k];
+  } catch {}
+  return (
+    <button onClick={() => onNavigate("evening-close")}
+      style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        width: "100%", padding: keptToday ? "10px 16px" : "14px 16px", marginBottom: 24,
+        background: keptToday ? "transparent" : "var(--gold-bg)",
+        border: "1px solid var(--rule)",
+        borderRadius: 3, cursor: "pointer", textAlign: "left",
+      }}>
+      <span>
+        <span style={{ display: "block", fontFamily: "'Playfair Display', serif", fontSize: keptToday ? 14 : 16, color: keptToday ? "var(--ink-faint)" : "var(--ink)", marginBottom: 2 }}>
+          {keptToday ? "The day is kept" : "Close the day"}
+        </span>
+        <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)" }}>
+          {keptToday ? "tap to add what happened since" : "thirty seconds of keeping, then rest"}
+        </span>
+      </span>
+      <span style={{ color: keptToday ? "var(--sage)" : "var(--gold)", fontSize: 16 }}>{keptToday ? "✓" : "→"}</span>
+    </button>
+  );
+}
+
+// One soft hint on first visit, then never again — gestures shouldn't need a manual.
+function FirstVisitHint() {
+  const [seen, setSeen] = useState(() => {
+    try { return localStorage.getItem("tend_hint_schedule") === "1"; } catch { return true; }
+  });
+  if (seen) return null;
+  const dismiss = () => {
+    try { localStorage.setItem("tend_hint_schedule", "1"); } catch {}
+    setSeen(true);
+  };
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 14, padding: "10px 14px", background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3 }}>
+      <p style={{ flex: 1, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13.5, color: "var(--ink-lt)", lineHeight: 1.6, margin: 0 }}>
+        The checkbox marks a lesson done. Tap a block to open it — notes and
+        "skip today" live inside.
+      </p>
+      <button onClick={dismiss}
+        style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)", flexShrink: 0, padding: 0 }}>
+        got it
+      </button>
+    </div>
+  );
+}
+
 function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset, viewDate, isToday, isViewOnly, appointments }) {
   // weave calendar appointments between blocks at their time position
   const apptToMin = (t) => {
@@ -808,12 +865,21 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
 
               {isExpanded && !isDone && !isSkipped && !isBeautyBlock && (
                 <div style={{ paddingLeft: 51, paddingBottom: 12, paddingTop: 8 }} onClick={e => e.stopPropagation()}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, cursor: "pointer" }}>
-                    <svg onClick={() => { setEditingNotes(b.id); setNotesText(subjectNotes[b.subject] || ""); }} width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--sage)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ cursor: "pointer" }}>
-                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
-                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", margin: 0 }}>{subjectNotes[b.subject] ? "Edit notes" : "Add notes"}</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", flex: 1 }}
+                      onClick={() => { setEditingNotes(b.id); setNotesText(subjectNotes[b.subject] || ""); }}>
+                      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--sage)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", margin: 0 }}>{subjectNotes[b.subject] ? "Edit notes" : "Add notes"}</p>
+                    </div>
+                    {isToday && !isViewOnly && (
+                      <button onClick={() => markSkipped(b.id)}
+                        style={{ background: "none", border: "1px solid var(--rule)", borderRadius: 20, padding: "3px 12px", cursor: "pointer", fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "lowercase", color: "var(--ink-faint)", flexShrink: 0 }}>
+                        skip today
+                      </button>
+                    )}
                   </div>
                   {editingNotes === b.id ? (
                     <div style={{ marginBottom: 10 }}>
@@ -849,7 +915,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
         );
       })}
       {apptTail.map((e, ai) => <ApptRow key={`appt-tail-${ai}`} e={e} />)}
-      {isToday && <p className="caption italic" style={{ marginTop: 12, textAlign: "center" }}>Tap checkbox to complete · Long press to skip · Tap to expand for notes</p>}
+      {isToday && <FirstVisitHint />}
       {isViewOnly && <p className="caption italic" style={{ marginTop: 12, textAlign: "center", color: "var(--ink-faint)" }}>Viewing another day · tap a block to add or edit notes</p>}
     </div>
   );
@@ -1042,6 +1108,7 @@ export default function HomeScreen({ onNavigate, settings }) {
           {isToday && <LunchIdea />}
           {isToday && <FocusTimer />}
           {isToday && <SummerRest />}
+          {isToday && <EveningCloseNudge onNavigate={onNavigate} />}
           <SummerRhythm
             userId={settings?.userId}
             viewDate={viewDate}
@@ -1056,36 +1123,7 @@ export default function HomeScreen({ onNavigate, settings }) {
           {isToday && <MotherCultureRow />}
           {isToday && <LunchIdea />}
           {isToday && <FocusTimer />}
-          {/* Evening Close prompt — appears from 3pm; softens (but stays) once today is kept */}
-          {isToday && new Date().getHours() >= 15 && (() => {
-            let keptToday = false;
-            try {
-              const all = JSON.parse(localStorage.getItem("tend_evening_close")) || {};
-              const d = new Date();
-              const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-              keptToday = !!all[k];
-            } catch {}
-            return (
-              <button onClick={() => onNavigate("evening-close")}
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  width: "100%", padding: keptToday ? "10px 16px" : "14px 16px", marginBottom: 24,
-                  background: keptToday ? "transparent" : "var(--gold-bg)",
-                  border: `1px solid ${keptToday ? "var(--rule)" : "var(--rule)"}`,
-                  borderRadius: 3, cursor: "pointer", textAlign: "left",
-                }}>
-                <span>
-                  <span style={{ display: "block", fontFamily: "'Playfair Display', serif", fontSize: keptToday ? 14 : 16, color: keptToday ? "var(--ink-faint)" : "var(--ink)", marginBottom: 2 }}>
-                    {keptToday ? "The day is kept" : "Close the day"}
-                  </span>
-                  <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)" }}>
-                    {keptToday ? "tap to add what happened since" : "thirty seconds of keeping, then rest"}
-                  </span>
-                </span>
-                <span style={{ color: keptToday ? "var(--sage)" : "var(--gold)", fontSize: 16 }}>{keptToday ? "✓" : "→"}</span>
-              </button>
-            );
-          })()}
+          {isToday && <EveningCloseNudge onNavigate={onNavigate} />}
           {/* CM quote (school year only; summer renders inside SummerRhythm) */}
           {isToday && (
             <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>

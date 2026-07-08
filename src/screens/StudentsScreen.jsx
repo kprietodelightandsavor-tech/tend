@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Ic } from "../components/Icons";
 
 const COLORS = ["#7E9B84", "#C49A4E", "#C2876F", "#6E8C88", "#9E6B6B", "#7E9B84"];
@@ -10,11 +10,7 @@ const NARRATION_STAGES = {
   "Frame It":  "frame",
 };
 
-const SEED_STUDENTS = [
-  { id: 1, name: "Nico",   color: "#7E9B84", initial: "N", grade: "11th", narrations: [{ date: "March 14", text: "Macbeth sees the dagger and isn't sure if it's real. Shakespeare shows how guilt can make you see things that aren't there.", stage: "Frame It", book: "Macbeth" }] },
-  { id: 2, name: "Emma",   color: "#C49A4E", initial: "E", grade: "9th",  narrations: [{ date: "March 13", text: "The dagger leads him toward Duncan's room. He knows what he's about to do is wrong but he goes anyway.", stage: "Follow It", book: "Macbeth" }] },
-  { id: 3, name: "Marcos", color: "#C2876F", initial: "M", grade: "7th",  narrations: [{ date: "March 12", text: "Macbeth talks to himself a lot. He seems scared of what he's going to do.", stage: "Find It", book: "Macbeth" }] },
-];
+// (Demo family removed — every account begins with its own.)
 
 // ─── ADD STUDENT SHEET ────────────────────────────────────────────────────────
 function AddStudentSheet({ onSave, onClose }) {
@@ -225,10 +221,25 @@ function StudentDetail({ student, onBack, onAddNarration, onDelete }) {
 }
 
 // ─── STUDENTS SCREEN ──────────────────────────────────────────────────────────
+// Students persist per-device; a fresh account starts empty with a warm
+// invitation, never someone else's family.
+const STUDENTS_KEY = "tend_students";
+const loadStudents = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STUDENTS_KEY));
+    if (Array.isArray(saved)) return saved;
+  } catch {}
+  return [];
+};
+
 export default function StudentsScreen({ onNavigate, settings }) {
-  const [students, setStudents]     = useState(SEED_STUDENTS);
+  const [students, setStudents]     = useState(loadStudents);
   const [activeIdx, setActiveIdx]   = useState(null);
   const [showAdd, setShowAdd]       = useState(false);
+
+  useEffect(() => {
+    try { localStorage.setItem(STUDENTS_KEY, JSON.stringify(students)); } catch {}
+  }, [students]);
 
   const addStudent = (student) => setStudents(prev => [...prev, student]);
 
@@ -264,6 +275,13 @@ export default function StudentsScreen({ onNavigate, settings }) {
       </button>
       <p className="eyebrow" style={{ marginBottom: 6 }}>Family</p>
       <h1 className="display serif" style={{ marginBottom: 24 }}>Students</h1>
+
+      {students.length === 0 && (
+        <p className="corm italic" style={{ fontSize: 16, color: "var(--ink-faint)", lineHeight: 1.8, marginBottom: 20 }}>
+          No students yet. Add your first — their narrations, their books,
+          their year will gather here.
+        </p>
+      )}
 
       {students.map((s, i) => (
         <button key={s.id} onClick={() => setActiveIdx(i)}

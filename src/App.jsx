@@ -417,10 +417,34 @@ export default function App() {
   };
 
   // Navigate with optional intent (e.g. "camera" to auto-launch camera in Memory Book)
+  // Screens ride the browser history, so the iPhone back-swipe (and the
+  // browser back button) always means "back" — like a native app.
   const handleNavigate = (id, intent = null) => {
     setNavIntent(intent);
-    setScreen(id);
+    setScreen(prev => {
+      if (id !== prev) {
+        try { window.history.pushState({ screen: id }, "", `?screen=${id}`); } catch {}
+      }
+      return id;
+    });
   };
+
+  useEffect(() => {
+    // seed the first history entry so the first back-swipe has somewhere to land
+    try {
+      if (!window.history.state?.screen) {
+        window.history.replaceState({ screen }, "", screen === "home" ? window.location.pathname : `?screen=${screen}`);
+      }
+    } catch {}
+    const onPop = (e) => {
+      const id = e.state?.screen;
+      setNavIntent(null);
+      setScreen(id && SCREENS[id] ? id : "home");
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (loading) {
     return (

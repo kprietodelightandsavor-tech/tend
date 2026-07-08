@@ -44,6 +44,7 @@ Just finished, uncommitted or freshly committed in GitHub Desktop:
 3. Renamed Summer → Break (labels only; internal value still "summer")
 4. Time-aware graying + "now" chips + "done & set aside" divider
 5. Built The Lantern (renamed from "The Guide"), moved to main nav 4th tab, added mic input, doors renamed to "Transitions" / "Ideas & Untangling"
+6. Apple-feel pass (she asked "is it intuitive like an Apple app?"): history-synced navigation so iPhone back-swipe works; Students no longer seeded with her kids (fresh accounts start empty, persist in localStorage "tend_students" — her own device will need her 3 kids re-added once); visible "skip today" button inside expanded blocks (long-press still works as shortcut); Evening Close nudge now appears on break days too; permanent gesture caption replaced with one-time dismissible hint
 
 ## NEXT STEPS (the natural continuation)
 1. Kim commits & pushes; verify Lantern answers on the live site (key already in Netlify)
