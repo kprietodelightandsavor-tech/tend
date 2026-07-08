@@ -59,15 +59,15 @@ export default function FocusTimer() {
   if (!open) {
     return (
       <button onClick={() => setOpen(true)}
-        style={{ display: "flex", alignItems: "center", gap: 9, background: "none", border: "none", cursor: "pointer", padding: 0, marginBottom: 22 }}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+        style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", padding: 0, marginBottom: 18 }}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
           <circle cx="12" cy="13" r="8" />
           <path d="M12 9v4l2.5 2.5" />
           <path d="M9 2h6" />
           <path d="M12 2v3" />
         </svg>
-        <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
-          need a timer? — short lesson · pomodoro ›
+        <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9.5, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
+          need a timer?
         </span>
       </button>
     );

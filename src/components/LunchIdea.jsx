@@ -19,24 +19,16 @@ export default function LunchIdea() {
   const idea = LUNCH_IDEAS[(dayIndex + offset) % LUNCH_IDEAS.length];
 
   return (
-    <div style={{
-      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
-      padding: "12px 16px", marginBottom: 24,
-      background: "var(--gold-bg)", border: "1px solid var(--rule)", borderRadius: 3,
-    }}>
-      <div style={{ flex: 1 }}>
-        <p style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--gold)", margin: "0 0 4px" }}>
-          Lunch, decided for you
-        </p>
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)", margin: "0 0 2px" }}>
-          {idea.name}
-        </p>
-        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", margin: 0 }}>
-          {idea.parts}
-        </p>
-      </div>
+    <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 18 }}>
+      <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--gold)", flexShrink: 0 }}>
+        Lunch
+      </span>
+      <span style={{ flex: 1, fontFamily: "'Cormorant Garamond', serif", fontSize: 14.5, color: "var(--ink-lt)", lineHeight: 1.5 }}>
+        <span style={{ fontStyle: "italic" }}>{idea.name}</span>
+        <span style={{ color: "var(--ink-faint)" }}> — {idea.parts}</span>
+      </span>
       <button onClick={() => setOffset(o => o + 1)}
-        style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0, fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
+        style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0, fontFamily: "'Lato', sans-serif", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", padding: 0 }}>
         another ›
       </button>
     </div>

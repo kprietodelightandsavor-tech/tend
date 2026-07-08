@@ -963,10 +963,11 @@ export default function HomeScreen({ onNavigate, settings }) {
 
       {isSummer ? (
         <>
-          {isToday && <SummerRest />}
+          {/* quiet tool lines first, then the day's prose — no alternating textures */}
           {isToday && <MotherCultureRow />}
-          {isToday && <FocusTimer />}
           {isToday && <LunchIdea />}
+          {isToday && <FocusTimer />}
+          {isToday && <SummerRest />}
           <SummerRhythm
             userId={settings?.userId}
             viewDate={viewDate}
@@ -979,8 +980,8 @@ export default function HomeScreen({ onNavigate, settings }) {
         <>
           {isToday && <MorningPlan blocks={todayBlocks} />}
           {isToday && <MotherCultureRow />}
-          {isToday && <FocusTimer />}
           {isToday && <LunchIdea />}
+          {isToday && <FocusTimer />}
           {/* Evening Close prompt — appears from 3pm; softens (but stays) once today is kept */}
           {isToday && new Date().getHours() >= 15 && (() => {
             let keptToday = false;
