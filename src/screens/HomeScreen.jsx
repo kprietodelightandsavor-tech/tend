@@ -6,7 +6,7 @@ import SummerRest from "../components/SummerRest";
 import FocusTimer from "../components/FocusTimer";
 import MotherCultureRow from "../components/MotherCultureRow";
 import { useDayAppointments } from "../components/TodayAppointments";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm, NATURE_DAYS, NATURE_LOOP_STEPS, getNatureLoopStep, advanceNatureLoop } from "../data/seed";
 import {
   SUMMER_MORNING_ANCHORS,
@@ -31,6 +31,7 @@ import {
   toggleBeautyComplete,
 } from "../data/beauty-seed";
 import { supabase } from "../lib/supabase";
+import { getScheduleBlocks } from "../lib/db";
 
 const Icon = {
   Leaf:    () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>),
@@ -80,6 +81,30 @@ const getBlockColor = (subject) => {
 
 const FREE_KEYWORDS = ["rise", "chores", "piano", "free", "rest", "independent", "lunch", "outdoor", "nature", "afternoon", "pursuits", "break", "reset", "flex"];
 const isFreeBlock = (subject) => FREE_KEYWORDS.some(k => subject.toLowerCase().includes(k));
+
+// The planner stores times in 24-hour form ("13:00"); the daily page shows the
+// same bare, suffix-free style as the default rhythm ("1:00"). Keep them matched.
+function to12hDisplay(t) {
+  const m = String(t).match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return t || "";
+  let h = parseInt(m[1], 10);
+  if (h > 12) h -= 12;
+  if (h === 0) h = 12;
+  return `${h}:${m[2]}`;
+}
+
+// A block coming from the user's saved planner only carries subject/time/note.
+// Re-derive the flags the daily page relies on (free-block mother notes,
+// Rise & Shine memory verses, teaching-log filtering) from the subject.
+function hydrateSavedBlock(b) {
+  const subject = b.subject || "";
+  return {
+    ...b,
+    time: to12hDisplay(b.time),
+    free: isFreeBlock(subject),
+    riseShine: /morning focus|rise\s*&?\s*shine/i.test(subject),
+  };
+}
 
 function isSameDay(a, b) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
@@ -634,34 +659,50 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
     fetch("/.netlify/functions/teaching-log", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ method: "upsert", userId, date: dateKey, subject: block.subject, timeBlock: block.time || null, note: block.note || null, status, schoolYear }) }).catch(() => {});
   };
 
-  const defaultItems = () => blocks.map(b => ({ ...b, status: "pending", motherNote: "", subChecked: {} }));
-  const [items, setItems] = useState(() => {
-    if (!isToday) return defaultItems();
+  // `blocks` (the schedule) decides WHICH items exist today; the saved state only
+  // supplies each item's status/notes. Match by id first, then subject, so a
+  // planner edit refreshes the list without losing today's checkmarks.
+  const mergeItems = (saved) => {
+    const byId = {}, bySubj = {};
+    (saved || []).forEach(s => {
+      if (s.id != null) byId[s.id] = s;
+      if (s.subject && !(s.subject in bySubj)) bySubj[s.subject] = s;
+    });
+    const merged = blocks.map(b => {
+      const prior = byId[b.id] || bySubj[b.subject];
+      const status = prior?.status === "done" || prior?.status === "skipped" ? prior.status : "pending";
+      return { ...b, status, motherNote: prior?.motherNote || "", subChecked: prior?.subChecked || {} };
+    });
+    return [...merged.filter(b => b.status === "pending"), ...merged.filter(b => b.status !== "pending")];
+  };
+
+  const readSavedItems = () => {
+    if (!isToday) return null;
     try {
       const saved = JSON.parse(localStorage.getItem(SCHEDULE_KEY) || "null");
       if (saved && saved.date === dateKey && saved.day === today) return saved.items;
     } catch {}
-    return defaultItems();
-  });
+    return null;
+  };
+
+  const [items, setItems] = useState(() => mergeItems(readSavedItems()));
 
   useEffect(() => {
-    if (!isToday) { setItems(defaultItems()); return; }
-    try {
-      const saved = JSON.parse(localStorage.getItem(SCHEDULE_KEY) || "null");
-      if (saved && saved.date === dateKey && saved.day === today) { setItems(saved.items); return; }
-    } catch {}
-    setItems(defaultItems());
-  }, [dateKey, today, isToday]);
+    setItems(mergeItems(readSavedItems()));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateKey, today, isToday, blocks]);
 
   useEffect(() => {
     if (!userId || synced || !isToday) return;
     loadDailyState(userId, dateKey).then(remote => {
       if (remote?.items && remote?.day === today) {
-        setItems(remote.items);
-        try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify({ date: dateKey, day: today, items: remote.items })); } catch {}
+        const merged = mergeItems(remote.items);
+        setItems(merged);
+        try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify({ date: dateKey, day: today, items: merged })); } catch {}
       }
       setSynced(true);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, isToday]);
 
   const persist = (newItems) => {
@@ -1019,31 +1060,47 @@ export default function HomeScreen({ onNavigate, settings }) {
   const week = settings?.week || 1;
   const isWeekend = dayName === "Saturday" || dayName === "Sunday";
   const isSummer = settings?.mode === "summer";
+  const userId = settings?.userId;
 
-  // Tuesday volunteer-week schedule swap (school year only)
-  let todayBlocks;
-  if (isSummer) {
-    todayBlocks = getSummerDayBlocks(dayName, viewDate);
-  } else {
+  // The daily check-off page shares the planner's schedule so edits made in the
+  // planner show up here. null = not loaded yet; {} = loaded, no custom schedule.
+  const [savedSchedule, setSavedSchedule] = useState(null);
+  useEffect(() => {
+    if (!userId) { setSavedSchedule({}); return; }
+    let cancelled = false;
+    (async () => {
+      const rows = await getScheduleBlocks(userId);
+      if (cancelled) return;
+      const grouped = {};
+      rows.forEach(r => {
+        (grouped[r.day] = grouped[r.day] || []).push({ id: r.id, subject: r.subject, time: r.time || "", note: r.note || "" });
+      });
+      setSavedSchedule(grouped);
+    })();
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  // Prefer the user's saved planner day; fall back to the built-in rhythm
+  // (with the Tuesday volunteer swap) only when they haven't customized it.
+  const todayBlocks = useMemo(() => {
+    if (isSummer) return getSummerDayBlocks(dayName, viewDate);
+
+    const custom = savedSchedule?.[dayName];
+    if (custom && custom.length) return custom.map(hydrateSavedBlock);
+
     const baseBlocks = DAY_SCHEDULE[dayName] || [];
     if (dayName === "Tuesday" && isVolunteerTuesday(viewDate)) {
-      todayBlocks = baseBlocks.map(b => {
-        if (b.subject.includes("Beauty Loop OR Volunteer")) {
-          return { ...b, subject: "Cibolo Rehab Center", note: "Volunteer with Chispa · 10:30–12:00" };
-        }
-        return b;
-      });
-    } else if (dayName === "Tuesday") {
-      todayBlocks = baseBlocks.map(b => {
-        if (b.subject.includes("Beauty Loop OR Volunteer")) {
-          return { ...b, subject: "Beauty Loop", note: "" };
-        }
-        return b;
-      });
-    } else {
-      todayBlocks = baseBlocks;
+      return baseBlocks.map(b => b.subject.includes("Beauty Loop OR Volunteer")
+        ? { ...b, subject: "Cibolo Rehab Center", note: "Volunteer with Chispa · 10:30–12:00" }
+        : b);
     }
-  }
+    if (dayName === "Tuesday") {
+      return baseBlocks.map(b => b.subject.includes("Beauty Loop OR Volunteer")
+        ? { ...b, subject: "Beauty Loop", note: "" }
+        : b);
+    }
+    return baseBlocks;
+  }, [isSummer, dayName, viewDate, savedSchedule]);
 
   const [dailyOffset, setDailyOffset] = useState(() => {
     try {

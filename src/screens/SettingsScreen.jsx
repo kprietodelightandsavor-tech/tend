@@ -46,6 +46,10 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
   const [nudgeBusy, setNudgeBusy] = useState(false);
   const [nudgeMsg, setNudgeMsg]   = useState("");
   const [easyReadOn, setEasyReadOn] = useState(() => { try { return localStorage.getItem("tend_easy_read") === "1"; } catch { return false; } });
+  const [newPass, setNewPass]         = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+  const [pwMsg, setPwMsg]             = useState("");
+  const [pwBusy, setPwBusy]           = useState(false);
   const [calEvents, setCalEvents] = useState([]);
   const [calMsg, setCalMsg]       = useState("");
   const [calLoading, setCalLoading] = useState(false);
@@ -350,6 +354,38 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
   style={{ width: "100%", background: "none", border: "none", cursor: "pointer", marginTop: 16, fontFamily: "'Lato', sans-serif", fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--ink-faint)", padding: "10px 0" }}>
   Back to Home
 </button>
+
+<div style={{ height: 1, background: "var(--rule)", margin: "24px 0" }} />
+
+{/* Password */}
+<div style={{ marginBottom: 8 }}>
+  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+    <Icon.User />
+    <p className="eyebrow" style={{ marginBottom: 0 }}>Password</p>
+  </div>
+  <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
+    Change the password you use to sign in.
+  </p>
+  <input className="input-line" type="password" placeholder="New password"
+    value={newPass} onChange={e => setNewPass(e.target.value)} style={{ marginBottom: 14, fontSize: 16 }} />
+  <input className="input-line" type="password" placeholder="Confirm new password"
+    value={confirmPass} onChange={e => setConfirmPass(e.target.value)} style={{ marginBottom: 14, fontSize: 16 }} />
+  <button className="btn-sage" style={{ width: "100%", opacity: pwBusy ? 0.6 : 1 }} disabled={pwBusy}
+    onClick={async () => {
+      setPwMsg("");
+      if (newPass.length < 6) { setPwMsg("Use at least 6 characters."); return; }
+      if (newPass !== confirmPass) { setPwMsg("Those two don't match."); return; }
+      setPwBusy(true);
+      const { supabase } = await import("../lib/supabase");
+      const { error } = await supabase.auth.updateUser({ password: newPass });
+      setPwBusy(false);
+      if (error) { setPwMsg(error.message); return; }
+      setNewPass(""); setConfirmPass(""); setPwMsg("Password updated ✦");
+    }}>
+    {pwBusy ? "Updating…" : "Update password"}
+  </button>
+  {pwMsg && <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.6 }}>{pwMsg}</p>}
+</div>
 
 <div style={{ height: 1, background: "var(--rule)", margin: "24px 0" }} />
 

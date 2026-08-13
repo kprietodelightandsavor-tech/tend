@@ -248,7 +248,7 @@ function AuthScreen() {
   return (
     <div style={{ minHeight: "100dvh", background: "var(--cream)", display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px 32px", maxWidth: 430, margin: "0 auto" }}>
       <div style={{ textAlign: "center", marginBottom: 48 }}>
-        <img src="/tend.icon.png" alt="Tend" style={{ width: 72, height: 72, borderRadius: 16, display: "block", margin: "0 auto 16px" }} />
+        <img src="/tend_icon.png" alt="Tend" style={{ width: 72, height: 72, borderRadius: 16, display: "block", margin: "0 auto 16px" }} />
         <h1 className="display serif" style={{ fontSize: 32, marginBottom: 4 }}>Tend</h1>
         <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)" }}>A daily rhythm for Charlotte Mason families</p>
       </div>
@@ -302,10 +302,68 @@ function AuthScreen() {
   );
 }
 
+// Reached by tapping the link in a password-reset email. Supabase puts a
+// recovery session in place first, so we're authenticated here — we just need
+// to let the user actually choose a new password before entering the app.
+function UpdatePasswordScreen({ onDone }) {
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm]   = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
+  const [done, setDone]         = useState(false);
+
+  const submit = async () => {
+    setError("");
+    if (password.length < 6) { setError("Use at least 6 characters."); return; }
+    if (password !== confirm) { setError("Those two don't match."); return; }
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (error) { setError(error.message); return; }
+    setDone(true);
+  };
+
+  return (
+    <div style={{ minHeight: "100dvh", background: "var(--cream)", display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px 32px", maxWidth: 430, margin: "0 auto" }}>
+      <div style={{ textAlign: "center", marginBottom: 40 }}>
+        <img src="/tend_icon.png" alt="Tend" style={{ width: 72, height: 72, borderRadius: 16, display: "block", margin: "0 auto 16px" }} />
+        <h1 className="display serif" style={{ fontSize: 28, marginBottom: 4 }}>Set a new password</h1>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)" }}>Choose something you'll remember — then you're back in.</p>
+      </div>
+
+      {done ? (
+        <>
+          <p style={{ fontSize: 14, color: "var(--sage)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginBottom: 24, lineHeight: 1.6, textAlign: "center" }}>
+            Your new password is set.
+          </p>
+          <button className="btn-sage" style={{ width: "100%" }} onClick={onDone}>Continue to Tend</button>
+        </>
+      ) : (
+        <>
+          <input className="input-line" type="password" placeholder="New password"
+            value={password} onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && submit()}
+            style={{ marginBottom: 16, fontSize: 16 }} />
+          <input className="input-line" type="password" placeholder="Confirm new password"
+            value={confirm} onChange={e => setConfirm(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && submit()}
+            style={{ marginBottom: 28, fontSize: 16 }} />
+          {error && <p style={{ fontSize: 13, color: "var(--red)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginBottom: 16, lineHeight: 1.6 }}>{error}</p>}
+          <button className="btn-sage" style={{ width: "100%", opacity: loading ? .6 : 1 }}
+            onClick={submit} disabled={loading || !password || !confirm}>
+            {loading ? "Saving…" : "Save new password"}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   const [session, setSession]   = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading]   = useState(true);
+  const [recovery, setRecovery] = useState(false);
   // Comfort reading (dyslexia-friendly type) — toggled in Settings
   const [easyRead, setEasyRead] = useState(() => {
     try { return localStorage.getItem("tend_easy_read") === "1"; } catch { return false; }
@@ -371,6 +429,12 @@ export default function App() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      if (event === "PASSWORD_RECOVERY") {
+        // Came from a reset email — show the set-a-new-password screen.
+        setRecovery(true);
+        setLoading(false);
+        return;
+      }
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
         setLoading(true);
         loadUserData();
@@ -451,6 +515,15 @@ export default function App() {
       <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--cream)" }}>
         <p className="corm italic" style={{ fontSize: 18, color: "var(--ink-faint)" }}>Tending…</p>
       </div>
+    );
+  }
+
+  if (recovery) {
+    return (
+      <UpdatePasswordScreen onDone={() => {
+        setRecovery(false);
+        try { window.history.replaceState({}, "", window.location.pathname); } catch {}
+      }} />
     );
   }
 
