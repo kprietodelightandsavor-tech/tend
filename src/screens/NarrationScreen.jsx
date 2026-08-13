@@ -277,11 +277,13 @@ export default function NarrationScreen({ settings, onNavigate }) {
     setAiLoading(true);
     setAiPrompts([]);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      // Route through our server function (holds the API key) — the browser
+      // can't call Anthropic directly (no key, blocked by CORS).
+      const res = await fetch("/.netlify/functions/anthropic-api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "claude-opus-4-6",
           max_tokens: 1000,
           messages: [{
             role: "user",
@@ -303,12 +305,13 @@ The prompts should:
         }),
       });
       const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || `Server returned ${res.status}`);
       const text = data.content?.[0]?.text || "[]";
       const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
       setAiPrompts(Array.isArray(parsed) ? parsed : []);
     } catch (e) {
       console.error("AI prompt error:", e);
-      setAiPrompts(["Could not generate prompts — please check your connection and try again."]);
+      setAiPrompts(["Could not generate prompts — please try again in a moment."]);
     }
     setAiLoading(false);
   };
