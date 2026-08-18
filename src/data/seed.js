@@ -58,7 +58,7 @@ export const DAY_SCHEDULE = {
   ],
   Wednesday: [
     { id: "wed-1",  subject: "Rise & Shine",         time: "8:30",  note: "Marcos: math 40 · read 20 · typing  |  Emma: math practice · read 20 · typing", free: true, fromLevel: 2 },
-    { id: "wed-2",  subject: "Bible & Me",           time: "10:15", note: "Simply CM New Testament · hymn" },
+    { id: "wed-2",  subject: "Bible & Memory",       time: "10:15", note: "Simply CM New Testament · hymn" },
     { id: "wed-4",  subject: "Family Lessons",       time: "10:45", note: "Adam of the Road, then King Arthur" },
     { id: "wed-5",  subject: "Science: Natural History", time: "11:00", note: "Science reading — and sometimes an activity", fromLevel: 6 },
     { id: "wed-6",  subject: "Using Language Well",  time: "11:45", note: "15 min  |  Marcos +10 min editing", fromLevel: 5 },
@@ -75,7 +75,7 @@ export const DAY_SCHEDULE = {
   Friday: [
     { id: "fri-1", subject: "Creative Work",           time: "7:00",  note: "", free: true },
     { id: "fri-2", subject: "Rise & Shine",            time: "8:30",  note: "Marcos: math 40 · read 20 · Building Writers  |  Emma: math practice · read 20 · Building Writers", free: true, fromLevel: 2 },
-    { id: "fri-3", subject: "Bible & Me",              time: "10:00", note: "Simply CM Old Testament · hymn" },
+    { id: "fri-3", subject: "Bible & Memory",         time: "10:00", note: "Simply CM Old Testament · hymn" },
     { id: "fri-4", subject: "Family Lessons",          time: "10:15", note: "Medieval literature" },
     { id: "fri-5", subject: "Language Arts",           time: "11:30", note: "15 min", fromLevel: 5 },
     { id: "fri-6", subject: "Science: Special Studies", time: "11:50", note: "Special studies reading, or a natural-history activity — then the notebook page", fromLevel: 6 },
@@ -104,7 +104,7 @@ export function isCiboloTuesday(date = new Date()) {
 
 // Bump this whenever the built-in schedule changes so existing accounts refresh
 // their stored week to the new default (see syncScheduleToVersion in db.js).
-export const SCHEDULE_VERSION = "2026-fall-5";
+export const SCHEDULE_VERSION = "2026-fall-6";
 
 // ─── TERM SETTINGS ────────────────────────────────────────────────────────────
 export const TERM_SETTINGS = {
