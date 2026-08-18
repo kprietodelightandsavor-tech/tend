@@ -36,12 +36,10 @@ const Icon = {
 };
 
 const LAUNCH_LEVELS = [
-  { n: 1, label: "Spine — Bible, family lessons, co-op" },
-  { n: 2, label: "+ Rise & Shine (math + reading)" },
+  { n: 1, label: "Spine — Bible, read-aloud, break, family lessons, co-op" },
+  { n: 2, label: "+ Rise & Shine & afternoon occupations" },
   { n: 3, label: "+ Family Start & Emma's math" },
-  { n: 4, label: "+ typing & Building Writers" },
-  { n: 5, label: "+ language, history, ancient history" },
-  { n: 6, label: "Full schedule (+ science days)" },
+  { n: 4, label: "Full — language, history, ancient history, science" },
 ];
 
 export default function SettingsScreen({ settings, onSave, onNavigate }) {
@@ -171,7 +169,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
           );
         })}
         <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.6 }}>
-          You're at Level {launchLevel}. {launchLevel < 6 ? "Only these blocks show on your day for now." : "Your full schedule is showing."}
+          You're at Level {launchLevel}. {launchLevel < 4 ? "Only these blocks show on your day for now." : "Your full schedule is showing."}
         </p>
       </div>
 

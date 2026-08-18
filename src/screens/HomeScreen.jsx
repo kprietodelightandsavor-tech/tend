@@ -7,7 +7,7 @@ import FocusTimer from "../components/FocusTimer";
 import MotherCultureRow from "../components/MotherCultureRow";
 import { useDayAppointments } from "../components/TodayAppointments";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { DAYS, DAY_SCHEDULE, TUESDAY_CIBOLO, isCiboloTuesday, SCHEDULE_VERSION, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm, NATURE_DAYS, NATURE_LOOP_STEPS, getNatureLoopStep, advanceNatureLoop } from "../data/seed";
+import { DAYS, DAY_SCHEDULE, TUESDAY_CIBOLO, SCHEDULE_VERSION, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm, NATURE_DAYS, NATURE_LOOP_STEPS, getNatureLoopStep, advanceNatureLoop } from "../data/seed";
 import {
   SUMMER_MORNING_ANCHORS,
   getEveningAnchors,
@@ -1058,6 +1058,26 @@ export default function HomeScreen({ onNavigate, settings }) {
   const userId = settings?.userId;
   const launchLevel = settings?.launchLevel || 1;
 
+  // Tuesday's Cibolo/home choice is a manual weekly toggle (Kim skips many
+  // volunteer weeks this year), keyed by the Monday of the viewed week.
+  const weekKey = (() => {
+    const d = new Date(viewDate); d.setHours(0, 0, 0, 0);
+    const back = d.getDay() === 0 ? 6 : d.getDay() - 1;
+    d.setDate(d.getDate() - back);
+    return d.toISOString().slice(0, 10);
+  })();
+  const [volunteerWeeks, setVolunteerWeeks] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("tend_cibolo_weeks") || "[]"); } catch { return []; }
+  });
+  const isVolunteerWeek = volunteerWeeks.includes(weekKey);
+  const toggleVolunteerWeek = () => {
+    setVolunteerWeeks(prev => {
+      const next = prev.includes(weekKey) ? prev.filter(w => w !== weekKey) : [...prev, weekKey];
+      try { localStorage.setItem("tend_cibolo_weeks", JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
   // The daily check-off page shares the planner's schedule so edits made in the
   // planner show up here. null = not loaded yet; {} = loaded, no custom schedule.
   const [savedSchedule, setSavedSchedule] = useState(null);
@@ -1084,17 +1104,17 @@ export default function HomeScreen({ onNavigate, settings }) {
     // Show only what the current Launch Level has brought in (soft-launch ramp).
     const atLevel = (blocks) => blocks.filter(b => (b.fromLevel || 1) <= launchLevel);
 
-    // Tuesday alternates (home nature 1st & 3rd / Cibolo 2nd & 4th) and can't be
-    // represented as one editable planner day, so it comes straight from code.
+    // Tuesday comes straight from code — home nature, or Cibolo when the weekly
+    // toggle is on. It can't be represented as one editable planner day.
     if (dayName === "Tuesday") {
-      return atLevel(isCiboloTuesday(viewDate) ? TUESDAY_CIBOLO : DAY_SCHEDULE.Tuesday);
+      return atLevel(isVolunteerWeek ? TUESDAY_CIBOLO : DAY_SCHEDULE.Tuesday);
     }
 
     // Every other day: the saved planner week if present, else the built-in rhythm.
     const custom = savedSchedule?.[dayName];
     if (custom && custom.length) return atLevel(custom.map(b => hydrateSavedBlock(b, dayName)));
     return atLevel(DAY_SCHEDULE[dayName] || []);
-  }, [isSummer, dayName, viewDate, savedSchedule, launchLevel]);
+  }, [isSummer, dayName, viewDate, savedSchedule, launchLevel, isVolunteerWeek]);
 
   const [dailyOffset, setDailyOffset] = useState(() => {
     try {
@@ -1170,11 +1190,27 @@ export default function HomeScreen({ onNavigate, settings }) {
         </>
       ) : (
         <>
-          {isToday && launchLevel < 6 && (
+          {isToday && launchLevel < 4 && (
             <button onClick={() => onNavigate("settings")}
               style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: "0 0 16px", fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)" }}>
               Easing in · Level {launchLevel} ›
             </button>
+          )}
+          {isToday && dayName === "Tuesday" && (
+            <div onClick={toggleVolunteerWeek}
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", marginBottom: 16, background: isVolunteerWeek ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${isVolunteerWeek ? "#D9C8B0" : "var(--sage-md)"}`, borderRadius: 3, cursor: "pointer" }}>
+              <div style={{ paddingRight: 12 }}>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)", margin: 0 }}>
+                  {isVolunteerWeek ? "Volunteering at Cibolo this week" : "Home nature Tuesday"}
+                </p>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", margin: "2px 0 0" }}>
+                  {isVolunteerWeek ? "Tap for a home Tuesday instead" : "Going to Cibolo? Tap to switch this week"}
+                </p>
+              </div>
+              <span style={{ width: 44, height: 26, borderRadius: 20, background: isVolunteerWeek ? "var(--gold)" : "var(--rule)", position: "relative", flexShrink: 0, transition: "background .2s" }}>
+                <span style={{ position: "absolute", top: 3, left: isVolunteerWeek ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left .2s" }} />
+              </span>
+            </div>
           )}
           {isToday && <MorningPlan blocks={todayBlocks} />}
           {isToday && <MotherCultureRow />}
