@@ -41,7 +41,7 @@ export const DAY_SCHEDULE = {
     { id: "mon-1", subject: "Rise & Shine",   time: "7:30",  note: "Marcos: math 40 · science reading 20 · typing  |  Emma: math practice · science reading 20 · typing", free: true },
     { id: "mon-2", subject: "Family Start",   time: "8:45",  note: "Psalm · each child narrates their science reading · hymn · composer study" },
     { id: "mon-3", subject: "Car Together",   time: "10:15", note: "Audiobook", free: true },
-    { id: "mon-4", subject: "Co-op Day",      time: "11:00", note: "Until 4:30 — lessons live at co-op today", free: true },
+    { id: "mon-4", subject: "Co-op Day",      time: "11:00–4:30", note: "Lessons live at co-op today", free: true },
     { id: "mon-5", subject: "House Reset",    time: "5:00",  note: "Animals, dinner", free: true },
   ],
   // Home nature weeks (1st & 3rd Tuesdays)
@@ -68,7 +68,7 @@ export const DAY_SCHEDULE = {
   ],
   Thursday: [
     { id: "thu-1", subject: "Car Together", time: "9:15", note: "Dwell, then the audiobook", free: true },
-    { id: "thu-2", subject: "Co-op Day",    time: "9:50", note: "Until 4:30 · theater", free: true },
+    { id: "thu-2", subject: "Co-op Day",    time: "9:50–4:30", note: "Theater", free: true },
     { id: "thu-3", subject: "Pick up Nico", time: "5:00", note: "Chess", free: true },
   ],
   Friday: [
@@ -103,7 +103,7 @@ export function isCiboloTuesday(date = new Date()) {
 
 // Bump this whenever the built-in schedule changes so existing accounts refresh
 // their stored week to the new default (see syncScheduleToVersion in db.js).
-export const SCHEDULE_VERSION = "2026-fall-2";
+export const SCHEDULE_VERSION = "2026-fall-3";
 
 // ─── TERM SETTINGS ────────────────────────────────────────────────────────────
 export const TERM_SETTINGS = {

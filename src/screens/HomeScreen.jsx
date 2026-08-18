@@ -888,22 +888,12 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
                     )}
                   </p>
                   {isSkipped && <p style={{ fontSize: 11, color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 2 }}>skipped · tap to restore</p>}
-                  {b.note && !isSkipped && !isDone && !isBeautyBlock && <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
+                  {b.note && !isSkipped && !isDone && <p style={{ fontSize: 13, color: "var(--ink-faint)", fontStyle: "italic", fontFamily: "'Cormorant Garamond', serif", marginTop: 3, lineHeight: 1.5 }}>{b.note}</p>}
                   {isDone && isToday && <p style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Lato', sans-serif", letterSpacing: ".08em", textTransform: "uppercase", marginTop: 2 }}>tap to undo</p>}
                 </div>
               </div>
 
-              {isBeautyBlock && beautyItems && beautyItems.length > 0 && !isDone && !isSkipped && (
-                <BeautyBlockContent
-                  dayName={today}
-                  viewDate={viewDate}
-                  userId={userId}
-                  beautyProgress={beautyProgress}
-                  onToggle={handleBeautyToggle}
-                />
-              )}
-
-              {isExpanded && !isDone && !isSkipped && !isBeautyBlock && (
+              {isExpanded && !isDone && !isSkipped && (
                 <div style={{ paddingLeft: 51, paddingBottom: 12, paddingTop: 8 }} onClick={e => e.stopPropagation()}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", flex: 1 }}
