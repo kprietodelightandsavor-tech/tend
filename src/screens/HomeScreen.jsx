@@ -1170,6 +1170,12 @@ export default function HomeScreen({ onNavigate, settings }) {
         </>
       ) : (
         <>
+          {isToday && launchLevel < 6 && (
+            <button onClick={() => onNavigate("settings")}
+              style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: "0 0 16px", fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)" }}>
+              Easing in · Level {launchLevel} ›
+            </button>
+          )}
           {isToday && <MorningPlan blocks={todayBlocks} />}
           {isToday && <MotherCultureRow />}
           {isToday && <LunchIdea />}
