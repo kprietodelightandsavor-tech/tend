@@ -5,21 +5,20 @@ export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sa
 // ─── BEAUTY LOOP (per day) ────────────────────────────────────────────────────
 export const BEAUTY_LOOP = {
   Monday: [
-    { id: "bl-m-1", label: "Artist Study" },
+    { id: "bl-m-1", label: "Hymn Study" },
     { id: "bl-m-2", label: "Poet Study" },
   ],
   Tuesday: [
     { id: "bl-t-1", label: "Composer Study" },
+    { id: "bl-t-2", label: "Recitation" },
   ],
   Wednesday: [
-    { id: "bl-w-1", label: "Recitation" },
     { id: "bl-w-2", label: "Biography / Plutarch" },
     { id: "bl-w-3", label: "Folk Song" },
   ],
   Thursday: [],
   Friday: [
-    { id: "bl-f-1", label: "Hymn Study" },
-    { id: "bl-f-2", label: "Recitation" },
+    { id: "bl-f-3", label: "Artist Study" },
   ],
 };
 
