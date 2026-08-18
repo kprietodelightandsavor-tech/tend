@@ -1057,6 +1057,17 @@ export default function HomeScreen({ onNavigate, settings }) {
   const isSummer = settings?.mode === "summer";
   const userId = settings?.userId;
   const launchLevel = settings?.launchLevel || 1;
+  // The level can be changed right from the Home screen (on today or any day
+  // ahead) so Kim can flip through and decide when to level up. levelOverride
+  // gives instant feedback while saveToMeta persists it.
+  const [levelOverride, setLevelOverride] = useState(null);
+  const [showLevels, setShowLevels] = useState(false);
+  const effectiveLevel = levelOverride ?? launchLevel;
+  const chooseLevel = (n) => {
+    setLevelOverride(n);
+    setShowLevels(false);
+    if (settings?.saveToMeta) settings.saveToMeta({ launch_level: n });
+  };
 
   // Tuesday's Cibolo/home choice is a manual weekly toggle (Kim skips many
   // volunteer weeks this year), keyed by the Monday of the viewed week.
@@ -1102,7 +1113,7 @@ export default function HomeScreen({ onNavigate, settings }) {
     if (isSummer) return getSummerDayBlocks(dayName, viewDate);
 
     // Show only what the current Launch Level has brought in (soft-launch ramp).
-    const atLevel = (blocks) => blocks.filter(b => (b.fromLevel || 1) <= launchLevel);
+    const atLevel = (blocks) => blocks.filter(b => (b.fromLevel || 1) <= effectiveLevel);
 
     // Tuesday comes straight from code — home nature, or Cibolo when the weekly
     // toggle is on. It can't be represented as one editable planner day.
@@ -1114,7 +1125,7 @@ export default function HomeScreen({ onNavigate, settings }) {
     const custom = savedSchedule?.[dayName];
     if (custom && custom.length) return atLevel(custom.map(b => hydrateSavedBlock(b, dayName)));
     return atLevel(DAY_SCHEDULE[dayName] || []);
-  }, [isSummer, dayName, viewDate, savedSchedule, launchLevel, isVolunteerWeek]);
+  }, [isSummer, dayName, viewDate, savedSchedule, effectiveLevel, isVolunteerWeek]);
 
   const [dailyOffset, setDailyOffset] = useState(() => {
     try {
@@ -1190,11 +1201,28 @@ export default function HomeScreen({ onNavigate, settings }) {
         </>
       ) : (
         <>
-          {offset >= 0 && launchLevel < 4 && (
-            <button onClick={() => onNavigate("settings")}
-              style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: "0 0 16px", fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)" }}>
-              Easing in · Level {launchLevel} ›
-            </button>
+          {offset >= 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <button onClick={() => setShowLevels(v => !v)}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)" }}>
+                {effectiveLevel < 4 ? `Easing in · Level ${effectiveLevel}` : "Full schedule · Level 4"} {showLevels ? "▾" : "›"}
+              </button>
+              {showLevels && (
+                <>
+                  <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+                    {[1, 2, 3, 4].map(n => (
+                      <button key={n} onClick={() => chooseLevel(n)}
+                        style={{ flex: 1, padding: "9px 0", borderRadius: 3, border: `1px solid ${effectiveLevel === n ? "var(--sage)" : "var(--rule)"}`, background: effectiveLevel === n ? "var(--sage)" : "none", color: effectiveLevel === n ? "white" : "var(--ink-lt)", cursor: "pointer", fontFamily: "'Playfair Display', serif", fontSize: 16 }}>
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", margin: "8px 0 0", lineHeight: 1.5 }}>
+                    {isToday ? "Changing this sets your level everywhere." : "Flip a day ahead through the levels to plan — this sets your level everywhere."}
+                  </p>
+                </>
+              )}
+            </div>
           )}
           {isToday && dayName === "Tuesday" && (
             <div onClick={toggleVolunteerWeek}
