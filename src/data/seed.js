@@ -50,7 +50,7 @@ export const DAY_SCHEDULE = {
     { id: "tue-n-2", subject: "Family Start",                  time: "10:00", note: "Proverb · hymn · poet & poetry · read-aloud" },
     { id: "tue-n-3", subject: "Ancient History",               time: "10:45", note: "Text · narration · Book of Centuries · map" },
     { id: "tue-n-4", subject: "Lunch",                         time: "12:00", note: "", free: true },
-    { id: "tue-n-5", subject: "Nature Lore & Special Studies", time: "1:00",  note: "Read the lore, then outside to observe and journal" },
+    { id: "tue-n-5", subject: "Science: Nature Lore", time: "1:00",  note: "Read the lore, then outside to observe and journal" },
     { id: "tue-n-6", subject: "Afternoon Occupations",         time: "2:15",  note: "Handicraft · Spanish · piano  |  Emma: math with Mom", free: true },
     { id: "tue-n-7", subject: "Land the Plane",                time: "5:30",  note: "", free: true },
   ],
@@ -59,7 +59,7 @@ export const DAY_SCHEDULE = {
     { id: "wed-2",  subject: "Bible & Me",           time: "10:15", note: "Simply CM New Testament · hymn" },
     { id: "wed-3",  subject: "Beauty Loop",          time: "10:30", note: "Recitation · biography · folk song" },
     { id: "wed-4",  subject: "Family Lessons",       time: "10:45", note: "Adam of the Road, then King Arthur" },
-    { id: "wed-5",  subject: "Nature + Outdoor",     time: "11:00", note: "" },
+    { id: "wed-5",  subject: "Science: Natural History", time: "11:00", note: "Science reading — and sometimes an activity" },
     { id: "wed-6",  subject: "Using Language Well",  time: "11:45", note: "15 min  |  Marcos +10 min editing" },
     { id: "wed-7",  subject: "Side by Side",         time: "12:10", note: "Emma: math with Mom  |  Marcos: unfinished math, then LSS" },
     { id: "wed-8",  subject: "History Spine",        time: "12:40", note: "Written narration · Book of Centuries · map" },
@@ -77,7 +77,7 @@ export const DAY_SCHEDULE = {
     { id: "fri-3", subject: "Bible & Me",              time: "10:00", note: "Simply CM Old Testament · hymn" },
     { id: "fri-4", subject: "Family Lessons",          time: "10:15", note: "Medieval literature" },
     { id: "fri-5", subject: "Language Arts",           time: "11:30", note: "15 min" },
-    { id: "fri-6", subject: "Science",                 time: "11:50", note: "Experiment, then the science notebook page" },
+    { id: "fri-6", subject: "Science: Special Studies", time: "11:50", note: "Special studies reading, or a natural-history activity — then the notebook page" },
     { id: "fri-7", subject: "Lunch",                   time: "1:00",  note: "", free: true },
     { id: "fri-8", subject: "Artist & Picture Study",  time: "1:45",  note: "Then the art project" },
   ],
@@ -103,7 +103,7 @@ export function isCiboloTuesday(date = new Date()) {
 
 // Bump this whenever the built-in schedule changes so existing accounts refresh
 // their stored week to the new default (see syncScheduleToVersion in db.js).
-export const SCHEDULE_VERSION = "2026-fall-1";
+export const SCHEDULE_VERSION = "2026-fall-2";
 
 // ─── TERM SETTINGS ────────────────────────────────────────────────────────────
 export const TERM_SETTINGS = {
