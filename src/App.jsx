@@ -546,7 +546,9 @@ export default function App() {
     userId:         session.user.id,
     outdoorMinutes: userData?.outdoor_minutes || 0,
     saveToMeta,
-    isPaid:         userData?.is_paid      || false,
+    // Premium gating is off for now — everything is available once logged in.
+    isPaid:         true,
+    launchLevel:    userData?.launch_level || 1,
     students:       userData?.children     || [],
     mode:           userData?.mode         || "school",
   };

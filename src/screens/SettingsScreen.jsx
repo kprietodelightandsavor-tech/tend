@@ -35,6 +35,15 @@ const Icon = {
   ),
 };
 
+const LAUNCH_LEVELS = [
+  { n: 1, label: "Spine — Bible, family lessons, co-op" },
+  { n: 2, label: "+ Rise & Shine (math + reading)" },
+  { n: 3, label: "+ Family Start & Emma's math" },
+  { n: 4, label: "+ typing & Building Writers" },
+  { n: 5, label: "+ language, history, ancient history" },
+  { n: 6, label: "Full schedule (+ science days)" },
+];
+
 export default function SettingsScreen({ settings, onSave, onNavigate }) {
   const [name, setName]           = useState(settings?.name || "");
   const [outdoorGoal, setGoal]    = useState(settings?.outdoorGoal || 15);
@@ -42,6 +51,7 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
   const [week, setWeek]           = useState(settings?.week || 1);
   const [saved, setSaved]         = useState(false);
   const [mode, setMode]           = useState(settings?.mode || "school");
+  const [launchLevel, setLaunchLevel] = useState(settings?.launchLevel || 1);
   const [icsUrl, setIcsUrl]       = useState(() => { try { return localStorage.getItem("tend_ics_url") || ""; } catch { return ""; } });
   const [nudgeBusy, setNudgeBusy] = useState(false);
   const [nudgeMsg, setNudgeMsg]   = useState("");
@@ -74,6 +84,11 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
     const next = mode === "summer" ? "school" : "summer";
     setMode(next);
     if (settings?.saveToMeta) await settings.saveToMeta({ mode: next });
+  };
+
+  const setLevel = async (n) => {
+    setLaunchLevel(n);
+    if (settings?.saveToMeta) await settings.saveToMeta({ launch_level: n });
   };
 
   const loadCalendar = async () => {
@@ -128,6 +143,35 @@ export default function SettingsScreen({ settings, onSave, onNavigate }) {
         </div>
         <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.6 }}>
           {mode === "summer" ? "Break rhythm is on — your home shows the break schedule." : "School year is on."}
+        </p>
+      </div>
+
+      <div style={{ height: 1, background: "var(--rule)", marginBottom: 28 }} />
+
+      {/* Launch Level — easing in */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <Icon.Sun />
+          <p className="eyebrow" style={{ marginBottom: 0 }}>Easing In</p>
+        </div>
+        <p className="corm italic" style={{ fontSize: 15, color: "var(--ink-faint)", marginBottom: 16, lineHeight: 1.7 }}>
+          Bring your rhythm in gradually — each level adds the next layer. Move up when you're ready. Handy for back-to-school, returning from a break, or just a lighter day.
+        </p>
+        {LAUNCH_LEVELS.map(({ n, label }) => {
+          const on = launchLevel === n;
+          return (
+            <div key={n} onClick={() => setLevel(n)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid var(--rule)", cursor: "pointer" }}>
+              <span style={{ fontSize: 15, fontFamily: "'Playfair Display', serif", color: on ? "var(--sage)" : "var(--ink)", lineHeight: 1.4, paddingRight: 12 }}>
+                <span style={{ color: "var(--ink-faint)", fontSize: 13, marginRight: 8 }}>{n}</span>{label}
+              </span>
+              <span style={{ width: 22, height: 22, borderRadius: "50%", border: `1.5px solid ${on ? "var(--sage)" : "var(--rule)"}`, background: on ? "var(--sage)" : "none", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {on && <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}
+              </span>
+            </div>
+          );
+        })}
+        <p className="caption italic" style={{ marginTop: 12, lineHeight: 1.6 }}>
+          You're at Level {launchLevel}. {launchLevel < 6 ? "Only these blocks show on your day for now." : "Your full schedule is showing."}
         </p>
       </div>
 

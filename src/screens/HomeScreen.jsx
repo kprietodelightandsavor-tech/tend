@@ -95,13 +95,17 @@ function to12hDisplay(t) {
 // A block coming from the user's saved planner only carries subject/time/note.
 // Re-derive the flags the daily page relies on (free-block mother notes,
 // Rise & Shine memory verses, teaching-log filtering) from the subject.
-function hydrateSavedBlock(b) {
+function hydrateSavedBlock(b, day) {
   const subject = b.subject || "";
+  // Supabase only stores subject/time/note, so re-attach the launch level from
+  // the built-in schedule by matching the subject within the day.
+  const builtIn = (DAY_SCHEDULE[day] || []).find(x => x.subject === subject);
   return {
     ...b,
     time: to12hDisplay(b.time),
     free: isFreeBlock(subject),
     riseShine: /morning focus|rise\s*&?\s*shine/i.test(subject),
+    fromLevel: builtIn?.fromLevel || 1,
   };
 }
 
@@ -764,7 +768,9 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
   const startLP  = (id) => { if (isViewOnly) return; lpt.current = setTimeout(() => { clearTimeout(lpt.current); markSkipped(id); }, 1000); };
   const cancelLP = () => clearTimeout(lpt.current);
 
-  const isNatureDay = NATURE_DAYS[today] === true;
+  // Nature Study loop card hidden for now (Kim is simplifying). To restore:
+  // const isNatureDay = NATURE_DAYS[today] === true;
+  const isNatureDay = false;
   const [loopStep, setLoopStep] = useState(getNatureLoopStep);
   const [natureCurrent] = useState(() => {
     try {
@@ -1050,6 +1056,7 @@ export default function HomeScreen({ onNavigate, settings }) {
   const isWeekend = dayName === "Saturday" || dayName === "Sunday";
   const isSummer = settings?.mode === "summer";
   const userId = settings?.userId;
+  const launchLevel = settings?.launchLevel || 1;
 
   // The daily check-off page shares the planner's schedule so edits made in the
   // planner show up here. null = not loaded yet; {} = loaded, no custom schedule.
@@ -1074,17 +1081,20 @@ export default function HomeScreen({ onNavigate, settings }) {
   const todayBlocks = useMemo(() => {
     if (isSummer) return getSummerDayBlocks(dayName, viewDate);
 
+    // Show only what the current Launch Level has brought in (soft-launch ramp).
+    const atLevel = (blocks) => blocks.filter(b => (b.fromLevel || 1) <= launchLevel);
+
     // Tuesday alternates (home nature 1st & 3rd / Cibolo 2nd & 4th) and can't be
     // represented as one editable planner day, so it comes straight from code.
     if (dayName === "Tuesday") {
-      return isCiboloTuesday(viewDate) ? TUESDAY_CIBOLO : DAY_SCHEDULE.Tuesday;
+      return atLevel(isCiboloTuesday(viewDate) ? TUESDAY_CIBOLO : DAY_SCHEDULE.Tuesday);
     }
 
     // Every other day: the saved planner week if present, else the built-in rhythm.
     const custom = savedSchedule?.[dayName];
-    if (custom && custom.length) return custom.map(hydrateSavedBlock);
-    return DAY_SCHEDULE[dayName] || [];
-  }, [isSummer, dayName, viewDate, savedSchedule]);
+    if (custom && custom.length) return atLevel(custom.map(b => hydrateSavedBlock(b, dayName)));
+    return atLevel(DAY_SCHEDULE[dayName] || []);
+  }, [isSummer, dayName, viewDate, savedSchedule, launchLevel]);
 
   const [dailyOffset, setDailyOffset] = useState(() => {
     try {
