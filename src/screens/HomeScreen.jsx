@@ -1179,7 +1179,6 @@ export default function HomeScreen({ onNavigate, settings }) {
           {isToday && <LunchIdea />}
           {isToday && <FocusTimer />}
           {isToday && <SummerRest />}
-          {isToday && <EveningCloseNudge onNavigate={onNavigate} />}
           <SummerRhythm
             userId={settings?.userId}
             viewDate={viewDate}
@@ -1187,6 +1186,7 @@ export default function HomeScreen({ onNavigate, settings }) {
             onNavigate={onNavigate}
             appointments={dayAppts}
           />
+          {isToday && <EveningCloseNudge onNavigate={onNavigate} />}
         </>
       ) : (
         <>
@@ -1216,7 +1216,6 @@ export default function HomeScreen({ onNavigate, settings }) {
           {isToday && <MotherCultureRow />}
           {isToday && <LunchIdea />}
           {isToday && <FocusTimer />}
-          {isToday && <EveningCloseNudge onNavigate={onNavigate} />}
           {/* CM quote (school year only; summer renders inside SummerRhythm) */}
           {isToday && (
             <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--rule)" }}>
@@ -1249,6 +1248,7 @@ export default function HomeScreen({ onNavigate, settings }) {
               isViewOnly={isViewOnly}
             />
           )}
+          {isToday && <EveningCloseNudge onNavigate={onNavigate} />}
         </>
       )}
     </div>
