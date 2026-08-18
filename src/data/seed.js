@@ -5,19 +5,20 @@ export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sa
 // ─── BEAUTY LOOP (per day) ────────────────────────────────────────────────────
 export const BEAUTY_LOOP = {
   Monday: [
-    { id: "bl-m-1", label: "Artist & Picture Study" },
-    { id: "bl-m-2", label: "Poet & Poetry Study" },
+    { id: "bl-m-1", label: "Artist Study" },
+    { id: "bl-m-2", label: "Poet Study" },
   ],
   Tuesday: [
     { id: "bl-t-1", label: "Composer Study" },
   ],
   Wednesday: [
-    { id: "bl-w-1", label: "Biography or Citizenship" },
-    { id: "bl-w-2", label: "Folk Song" },
+    { id: "bl-w-1", label: "Recitation" },
+    { id: "bl-w-2", label: "Biography / Plutarch" },
+    { id: "bl-w-3", label: "Folk Song" },
   ],
   Thursday: [],
   Friday: [
-    { id: "bl-f-1", label: "Hymn Study", note: "Introduce this term's hymn — it will carry through morning alarms." },
+    { id: "bl-f-1", label: "Hymn Study" },
     { id: "bl-f-2", label: "Recitation" },
   ],
 };
@@ -57,7 +58,6 @@ export const DAY_SCHEDULE = {
   Wednesday: [
     { id: "wed-1",  subject: "Rise & Shine",         time: "8:30",  note: "Marcos: math 40 · read 20 · typing  |  Emma: math practice · read 20 · typing", free: true },
     { id: "wed-2",  subject: "Bible & Me",           time: "10:15", note: "Simply CM New Testament · hymn" },
-    { id: "wed-3",  subject: "Beauty Loop",          time: "10:30", note: "Recitation · biography · folk song" },
     { id: "wed-4",  subject: "Family Lessons",       time: "10:45", note: "Adam of the Road, then King Arthur" },
     { id: "wed-5",  subject: "Science: Natural History", time: "11:00", note: "Science reading — and sometimes an activity" },
     { id: "wed-6",  subject: "Using Language Well",  time: "11:45", note: "15 min  |  Marcos +10 min editing" },
@@ -103,7 +103,7 @@ export function isCiboloTuesday(date = new Date()) {
 
 // Bump this whenever the built-in schedule changes so existing accounts refresh
 // their stored week to the new default (see syncScheduleToVersion in db.js).
-export const SCHEDULE_VERSION = "2026-fall-3";
+export const SCHEDULE_VERSION = "2026-fall-4";
 
 // ─── TERM SETTINGS ────────────────────────────────────────────────────────────
 export const TERM_SETTINGS = {

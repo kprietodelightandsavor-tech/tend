@@ -1178,7 +1178,8 @@ export default function HomeScreen({ onNavigate, settings }) {
             <HabitFocus />
           </div>
 
-          {isToday && <FamilyBibleStudy userId={settings?.userId} />}
+          {/* Family Bible Study card hidden for now — Kim is simplifying to her own resources.
+              To bring it back, restore: {isToday && <FamilyBibleStudy userId={settings?.userId} />} */}
 
           {isWeekend ? (
             <WeekendRhythm rhythm={weekendRhythm} isToday={isToday} />
