@@ -1190,7 +1190,7 @@ export default function HomeScreen({ onNavigate, settings }) {
         </>
       ) : (
         <>
-          {isToday && launchLevel < 4 && (
+          {offset >= 0 && launchLevel < 4 && (
             <button onClick={() => onNavigate("settings")}
               style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: "0 0 16px", fontFamily: "'Lato', sans-serif", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--sage)" }}>
               Easing in · Level {launchLevel} ›
