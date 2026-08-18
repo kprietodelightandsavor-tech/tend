@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { DAYS, DAY_SCHEDULE, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, COOP_DAY_TEMPLATE, COOP_HALF_TEMPLATE, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
+import { DAYS, DAY_SCHEDULE, SCHEDULE_VERSION, BEAUTY_LOOP, TERM_SETTINGS, REST_WEEK_SUGGESTIONS, COOP_DAY_TEMPLATE, COOP_HALF_TEMPLATE, getSaturdayRhythm, getSundayRhythm } from "../data/seed";
 import { PremiumModal } from "./HomeScreen";
-import { saveScheduleDay, seedScheduleIfEmpty, resetScheduleToDefault } from "../lib/db";
+import { saveScheduleDay, seedScheduleIfEmpty, resetScheduleToDefault, syncScheduleToVersion } from "../lib/db";
 import { createPortal } from "react-dom";
 
 const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -413,6 +413,8 @@ export default function PlannerScreen({ settings }) {
     if (!userId) return;
     let cancelled = false;
     (async () => {
+      // Refresh to the new built-in schedule if it changed, then load.
+      await syncScheduleToVersion(userId, DAY_SCHEDULE, SCHEDULE_VERSION);
       const rows = await seedScheduleIfEmpty(userId, DAY_SCHEDULE);
       if (cancelled || !rows.length) return;
       const s = {};

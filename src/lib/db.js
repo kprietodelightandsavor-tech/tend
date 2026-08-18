@@ -134,6 +134,19 @@ export async function seedScheduleIfEmpty(userId, defaultSchedule) {
   return await getScheduleBlocks(userId);
 }
 
+// When the built-in schedule changes (SCHEDULE_VERSION bumps), refresh this
+// account's stored week to the new default — once per device. Returns the
+// refreshed rows if it reseeded, or null if already on the current version.
+export async function syncScheduleToVersion(userId, defaultSchedule, version) {
+  const KEY = "tend_schedule_version";
+  let stored = null;
+  try { stored = localStorage.getItem(KEY); } catch {}
+  if (stored === version) return null;
+  const rows = await resetScheduleToDefault(userId, defaultSchedule);
+  try { localStorage.setItem(KEY, version); } catch {}
+  return rows;
+}
+
 export async function resetScheduleToDefault(userId, defaultSchedule) {
   // wipe the stored week and re-seed from the app's current default rhythm
   await supabase.from('schedule_blocks').delete().eq('user_id', userId);

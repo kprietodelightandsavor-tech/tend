@@ -31,61 +31,79 @@ export const RISE_SHINE_ITEMS = {
   Friday:    ["Math", "Reading or Writing"],
 };
 
-// ─── DAILY SCHEDULE — the six-block living rhythm ─────────────────────────────
-// Core subjects live only on their days:
-//   Mon: full co-op · Tue: Ancient History + Nature Study
-//   Wed: US/World History + Science · Thu: half co-op, then Science + Outdoor Geography
-//   Fri: US/World History + Nature Study
+// ─── DAILY SCHEDULE — Kim's 2026 fall rhythm ─────────────────────────────────
+// Mon: co-op all day · Tue: alternates (home nature 1st & 3rd / Cibolo 2nd & 4th)
+// Wed: home academics + tennis · Thu: co-op (theater) · Fri: home + art
+// Tuesday's Cibolo variant lives in TUESDAY_CIBOLO below; the daily page picks
+// which Tuesday to show via isCiboloTuesday().
 export const DAY_SCHEDULE = {
   Monday: [
-    { id: "m-1",  subject: "Morning Focus Time",          time: "7:30",  note: "Quiet own work — math + reading, then pack for co-op", free: true, riseShine: true },
-    { id: "m-2",  subject: "Family Start · Together Time", time: "8:45",  note: "Bible & read aloud — the car counts" },
-    { id: "m-3",  subject: "Co-op Day",                    time: "9:50",  note: "All day — lessons live at co-op today" },
-    { id: "m-4",  subject: "Afternoon Occupations",        time: "2:30",  note: "Rest, outside time, errands on the way home", free: true },
-    { id: "m-5",  subject: "House Reset & Animal Chores",  time: "4:30",  note: "", free: true },
+    { id: "mon-1", subject: "Rise & Shine",   time: "7:30",  note: "Marcos: math 40 · science reading 20 · typing  |  Emma: math practice · science reading 20 · typing", free: true },
+    { id: "mon-2", subject: "Family Start",   time: "8:45",  note: "Psalm · each child narrates their science reading · hymn · composer study" },
+    { id: "mon-3", subject: "Car Together",   time: "10:15", note: "Audiobook", free: true },
+    { id: "mon-4", subject: "Co-op Day",      time: "11:00", note: "Until 4:30 — lessons live at co-op today", free: true },
+    { id: "mon-5", subject: "House Reset",    time: "5:00",  note: "Animals, dinner", free: true },
   ],
+  // Home nature weeks (1st & 3rd Tuesdays)
   Tuesday: [
-    { id: "t-1",  subject: "Morning Focus Time",          time: "7:30",  note: "Quiet own work while minds are fresh — math + reading or copywork", free: true, riseShine: true },
-    { id: "t-2",  subject: "Family Start · Together Time", time: "9:00",  note: "Bible · read aloud · poetry · Beauty Loop" },
-    { id: "t-3",  subject: "Core — Ancient History",       time: "9:50",  note: "Short lesson, then narrate" },
-    { id: "t-4",  subject: "Core — Nature Study",          time: "10:35", note: "Outdoor observation — sketch & narrate" },
-    { id: "t-5",  subject: "Volunteer OR Core Loop",       time: "11:15", note: "Cibolo Rehab Center on volunteer Tuesdays — otherwise catch a loop" },
-    { id: "t-6",  subject: "Lunch",                        time: "12:00", note: "Easy, high-protein", free: true },
-    { id: "t-7",  subject: "Afternoon Focus Time",         time: "1:00",  note: "Own work, self-paced — Spanish · piano · reading or writing" },
-    { id: "t-8",  subject: "Afternoon Occupations",        time: "2:15",  note: "Outside activities · self-care · animals · garden · property", free: true },
-    { id: "t-9",  subject: "House Reset & Animal Chores",  time: "4:30",  note: "", free: true },
+    { id: "tue-n-1", subject: "Rise & Shine",                  time: "8:30",  note: "Marcos: math 40 · read 20  |  Emma: math practice · read 20 · copywork", free: true },
+    { id: "tue-n-2", subject: "Family Start",                  time: "10:00", note: "Proverb · hymn · poet & poetry · read-aloud" },
+    { id: "tue-n-3", subject: "Ancient History",               time: "10:45", note: "Text · narration · Book of Centuries · map" },
+    { id: "tue-n-4", subject: "Lunch",                         time: "12:00", note: "", free: true },
+    { id: "tue-n-5", subject: "Nature Lore & Special Studies", time: "1:00",  note: "Read the lore, then outside to observe and journal" },
+    { id: "tue-n-6", subject: "Afternoon Occupations",         time: "2:15",  note: "Handicraft · Spanish · piano  |  Emma: math with Mom", free: true },
+    { id: "tue-n-7", subject: "Land the Plane",                time: "5:30",  note: "", free: true },
   ],
   Wednesday: [
-    { id: "w-1",  subject: "Morning Focus Time",          time: "7:30",  note: "Quiet own work while minds are fresh — math + reading or writing", free: true, riseShine: true },
-    { id: "w-2",  subject: "Family Start · Together Time", time: "9:00",  note: "Bible · read aloud · poetry · Beauty Loop" },
-    { id: "w-3",  subject: "Core — US & World History",    time: "9:50",  note: "Short lesson, then narrate — world history rolls into the US stream" },
-    { id: "w-4",  subject: "Core — Science",               time: "10:35", note: "Nature Explorers or current science unit — then a telling" },
-    { id: "w-5",  subject: "Lunch",                        time: "12:00", note: "Easy, high-protein", free: true },
-    { id: "w-6",  subject: "Afternoon Focus Time",         time: "1:00",  note: "Own work, self-paced — Spanish · piano · reading or writing" },
-    { id: "w-7",  subject: "Afternoon Occupations",        time: "2:15",  note: "Outside activities · self-care · animals · garden · property", free: true },
-    { id: "w-8",  subject: "House Reset & Animal Chores",  time: "4:30",  note: "", free: true },
+    { id: "wed-1",  subject: "Rise & Shine",         time: "8:30",  note: "Marcos: math 40 · read 20 · typing  |  Emma: math practice · read 20 · typing", free: true },
+    { id: "wed-2",  subject: "Bible & Me",           time: "10:15", note: "Simply CM New Testament · hymn" },
+    { id: "wed-3",  subject: "Beauty Loop",          time: "10:30", note: "Recitation · biography · folk song" },
+    { id: "wed-4",  subject: "Family Lessons",       time: "10:45", note: "Adam of the Road, then King Arthur" },
+    { id: "wed-5",  subject: "Nature + Outdoor",     time: "11:00", note: "" },
+    { id: "wed-6",  subject: "Using Language Well",  time: "11:45", note: "15 min  |  Marcos +10 min editing" },
+    { id: "wed-7",  subject: "Side by Side",         time: "12:10", note: "Emma: math with Mom  |  Marcos: unfinished math, then LSS" },
+    { id: "wed-8",  subject: "History Spine",        time: "12:40", note: "Written narration · Book of Centuries · map" },
+    { id: "wed-9",  subject: "Lunch",                time: "1:15",  note: "", free: true },
+    { id: "wed-10", subject: "Tennis",               time: "2:30",  note: "", free: true },
   ],
   Thursday: [
-    { id: "th-1", subject: "Morning Focus Time",          time: "7:30",  note: "Quiet own work — math + reading, then pack for co-op", free: true, riseShine: true },
-    { id: "th-2", subject: "Family Start · Together Time", time: "8:45",  note: "Bible & read aloud — the car counts" },
-    { id: "th-3", subject: "Co-op — Morning",              time: "9:50",  note: "Half day — home learning after lunch" },
-    { id: "th-4", subject: "Lunch",                        time: "12:30", note: "Easy, high-protein", free: true },
-    { id: "th-5", subject: "Core — Science",               time: "1:15",  note: "Nature Explorers or current science unit — then a telling" },
-    { id: "th-6", subject: "Core — Outdoor Geography",     time: "2:00",  note: "Maps and the land, out of doors — compass walks, the creek, the sky" },
-    { id: "th-7", subject: "Afternoon Occupations",        time: "3:00",  note: "Outside activities · self-care · animals · garden", free: true },
-    { id: "th-8", subject: "House Reset & Animal Chores",  time: "4:30",  note: "", free: true },
+    { id: "thu-1", subject: "Car Together", time: "9:15", note: "Dwell, then the audiobook", free: true },
+    { id: "thu-2", subject: "Co-op Day",    time: "9:50", note: "Until 4:30 · theater", free: true },
+    { id: "thu-3", subject: "Pick up Nico", time: "5:00", note: "Chess", free: true },
   ],
   Friday: [
-    { id: "f-1",  subject: "Morning Focus Time",          time: "7:30",  note: "Quiet own work while minds are fresh — math + reading or writing", free: true, riseShine: true },
-    { id: "f-2",  subject: "Family Start · Together Time", time: "9:00",  note: "Bible · read aloud · poet & folk song · Beauty Loop" },
-    { id: "f-3",  subject: "Core — US & World History",    time: "9:50",  note: "Short lesson, then narrate" },
-    { id: "f-4",  subject: "Core — Nature Study",          time: "10:35", note: "Outdoor observation — sketch & narrate" },
-    { id: "f-5",  subject: "Lunch",                        time: "12:00", note: "Easy, high-protein", free: true },
-    { id: "f-6",  subject: "Afternoon Focus Time",         time: "1:00",  note: "Own work, self-paced — Spanish · piano · reading or writing" },
-    { id: "f-7",  subject: "Afternoon Occupations",        time: "2:15",  note: "Outside activities · self-care · animals · garden · property", free: true },
-    { id: "f-8",  subject: "House Reset & Animal Chores",  time: "4:30",  note: "", free: true },
+    { id: "fri-1", subject: "Creative Work",           time: "7:00",  note: "", free: true },
+    { id: "fri-2", subject: "Rise & Shine",            time: "8:30",  note: "Marcos: math 40 · read 20 · Building Writers  |  Emma: math practice · read 20 · Building Writers", free: true },
+    { id: "fri-3", subject: "Bible & Me",              time: "10:00", note: "Simply CM Old Testament · hymn" },
+    { id: "fri-4", subject: "Family Lessons",          time: "10:15", note: "Medieval literature" },
+    { id: "fri-5", subject: "Language Arts",           time: "11:30", note: "15 min" },
+    { id: "fri-6", subject: "Science",                 time: "11:50", note: "Experiment, then the science notebook page" },
+    { id: "fri-7", subject: "Lunch",                   time: "1:00",  note: "", free: true },
+    { id: "fri-8", subject: "Artist & Picture Study",  time: "1:45",  note: "Then the art project" },
   ],
 };
+
+// Cibolo weeks (2nd & 4th Tuesdays) — swapped in for the home nature Tuesday.
+export const TUESDAY_CIBOLO = [
+  { id: "tue-c-1", subject: "Rise & Shine",           time: "8:30",  note: "Marcos: math 40 · read 20  |  Emma: math practice · read 20 · copywork", free: true },
+  { id: "tue-c-2", subject: "Family Start",           time: "9:45",  note: "Proverb · hymn" },
+  { id: "tue-c-3", subject: "Cibolo",                 time: "10:30", note: "Until 12:30", free: true },
+  { id: "tue-c-4", subject: "Lunch",                  time: "12:45", note: "", free: true },
+  { id: "tue-c-5", subject: "Ancient History",        time: "1:30",  note: "Text · narration · Book of Centuries · map" },
+  { id: "tue-c-6", subject: "Afternoon Occupations",  time: "2:30",  note: "Emma: math with Mom · handicraft · Spanish · piano", free: true },
+  { id: "tue-c-7", subject: "Land the Plane",         time: "5:30",  note: "", free: true },
+];
+
+// Which Tuesday is it? 2nd & 4th Tuesdays of the month are Cibolo weeks;
+// 1st, 3rd (and any 5th) are home nature weeks.
+export function isCiboloTuesday(date = new Date()) {
+  const occurrence = Math.floor((date.getDate() - 1) / 7) + 1; // 1st..5th Tuesday
+  return occurrence % 2 === 0; // 2nd & 4th
+}
+
+// Bump this whenever the built-in schedule changes so existing accounts refresh
+// their stored week to the new default (see syncScheduleToVersion in db.js).
+export const SCHEDULE_VERSION = "2026-fall-1";
 
 // ─── TERM SETTINGS ────────────────────────────────────────────────────────────
 export const TERM_SETTINGS = {

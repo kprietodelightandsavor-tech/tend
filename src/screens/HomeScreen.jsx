@@ -7,7 +7,7 @@ import FocusTimer from "../components/FocusTimer";
 import MotherCultureRow from "../components/MotherCultureRow";
 import { useDayAppointments } from "../components/TodayAppointments";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { DAYS, DAY_SCHEDULE, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm, NATURE_DAYS, NATURE_LOOP_STEPS, getNatureLoopStep, advanceNatureLoop } from "../data/seed";
+import { DAYS, DAY_SCHEDULE, TUESDAY_CIBOLO, isCiboloTuesday, SCHEDULE_VERSION, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm, NATURE_DAYS, NATURE_LOOP_STEPS, getNatureLoopStep, advanceNatureLoop } from "../data/seed";
 import {
   SUMMER_MORNING_ANCHORS,
   getEveningAnchors,
@@ -26,12 +26,11 @@ import {
 } from "../data/family-bible-seed";
 import {
   getTodayBeauty,
-  isVolunteerTuesday,
   loadBeautyProgress,
   toggleBeautyComplete,
 } from "../data/beauty-seed";
 import { supabase } from "../lib/supabase";
-import { getScheduleBlocks } from "../lib/db";
+import { getScheduleBlocks, syncScheduleToVersion } from "../lib/db";
 
 const Icon = {
   Leaf:    () => (<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#93A388" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.34L5.71 21l1-1.3A4.49 4.49 0 008 20c8 0 13-8 13-16-2 0-5 1-8 4z"/></svg>),
@@ -1069,6 +1068,8 @@ export default function HomeScreen({ onNavigate, settings }) {
     if (!userId) { setSavedSchedule({}); return; }
     let cancelled = false;
     (async () => {
+      // If the built-in schedule changed, refresh this account to it first.
+      await syncScheduleToVersion(userId, DAY_SCHEDULE, SCHEDULE_VERSION);
       const rows = await getScheduleBlocks(userId);
       if (cancelled) return;
       const grouped = {};
@@ -1080,26 +1081,19 @@ export default function HomeScreen({ onNavigate, settings }) {
     return () => { cancelled = true; };
   }, [userId]);
 
-  // Prefer the user's saved planner day; fall back to the built-in rhythm
-  // (with the Tuesday volunteer swap) only when they haven't customized it.
   const todayBlocks = useMemo(() => {
     if (isSummer) return getSummerDayBlocks(dayName, viewDate);
 
+    // Tuesday alternates (home nature 1st & 3rd / Cibolo 2nd & 4th) and can't be
+    // represented as one editable planner day, so it comes straight from code.
+    if (dayName === "Tuesday") {
+      return isCiboloTuesday(viewDate) ? TUESDAY_CIBOLO : DAY_SCHEDULE.Tuesday;
+    }
+
+    // Every other day: the saved planner week if present, else the built-in rhythm.
     const custom = savedSchedule?.[dayName];
     if (custom && custom.length) return custom.map(hydrateSavedBlock);
-
-    const baseBlocks = DAY_SCHEDULE[dayName] || [];
-    if (dayName === "Tuesday" && isVolunteerTuesday(viewDate)) {
-      return baseBlocks.map(b => b.subject.includes("Beauty Loop OR Volunteer")
-        ? { ...b, subject: "Cibolo Rehab Center", note: "Volunteer with Chispa · 10:30–12:00" }
-        : b);
-    }
-    if (dayName === "Tuesday") {
-      return baseBlocks.map(b => b.subject.includes("Beauty Loop OR Volunteer")
-        ? { ...b, subject: "Beauty Loop", note: "" }
-        : b);
-    }
-    return baseBlocks;
+    return DAY_SCHEDULE[dayName] || [];
   }, [isSummer, dayName, viewDate, savedSchedule]);
 
   const [dailyOffset, setDailyOffset] = useState(() => {
