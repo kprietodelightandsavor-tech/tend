@@ -848,7 +848,7 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
       {(appointments?.allDay || []).map((e, ai) => <ApptRow key={`appt-allday-${ai}`} e={e} />)}
       {items.map((b, bi) => {
         const isDone = b.status === "done", isSkipped = b.status === "skipped";
-        const { past: isPastBlock, now: isNowBlock } = blockTimeState(b);
+        const { now: isNowBlock } = blockTimeState(b);
         // Completed & skipped blocks sink below this clearly marked line —
         // so when something moves, it's obvious where it went.
         const firstSunkIdx = items.findIndex(x => x.status !== "pending");
@@ -878,13 +878,13 @@ function TodaySchedule({ today, blocks, onNavigate, settings, week, dailyOffset,
               <div onClick={() => setExpandedBlock(isExpanded ? null : b.id)}
                 onTouchStart={() => { if (b.status === "pending" && !isViewOnly) startLP(b.id); }} onTouchEnd={cancelLP}
                 onMouseDown={() => { if (b.status === "pending" && !isViewOnly) startLP(b.id); }} onMouseUp={cancelLP} onMouseLeave={cancelLP}
-                style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px", cursor: "pointer", opacity: isDone ? 0.35 : isSkipped ? 0.45 : isPastBlock ? 0.45 : 1, transition: "opacity .4s ease" }}>
-                <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: isDone || isSkipped || isPastBlock ? "var(--rule)" : blockColor, marginRight: 12, flexShrink: 0, transition: "background .3s ease", minHeight: 36 }} />
+                style={{ display: "flex", gap: 0, alignItems: "flex-start", padding: "12px 0 6px", cursor: "pointer", opacity: isDone ? 0.35 : isSkipped ? 0.45 : 1, transition: "opacity .4s ease" }}>
+                <div style={{ width: 3, borderRadius: 2, alignSelf: "stretch", background: isDone || isSkipped ? "var(--rule)" : blockColor, marginRight: 12, flexShrink: 0, transition: "background .3s ease", minHeight: 36 }} />
                 <div onClick={e => { e.stopPropagation(); if (!isViewOnly) toggleDone(b.id); }} style={{ width: 18, height: 18, borderRadius: 2, border: `1.5px solid ${isDone ? "var(--sage)" : "var(--rule)"}`, background: isDone ? "var(--sage)" : "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: isViewOnly ? "default" : "pointer", flexShrink: 0, transition: "all .2s", marginRight: 10, opacity: isViewOnly ? 0.5 : 1 }}>
                   {isDone && <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 16, color: isDone || isPastBlock ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease", display: "flex", alignItems: "center", gap: 8 }}>
+                  <p style={{ fontSize: 16, color: isDone ? "var(--ink-faint)" : "var(--ink)", fontFamily: "'Playfair Display', serif", textDecoration: isDone ? "line-through" : "none", textDecorationColor: "var(--sage-md)", transition: "all .3s ease", display: "flex", alignItems: "center", gap: 8 }}>
                     {isBeautyBlock && <Icon.Flower size={14} color={isDone ? "var(--ink-faint)" : "var(--sage)"} />}
                     <span>{b.subject} <span style={{ fontSize: 12, color: "var(--ink-faint)", fontWeight: 400 }}>{displayTime}</span></span>
                     {isNowBlock && !isDone && !isSkipped && (
