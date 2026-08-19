@@ -45,18 +45,20 @@ export const DAY_SCHEDULE = {
     { id: "mon-3", subject: "Car Together",   time: "10:15", note: "Audiobook", free: true },
     { id: "mon-4", subject: "Co-op Day",      time: "11:00–4:30", note: "Lessons live at co-op today", free: true },
     { id: "mon-5", subject: "House Reset",    time: "5:00",  note: "Animals, dinner", free: true },
+    { id: "mon-6", subject: "Piano",          time: "5:30",  note: "10 minutes before dinner", free: true },
   ],
   // Home nature Tuesday (the default). Morning basket + break arrive at Level 3.
   Tuesday: [
     { id: "tue-n-1", subject: "Rise & Shine",          time: "8:30",  note: "Marcos: Denison math 40 · Nature Reader 20 · Building Writers · Spanish  |  Emma: Math practice · Nature Reader 20 · Copywork · Building Writers · Spanish", free: true, fromLevel: 2 },
     { id: "tue-n-2", subject: "Family Start",          time: "9:45",  note: "Proverb · hymn · poet & poetry", fromLevel: 3 },
     { id: "tue-n-3", subject: "Beauty Loop",           time: "10:15", note: "Composer Study · Recitation", fromLevel: 3 },
-    { id: "tue-n-4", subject: "Read-Aloud",            time: "10:25", note: "Adam of the Road, then King Arthur · 20 min", fromLevel: 3 },
+    { id: "tue-n-4", subject: "Read-Aloud",            time: "10:25", note: "From your ancient history novel · 20 min", fromLevel: 3 },
     { id: "tue-n-5", subject: "Morning Break",         time: "10:45–11:30", note: "45 minutes", free: true, fromLevel: 3 },
     { id: "tue-n-6", subject: "Ancient History",       time: "11:30", note: "Text · narration · Book of Centuries · map", fromLevel: 4 },
     { id: "tue-n-7", subject: "Lunch",                 time: "12:15", note: "", free: true },
-    { id: "tue-n-8", subject: "Afternoon Occupations", time: "1:15",  note: "Handicraft · Spanish · piano  |  Emma: math with Mom", free: true, fromLevel: 2 },
-    { id: "tue-n-9", subject: "Land the Plane",        time: "5:30",  note: "No hard stop — Tuesdays can run long", free: true },
+    { id: "tue-n-8", subject: "Afternoon Occupations", time: "1:15",  note: "Handicraft · Spanish  |  Emma: math with Mom", free: true, fromLevel: 2 },
+    { id: "tue-n-9", subject: "Piano",                 time: "5:30",  note: "10 minutes before dinner", free: true },
+    { id: "tue-n-10", subject: "Land the Plane",       time: "5:30",  note: "No hard stop — Tuesdays can run long", free: true },
   ],
   Wednesday: [
     { id: "wed-1",  subject: "Rise & Shine",         time: "8:30",  note: "Marcos: Denison math 40 · Novel or Basket 20 · Typing 15 · Spanish  |  Emma: Math practice · Science Reading 20 (narrate at Bible & Memory) · Typing 15 · Spanish", free: true, fromLevel: 2 },
@@ -69,14 +71,15 @@ export const DAY_SCHEDULE = {
     { id: "wed-8",  subject: "Using Language Well",  time: "11:50", note: "15 min  |  Marcos +10 min editing", fromLevel: 4 },
     { id: "wed-9",  subject: "History Spine",        time: "12:10", note: "Written narration · Book of Centuries · map", fromLevel: 4 },
     { id: "wed-10", subject: "Science: Natural History", time: "12:35", note: "Science reading — and sometimes an activity", fromLevel: 4 },
-    { id: "wed-11", subject: "Lunch",                time: "1:00",  note: "", free: true },
-    { id: "wed-12", subject: "Afternoon Occupations", time: "1:30", note: "Handicraft · Spanish · piano", free: true, fromLevel: 2 },
+    { id: "wed-11", subject: "Lunch",                time: "1:15",  note: "", free: true },
     { id: "wed-13", subject: "Tennis",               time: "2:30",  note: "", free: true },
+    { id: "wed-14", subject: "Piano",                time: "5:30",  note: "10 minutes before dinner", free: true },
   ],
   Thursday: [
     { id: "thu-1", subject: "Car Together", time: "9:15", note: "Dwell, then the audiobook", free: true },
     { id: "thu-2", subject: "Co-op Day",    time: "9:50–4:30", note: "Theater", free: true },
     { id: "thu-3", subject: "Pick up Nico", time: "5:00", note: "Chess", free: true },
+    { id: "thu-4", subject: "Piano",        time: "5:30", note: "10 minutes before dinner", free: true },
   ],
   Friday: [
     { id: "fri-1",  subject: "Creative Work",           time: "7:00",  note: "", free: true },
@@ -90,7 +93,7 @@ export const DAY_SCHEDULE = {
     { id: "fri-9",  subject: "Science: Special Studies", time: "12:05", note: "Special studies reading, or a natural-history activity — then the notebook page", fromLevel: 4 },
     { id: "fri-10", subject: "Lunch",                   time: "12:45", note: "", free: true },
     { id: "fri-11", subject: "Art Project",             time: "1:30",  note: "The afternoon art project", free: true },
-    { id: "fri-12", subject: "Afternoon Occupations",   time: "2:15",  note: "Handicraft · Spanish · piano — no hard stop", free: true, fromLevel: 2 },
+    { id: "fri-12", subject: "Afternoon Occupations",   time: "2:15",  note: "Handicraft · Spanish — no hard stop", free: true, fromLevel: 2 },
   ],
 };
 
@@ -102,13 +105,14 @@ export const TUESDAY_CIBOLO = [
   { id: "tue-c-3", subject: "Cibolo",                 time: "10:30–12:30", note: "Volunteering", free: true },
   { id: "tue-c-4", subject: "Lunch",                  time: "12:45", note: "", free: true },
   { id: "tue-c-5", subject: "Ancient History",        time: "1:30",  note: "Text · narration · Book of Centuries · map", fromLevel: 4 },
-  { id: "tue-c-6", subject: "Afternoon Occupations",  time: "2:30",  note: "Emma: math with Mom · handicraft · Spanish · piano", free: true, fromLevel: 2 },
-  { id: "tue-c-7", subject: "Land the Plane",         time: "5:30",  note: "", free: true },
+  { id: "tue-c-6", subject: "Afternoon Occupations",  time: "2:30",  note: "Emma: math with Mom · handicraft · Spanish", free: true, fromLevel: 2 },
+  { id: "tue-c-7", subject: "Piano",                  time: "5:30",  note: "10 minutes before dinner", free: true },
+  { id: "tue-c-8", subject: "Land the Plane",         time: "5:30",  note: "", free: true },
 ];
 
 // Bump this whenever the built-in schedule changes so existing accounts refresh
 // their stored week to the new default (see syncScheduleToVersion in db.js).
-export const SCHEDULE_VERSION = "2026-fall-9";
+export const SCHEDULE_VERSION = "2026-fall-10";
 
 // ─── TERM SETTINGS ────────────────────────────────────────────────────────────
 export const TERM_SETTINGS = {
