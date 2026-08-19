@@ -54,9 +54,9 @@ export const DAY_SCHEDULE = {
     { id: "tue-n-3", subject: "Beauty Loop",           time: "10:15", note: "Composer Study · Recitation", fromLevel: 3 },
     { id: "tue-n-4", subject: "Read-Aloud",            time: "10:25", note: "From your ancient history novel · 20 min", fromLevel: 3 },
     { id: "tue-n-5", subject: "Morning Break",         time: "10:45–11:30", note: "45 minutes", free: true, fromLevel: 3 },
-    { id: "tue-n-6", subject: "Lunch",                 time: "11:45", note: "", free: true },
-    { id: "tue-n-7", subject: "Ancient History Spine", time: "12:15", note: "Right after lunch · text · narration · Book of Centuries · map", fromLevel: 4 },
-    { id: "tue-n-8", subject: "Afternoon Occupations", time: "1:00",  note: "Handicraft · Spanish  |  Emma: math with Mom", free: true, fromLevel: 2 },
+    { id: "tue-n-6", subject: "Afternoon Occupations", time: "11:30", note: "Handicraft · Spanish  |  Emma: math with Mom", free: true, fromLevel: 2 },
+    { id: "tue-n-7", subject: "Lunch",                 time: "12:30", note: "", free: true },
+    { id: "tue-n-8", subject: "Ancient History Spine", time: "1:00",  note: "Right after lunch · text · narration · Book of Centuries · map", fromLevel: 4 },
     { id: "tue-n-9", subject: "Nature Study",          time: "1:45",  note: "The last lesson — outdoors: a hike, a nature walk, or time on the ranch", fromLevel: 3 },
     { id: "tue-n-10", subject: "Piano",                time: "5:30",  note: "10 minutes before dinner", free: true },
     { id: "tue-n-11", subject: "Land the Plane",       time: "5:30",  note: "No hard stop — Tuesdays can run long", free: true },
@@ -113,7 +113,7 @@ export const TUESDAY_CIBOLO = [
 
 // Bump this whenever the built-in schedule changes so existing accounts refresh
 // their stored week to the new default (see syncScheduleToVersion in db.js).
-export const SCHEDULE_VERSION = "2026-fall-11";
+export const SCHEDULE_VERSION = "2026-fall-12";
 
 // ─── TERM SETTINGS ────────────────────────────────────────────────────────────
 export const TERM_SETTINGS = {
