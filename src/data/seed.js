@@ -40,15 +40,15 @@ export const RISE_SHINE_ITEMS = {
 // 4 = full schedule). Blocks with no fromLevel are level 1.
 export const DAY_SCHEDULE = {
   Monday: [
-    { id: "mon-1", subject: "Rise & Shine",   time: "7:30",  note: "Marcos: math 40 · science reading 20 · typing  |  Emma: math practice · science reading 20 · typing", free: true, fromLevel: 2 },
-    { id: "mon-2", subject: "Family Start",   time: "8:45",  note: "Psalm · each child narrates their science reading · hymn · composer study", fromLevel: 3 },
+    { id: "mon-1", subject: "Rise & Shine",   time: "8:30",  note: "Marcos: Denison math 40 · Science Reading 20 (narrate at Family Start) · Typing 15  |  Emma: Math practice · Novel or Basket 20 · Typing 15", free: true, fromLevel: 2 },
+    { id: "mon-2", subject: "Family Start",   time: "9:45",  note: "Psalm · each child narrates their science reading · hymn · composer study", fromLevel: 3 },
     { id: "mon-3", subject: "Car Together",   time: "10:15", note: "Audiobook", free: true },
     { id: "mon-4", subject: "Co-op Day",      time: "11:00–4:30", note: "Lessons live at co-op today", free: true },
     { id: "mon-5", subject: "House Reset",    time: "5:00",  note: "Animals, dinner", free: true },
   ],
   // Home nature Tuesday (the default). Morning basket + break arrive at Level 3.
   Tuesday: [
-    { id: "tue-n-1", subject: "Rise & Shine",          time: "8:30",  note: "Marcos: math 40 · read 20  |  Emma: math practice · read 20 · copywork", free: true, fromLevel: 2 },
+    { id: "tue-n-1", subject: "Rise & Shine",          time: "8:30",  note: "Marcos: Denison math 40 · Nature Reader 20 · Building Writers · Spanish  |  Emma: Math practice · Nature Reader 20 · Copywork · Building Writers · Spanish", free: true, fromLevel: 2 },
     { id: "tue-n-2", subject: "Family Start",          time: "9:45",  note: "Proverb · hymn · poet & poetry", fromLevel: 3 },
     { id: "tue-n-3", subject: "Beauty Loop",           time: "10:15", note: "Composer Study · Recitation", fromLevel: 3 },
     { id: "tue-n-4", subject: "Read-Aloud",            time: "10:25", note: "20 minutes", fromLevel: 3 },
@@ -59,7 +59,7 @@ export const DAY_SCHEDULE = {
     { id: "tue-n-9", subject: "Land the Plane",        time: "5:30",  note: "No hard stop — Tuesdays can run long", free: true },
   ],
   Wednesday: [
-    { id: "wed-1",  subject: "Rise & Shine",         time: "8:30",  note: "Marcos: math 40 · read 20 · typing  |  Emma: math practice · read 20 · typing", free: true, fromLevel: 2 },
+    { id: "wed-1",  subject: "Rise & Shine",         time: "8:30",  note: "Marcos: Denison math 40 · Novel or Basket 20 · Typing 15 · Spanish  |  Emma: Math practice · Science Reading 20 (narrate at Bible & Memory) · Typing 15 · Spanish", free: true, fromLevel: 2 },
     { id: "wed-2",  subject: "Bible & Memory",       time: "9:30",  note: "Simply CM New Testament · hymn" },
     { id: "wed-3",  subject: "Beauty Loop",          time: "9:50",  note: "Biography / Plutarch · Folk Song" },
     { id: "wed-4",  subject: "Read-Aloud",           time: "10:00", note: "Ancient history read-alouds · 20 min" },
@@ -80,7 +80,7 @@ export const DAY_SCHEDULE = {
   ],
   Friday: [
     { id: "fri-1",  subject: "Creative Work",           time: "7:00",  note: "", free: true },
-    { id: "fri-2",  subject: "Rise & Shine",            time: "8:30",  note: "Marcos: math 40 · read 20 · Building Writers  |  Emma: math practice · read 20 · Building Writers", free: true, fromLevel: 2 },
+    { id: "fri-2",  subject: "Rise & Shine",            time: "8:30",  note: "Marcos: Denison math 40 · Free Choice 20 · Building Writers · Spanish  |  Emma: Math practice · Free Choice 20 · Copywork · Building Writers · Spanish", free: true, fromLevel: 2 },
     { id: "fri-3",  subject: "Bible & Memory",          time: "9:45",  note: "Simply CM Old Testament · hymn" },
     { id: "fri-4",  subject: "Beauty Loop",             time: "10:05", note: "Artist Study — picture study" },
     { id: "fri-5",  subject: "Read-Aloud",              time: "10:15", note: "20 minutes" },
@@ -97,7 +97,7 @@ export const DAY_SCHEDULE = {
 // Cibolo weeks — swapped in when the Tuesday toggle is set to "volunteering."
 // No morning break (out of the house) and no beauty/read-aloud basket.
 export const TUESDAY_CIBOLO = [
-  { id: "tue-c-1", subject: "Rise & Shine",           time: "8:30",  note: "Marcos: math 40 · read 20  |  Emma: math practice · read 20 · copywork", free: true, fromLevel: 2 },
+  { id: "tue-c-1", subject: "Rise & Shine",           time: "8:30",  note: "Marcos: Denison math 40 · Nature Reader 20 · Building Writers · Spanish  |  Emma: Math practice · Nature Reader 20 · Copywork · Building Writers · Spanish", free: true, fromLevel: 2 },
   { id: "tue-c-2", subject: "Family Start",           time: "9:45",  note: "Proverb · hymn", fromLevel: 3 },
   { id: "tue-c-3", subject: "Cibolo",                 time: "10:30–12:30", note: "Volunteering", free: true },
   { id: "tue-c-4", subject: "Lunch",                  time: "12:45", note: "", free: true },
@@ -108,7 +108,7 @@ export const TUESDAY_CIBOLO = [
 
 // Bump this whenever the built-in schedule changes so existing accounts refresh
 // their stored week to the new default (see syncScheduleToVersion in db.js).
-export const SCHEDULE_VERSION = "2026-fall-7";
+export const SCHEDULE_VERSION = "2026-fall-8";
 
 // ─── TERM SETTINGS ────────────────────────────────────────────────────────────
 export const TERM_SETTINGS = {
