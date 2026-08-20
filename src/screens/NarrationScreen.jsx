@@ -24,6 +24,44 @@ const STAGES = [
   { id: "confident",  label: "Confident",  note: "Ready for analysis, connection, and wonder" },
 ];
 
+// Charlotte Mason's Forms — written narration & composition prompts, from the
+// TEND Keeping Journal. Form I ≈ grades 1–3, II ≈ 4–6, III ≈ 7–9.
+const FORMS = [
+  { id: "I",   label: "Form I",   grades: "grades 1–3", note: "oral, brief, and joyful" },
+  { id: "II",  label: "Form II",  grades: "grades 4–6", note: "oral continues; written narration begins" },
+  { id: "III", label: "Form III", grades: "grades 7–9", note: "narration deepens into composition" },
+];
+const SUBJECT_TO_FORM_CAT = { bible: "bible", history: "history", literature: "literature", nature: "science", science: "science", geography: "geography" };
+const FORM_PROMPTS = {
+  bible: {
+    I:   ["Tell the story back in your own words — begin at the beginning.", "What did he or she do? What would you have done?", "Say your verse, then tell what it means in your own words."],
+    II:  ["Retell the parable, then tell what it asks of us.", "Write three sentences about the person we met in today's reading."],
+    III: ["Compare two accounts of the same event: what does each writer want us to see?", "Write on: what does this passage demand of a person today?"],
+  },
+  history: {
+    I:   ["Tell me the story of ___ as if I had never heard it.", "Act the scene: what did you see, hear, and smell there?", "Which person do you love best in this story? Why?"],
+    II:  ["Write the scene as though you stood beside ___.", "Make a timeline entry and tell why this moment matters.", "Write a letter home from a person living through this event."],
+    III: ["Compare ___ and ___: character, choices, consequence.", "Defend or condemn a decision made by ___, citing the record.", "Write the week's reading as a newspaper front page from that year."],
+  },
+  literature: {
+    I:   ["Tell your favorite part — why did you love it?", "Tell me about ___. What kind of person is he or she?", "What do you think will happen next? What makes you say so?"],
+    II:  ["Write a letter from one character to another.", "Tell the chapter again from another character's point of view.", "Copy the passage you loved best; tell why you chose it."],
+    III: ["Trace how the author builds our sympathy for ___.", "Essay: what idea is this book really about? Support from the text.", "Write the missing scene the author chose not to show."],
+  },
+  science: {
+    I:   ["Describe what we found so exactly that I could find it too.", "Draw it in your nature notebook, then tell me three things you noticed.", "What was it doing? What do you wonder about it?"],
+    II:  ["Write up our experiment: what we did, what happened, and why.", "Nature notebook entry: date, weather, place, find, and a careful sketch.", "Explain to a younger child how ___ works."],
+    III: ["Explain the principle behind what we observed, with a labeled diagram.", "Write the discovery as the scientist might have recorded it in a journal.", "Field notes: one square yard, twenty minutes — record everything."],
+  },
+  geography: {
+    I:   ["Take me on the journey — what would we pass along the way?", "Tell about the people who live there: home, food, work, weather."],
+    II:  ["Describe the land, and how it shapes the people who live on it.", "Draw the map from memory, then check it and note what you missed."],
+    III: ["Account for the prosperity or struggle of a region from its geography.", "Plan a journey through the region we studied; justify your route."],
+  },
+};
+const gradeNum = (g) => { const m = String(g ?? "").match(/\d+/); return m ? +m[0] : null; };
+const formForGrade = (n) => n == null ? null : n <= 3 ? "I" : n <= 6 ? "II" : "III";
+
 const PROMPTS = {
   literature: {
     beginner: [
@@ -245,6 +283,7 @@ export default function NarrationScreen({ settings, onNavigate }) {
   const [aiPrompts, setAiPrompts]     = useState([]);
   const [aiLoading, setAiLoading]     = useState(false);
   const [copied, setCopied]           = useState(false);
+  const [formTab, setFormTab]         = useState("II");
 
   const startSession = (subjectId, stageId) => {
     const pool = PROMPTS[subjectId]?.[stageId] || [];
@@ -371,6 +410,41 @@ The prompts should:
           </button>
         ))}
       </div>
+
+      {/* Written narration & composition — Charlotte Mason's Forms, from the journal */}
+      {SUBJECT_TO_FORM_CAT[subject] && (() => {
+        const cat = SUBJECT_TO_FORM_CAT[subject];
+        const kidsFor = (fid) => (settings?.students || []).filter(s => formForGrade(gradeNum(s.grade)) === fid).map(s => s.name);
+        return (
+          <div style={{ marginTop: 30, borderTop: "1px solid var(--rule)", paddingTop: 22 }}>
+            <p className="eyebrow" style={{ marginBottom: 4 }}>Written narration · from your journal</p>
+            <p className="corm italic" style={{ fontSize: 13, color: "var(--ink-faint)", marginBottom: 14, lineHeight: 1.6 }}>
+              Charlotte Mason's Forms. Pick the child's level — most narration stays oral; these are for the pieces you choose to write.
+            </p>
+            <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+              {FORMS.map(f => {
+                const on = formTab === f.id;
+                return (
+                  <button key={f.id} onClick={() => setFormTab(f.id)}
+                    style={{ flex: 1, padding: "8px 4px", border: `1px solid ${on ? "var(--sage)" : "var(--rule)"}`, background: on ? "var(--sage-bg)" : "none", borderRadius: 2, cursor: "pointer", fontSize: 10, fontFamily: "'Lato', sans-serif", letterSpacing: ".06em", textTransform: "uppercase", color: on ? "var(--sage)" : "var(--ink-faint)", transition: "all .2s" }}>
+                    {f.label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="caption italic" style={{ marginBottom: 12 }}>
+              {FORMS.find(f => f.id === formTab)?.grades}
+              {kidsFor(formTab).length ? ` · ${kidsFor(formTab).join(", ")}` : ""} — {FORMS.find(f => f.id === formTab)?.note}
+            </p>
+            {(FORM_PROMPTS[cat]?.[formTab] || []).map((p, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "12px 0", borderBottom: "1px solid var(--rule)" }}>
+                <p style={{ flex: 1, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "var(--ink)", lineHeight: 1.7 }}>{p}</p>
+                <button onClick={() => copyPrompt(p)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-faint)", flexShrink: 0, marginTop: 3 }}><Icon.Copy /></button>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 
