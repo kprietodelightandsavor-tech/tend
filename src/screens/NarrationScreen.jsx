@@ -270,6 +270,69 @@ const CLOSES = [
   "That's the work. You remembered, you thought, and you made it yours.",
 ];
 
+// A weekly count of written narrations per child. Marcos's come from several
+// sources (home subjects + his lit course), so a target + tally beats a fixed
+// rotation. Dots beyond the target turn gold. Resets Monday.
+function WrittenNarrationTracker({ students }) {
+  const weekStart = (() => {
+    const d = new Date(); d.setHours(0, 0, 0, 0);
+    const back = d.getDay() === 0 ? 6 : d.getDay() - 1;
+    d.setDate(d.getDate() - back);
+    return d.toISOString().slice(0, 10);
+  })();
+  const [counts, setCounts] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("tend_written_narr") || "{}")[weekStart] || {}; } catch { return {}; }
+  });
+  const [targets, setTargets] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("tend_written_narr_targets") || "{}"); } catch { return {}; }
+  });
+  const kids = (students || []).filter(s => s && s.name);
+  if (!kids.length) return null;
+  const saveCounts = (next) => {
+    setCounts(next);
+    try { const all = JSON.parse(localStorage.getItem("tend_written_narr") || "{}"); all[weekStart] = next; localStorage.setItem("tend_written_narr", JSON.stringify(all)); } catch {}
+  };
+  const saveTargets = (next) => {
+    setTargets(next);
+    try { localStorage.setItem("tend_written_narr_targets", JSON.stringify(next)); } catch {}
+  };
+  const targetFor = (n) => targets[n] ?? 1;
+  const bump = (n, d) => saveTargets({ ...targets, [n]: Math.max(0, Math.min(9, targetFor(n) + d)) });
+  const setDone = (n, v) => saveCounts({ ...counts, [n]: Math.max(0, v) });
+  const ctrlBtn = { width: 22, height: 22, borderRadius: "50%", border: "1px solid var(--rule)", background: "var(--cream)", cursor: "pointer", fontSize: 14, color: "var(--ink-faint)", lineHeight: 1, padding: 0 };
+
+  return (
+    <div style={{ background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 4, padding: "16px 16px 10px", marginBottom: 24 }}>
+      <p className="eyebrow" style={{ marginBottom: 3, color: "var(--sage)" }}>Written narrations · this week</p>
+      <p className="caption italic" style={{ marginBottom: 12 }}>Count any written narration — a home subject or a course. Resets Monday.</p>
+      {kids.map(k => {
+        const t = targetFor(k.name), c = counts[k.name] || 0;
+        return (
+          <div key={k.name} style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 0", borderTop: "1px solid var(--sage-md)" }}>
+            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)", width: 66, flexShrink: 0 }}>{k.name}</span>
+            <div style={{ display: "flex", gap: 5, flex: 1, flexWrap: "wrap" }}>
+              {Array.from({ length: Math.max(t, c, 1) }).map((_, i) => {
+                const filled = i < c, extra = i >= t;
+                return (
+                  <button key={i} onClick={() => setDone(k.name, c === i + 1 ? i : i + 1)} aria-label="toggle narration"
+                    style={{ width: 20, height: 20, borderRadius: "50%", cursor: "pointer", padding: 0, transition: "all .15s",
+                      border: `1.5px solid ${filled ? (extra ? "var(--gold)" : "var(--sage)") : "var(--sage-md)"}`,
+                      background: filled ? (extra ? "var(--gold)" : "var(--sage)") : "none" }} />
+                );
+              })}
+            </div>
+            <span style={{ fontFamily: "'Lato', sans-serif", fontSize: 11, color: "var(--ink-faint)", width: 28, textAlign: "right" }}>{c}/{t}</span>
+            <div style={{ display: "flex", gap: 3 }}>
+              <button onClick={() => bump(k.name, -1)} style={ctrlBtn}>−</button>
+              <button onClick={() => bump(k.name, 1)} style={ctrlBtn}>+</button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function NarrationScreen({ settings, onNavigate }) {
   const [subject, setSubject]         = useState(null);
   const [stage, setStage]             = useState(null);
@@ -367,9 +430,10 @@ The prompts should:
       </button>
       <p className="eyebrow" style={{ marginBottom: 6 }}>Narration Coach</p>
       <h1 className="display serif" style={{ marginBottom: 4 }}>What did you<br />just read?</h1>
-      <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.7, marginBottom: 28 }}>
+      <p className="corm italic" style={{ fontSize: 14, color: "var(--ink-faint)", lineHeight: 1.7, marginBottom: 24 }}>
         Choose a subject and I'll give you prompts to draw out what they truly know — not a quiz, but a conversation.
       </p>
+      <WrittenNarrationTracker students={settings?.students} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 24 }}>
         {SUBJECTS.map(s => (
           <button key={s.id}
