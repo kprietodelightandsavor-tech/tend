@@ -10,7 +10,6 @@ export const BEAUTY_LOOP = {
   ],
   Tuesday: [
     { id: "bl-t-1", label: "Composer Study" },
-    { id: "bl-t-2", label: "Recitation" },
   ],
   Wednesday: [
     { id: "bl-w-2", label: "Biography / Plutarch" },
@@ -52,10 +51,10 @@ export const DAY_SCHEDULE = {
   Tuesday: [
     { id: "tue-n-1", subject: "Rise & Shine",          time: "8:30",  note: "Marcos: Denison math 40 · Nature Reader 20 · Building Writers · Spanish  |  Emma: Math practice · Nature Reader 20 · Copywork · Building Writers · Spanish", free: true, fromLevel: 2 },
     { id: "tue-n-2", subject: "Bible & Memory",        time: "10:15", note: "Proverb · hymn" },
-    { id: "tue-n-3", subject: "Beauty Loop",           time: "10:30", note: "Composer Study · Recitation" },
+    { id: "tue-n-3", subject: "Beauty Loop",           time: "10:30", note: "Composer Study" },
     { id: "tue-n-4", subject: "Read-Aloud",            time: "10:50", note: "From your ancient history novel · 20 min" },
     { id: "tue-n-5", subject: "Morning Break",         time: "11:15–12:00", note: "45 minutes", free: true },
-    { id: "tue-n-6", subject: "Ancient History Spine", time: "12:00", note: "Text · narration · Book of Centuries · map", fromLevel: 4 },
+    { id: "tue-n-6", subject: "Medieval History", time: "12:00", note: "Text · narration · Book of Centuries · map", fromLevel: 4 },
     { id: "tue-n-7", subject: "Written Narration",     time: "12:30", note: "The week's written narration — pick the subject (Form prompts live in the Narration coach)", fromLevel: 4 },
     { id: "tue-n-8", subject: "Lunch",                 time: "1:00",  note: "", free: true },
     { id: "tue-n-9", subject: "Nature Study",          time: "1:45",  note: "The last lesson — outdoors: a hike, a nature walk, or time on the ranch", fromLevel: 3 },
@@ -70,7 +69,7 @@ export const DAY_SCHEDULE = {
     { id: "wed-5",  subject: "Morning Break",        time: "11:15–12:00", note: "45 minutes", free: true },
     { id: "wed-6",  subject: "Using Language Well",  time: "12:00", note: "15 min  |  Marcos +10 min editing", fromLevel: 4 },
     { id: "wed-7",  subject: "Side by Side",         time: "12:15", note: "Emma: math with Mom  |  Marcos: unfinished math, then LSS", fromLevel: 3 },
-    { id: "wed-8",  subject: "History Spine",        time: "12:45", note: "Written narration · Book of Centuries · map", fromLevel: 4 },
+    { id: "wed-8",  subject: "Modern History",       time: "12:45", note: "Written narration · Book of Centuries · map", fromLevel: 4 },
     { id: "wed-9",  subject: "Science: Natural History", time: "1:10", note: "20–30 min · reading, sometimes an activity", fromLevel: 4 },
     { id: "wed-10", subject: "Lunch",                time: "1:40",  note: "Quick — leave by 2:00 for tennis", free: true },
     { id: "wed-11", subject: "Tennis",               time: "2:30",  note: "", free: true },
@@ -89,7 +88,7 @@ export const DAY_SCHEDULE = {
     { id: "fri-4",  subject: "Read-Aloud",              time: "10:50", note: "20 minutes" },
     { id: "fri-5",  subject: "Morning Break",           time: "11:15–12:00", note: "45 minutes", free: true },
     { id: "fri-6",  subject: "Using Language Well",     time: "12:00", note: "15 min", fromLevel: 4 },
-    { id: "fri-7",  subject: "Side by Side",            time: "12:15", note: "Emma: math with Mom (her extra math)  |  Marcos: independent work", fromLevel: 3 },
+    { id: "fri-7",  subject: "Side by Side",            time: "12:15", note: "Emma: math with Mom (her extra math)  |  Marcos: LSS — Living Stories & Sentences", fromLevel: 3 },
     { id: "fri-8",  subject: "Science: Special Studies", time: "12:45", note: "Special studies reading, or a natural-history activity — then the notebook page", fromLevel: 4 },
     { id: "fri-9",  subject: "Lunch",                   time: "1:15",  note: "", free: true },
     { id: "fri-10", subject: "Art Project",             time: "2:00",  note: "The afternoon art project", free: true },
@@ -104,14 +103,14 @@ export const TUESDAY_CIBOLO = [
   { id: "tue-c-2", subject: "Bible & Memory",         time: "9:45",  note: "Proverb · hymn" },
   { id: "tue-c-3", subject: "Cibolo",                 time: "10:30–12:30", note: "Volunteering", free: true },
   { id: "tue-c-4", subject: "Lunch",                  time: "1:00",  note: "", free: true },
-  { id: "tue-c-5", subject: "Ancient History Spine",  time: "1:30",  note: "Text · narration · Book of Centuries · map", fromLevel: 4 },
+  { id: "tue-c-5", subject: "Medieval History",       time: "1:30",  note: "Text · narration · Book of Centuries · map", fromLevel: 4 },
   { id: "tue-c-6", subject: "Handicraft",             time: "2:30–3:30", note: "Handicraft & skills", free: true, fromLevel: 2 },
   { id: "tue-c-7", subject: "Piano",                  time: "5:00",  note: "10 minutes before dinner", free: true },
 ];
 
 // Bump this whenever the built-in schedule changes so existing accounts refresh
 // their stored week to the new default (see syncScheduleToVersion in db.js).
-export const SCHEDULE_VERSION = "2026-fall-15";
+export const SCHEDULE_VERSION = "2026-fall-16";
 
 // ─── TERM SETTINGS ────────────────────────────────────────────────────────────
 export const TERM_SETTINGS = {
