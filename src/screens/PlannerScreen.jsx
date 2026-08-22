@@ -429,7 +429,14 @@ export default function PlannerScreen({ settings }) {
     return () => { cancelled = true; };
   }, [userId]);
 
-  const persistDay = (day, blocks) => { if (userId) saveScheduleDay(userId, day, blocks); };
+  // Editing a day marks it "yours" so built-in updates never overwrite it.
+  const markCustomDay = (day) => {
+    try {
+      const c = JSON.parse(localStorage.getItem("tend_custom_days") || "[]");
+      if (!c.includes(day)) { c.push(day); localStorage.setItem("tend_custom_days", JSON.stringify(c)); }
+    } catch {}
+  };
+  const persistDay = (day, blocks) => { if (userId) saveScheduleDay(userId, day, blocks); markCustomDay(day); };
 
   const dayBlocks = schedule[activeDay] || [];
 
@@ -663,6 +670,7 @@ export default function PlannerScreen({ settings }) {
                         if (!userId) return;
                         const sure = window.confirm("Replace your whole week with the default six-block rhythm? Your current schedule will be overwritten.");
                         if (!sure) return;
+                        try { localStorage.removeItem("tend_custom_days"); } catch {}
                         const rows = await resetScheduleToDefault(userId, DAY_SCHEDULE);
                         const s = {};
                         DAYS.forEach(d => { s[d] = []; });

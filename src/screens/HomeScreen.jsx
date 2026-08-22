@@ -1092,6 +1092,9 @@ export default function HomeScreen({ onNavigate, settings }) {
   // The daily check-off page shares the planner's schedule so edits made in the
   // planner show up here. null = not loaded yet; {} = loaded, no custom schedule.
   const [savedSchedule, setSavedSchedule] = useState(null);
+  // Days the family edited in the Planner — these show in full (past the level
+  // ramp) and are never overwritten by built-in updates.
+  const [customDays] = useState(() => { try { return JSON.parse(localStorage.getItem("tend_custom_days") || "[]"); } catch { return []; } });
   useEffect(() => {
     if (!userId) { setSavedSchedule({}); return; }
     let cancelled = false;
@@ -1114,18 +1117,26 @@ export default function HomeScreen({ onNavigate, settings }) {
 
     // Show only what the current Launch Level has brought in (soft-launch ramp).
     const atLevel = (blocks) => blocks.filter(b => (b.fromLevel || 1) <= effectiveLevel);
+    const isCustom = customDays.includes(dayName);
 
-    // Tuesday comes straight from code — home nature, or Cibolo when the weekly
-    // toggle is on. It can't be represented as one editable planner day.
+    // Tuesday: the Cibolo week (toggle) is code-only; the home nature Tuesday can
+    // be edited in the Planner like any other day.
     if (dayName === "Tuesday") {
-      return atLevel(isVolunteerWeek ? TUESDAY_CIBOLO : DAY_SCHEDULE.Tuesday);
+      if (isVolunteerWeek) return atLevel(TUESDAY_CIBOLO);
+      const t = savedSchedule?.Tuesday;
+      if (isCustom && t && t.length) return t.map(b => hydrateSavedBlock(b, "Tuesday"));
+      return atLevel(DAY_SCHEDULE.Tuesday);
     }
 
-    // Every other day: the saved planner week if present, else the built-in rhythm.
+    // Other days: your Planner edits win. A day you edited shows in full (you
+    // chose it, so it skips the level ramp); an untouched day eases in by level.
     const custom = savedSchedule?.[dayName];
-    if (custom && custom.length) return atLevel(custom.map(b => hydrateSavedBlock(b, dayName)));
+    if (custom && custom.length) {
+      const blocks = custom.map(b => hydrateSavedBlock(b, dayName));
+      return isCustom ? blocks : atLevel(blocks);
+    }
     return atLevel(DAY_SCHEDULE[dayName] || []);
-  }, [isSummer, dayName, viewDate, savedSchedule, effectiveLevel, isVolunteerWeek]);
+  }, [isSummer, dayName, viewDate, savedSchedule, effectiveLevel, isVolunteerWeek, customDays]);
 
   const [dailyOffset, setDailyOffset] = useState(() => {
     try {

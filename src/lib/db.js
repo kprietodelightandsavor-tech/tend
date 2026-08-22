@@ -142,9 +142,17 @@ export async function syncScheduleToVersion(userId, defaultSchedule, version) {
   let stored = null;
   try { stored = localStorage.getItem(KEY); } catch {}
   if (stored === version) return null;
-  const rows = await resetScheduleToDefault(userId, defaultSchedule);
+  // Merge, don't overwrite: refresh only the days the family hasn't edited in
+  // the Planner. Their customized days ("tend_custom_days") are left untouched
+  // so built-in updates arrive without wiping their own edits.
+  let custom = [];
+  try { custom = JSON.parse(localStorage.getItem("tend_custom_days") || "[]"); } catch {}
+  for (const [day, blocks] of Object.entries(defaultSchedule)) {
+    if (custom.includes(day)) continue;
+    await saveScheduleDay(userId, day, blocks);
+  }
   try { localStorage.setItem(KEY, version); } catch {}
-  return rows;
+  return await getScheduleBlocks(userId);
 }
 
 export async function resetScheduleToDefault(userId, defaultSchedule) {
