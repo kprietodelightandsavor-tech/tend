@@ -52,7 +52,7 @@ export const DAY_SCHEDULE = {
     { id: "tue-n-1", subject: "Rise & Shine",          time: "8:30",  note: "Marcos: Denison math 40 · Nature Reader 20 · Building Writers · Spanish  |  Emma: Math practice · Nature Reader 20 · Copywork · Building Writers · Spanish", free: true, fromLevel: 2 },
     { id: "tue-n-2", subject: "Bible & Memory",        time: "10:15", note: "Proverb · hymn" },
     { id: "tue-n-3", subject: "Beauty Loop",           time: "10:30", note: "Composer Study" },
-    { id: "tue-n-4", subject: "Read-Aloud",            time: "10:50", note: "From your ancient history novel · 20 min" },
+    { id: "tue-n-4", subject: "Read-Aloud",            time: "10:50", note: "From your medieval history novel · 20 min" },
     { id: "tue-n-5", subject: "Morning Break",         time: "11:15–12:00", note: "45 minutes", free: true },
     { id: "tue-n-6", subject: "Medieval History", time: "12:00", note: "Text · narration · Book of Centuries · map", fromLevel: 4 },
     { id: "tue-n-7", subject: "Written Narration",     time: "12:30", note: "The week's written narration — pick the subject (Form prompts live in the Narration coach)", fromLevel: 4 },
@@ -96,21 +96,35 @@ export const DAY_SCHEDULE = {
   ],
 };
 
-// Cibolo weeks — swapped in when the Tuesday toggle is set to "volunteering."
-// No morning break (out of the house) and no beauty/read-aloud basket.
-export const TUESDAY_CIBOLO = [
-  { id: "tue-c-1", subject: "Rise & Shine",           time: "8:30",  note: "Marcos: Denison math 40 · Nature Reader 20 · Building Writers · Spanish  |  Emma: Math practice · Nature Reader 20 · Copywork · Building Writers · Spanish", free: true, fromLevel: 2 },
-  { id: "tue-c-2", subject: "Bible & Memory",         time: "9:45",  note: "Proverb · hymn" },
-  { id: "tue-c-3", subject: "Cibolo",                 time: "10:30–12:30", note: "Volunteering", free: true },
-  { id: "tue-c-4", subject: "Lunch",                  time: "1:00",  note: "", free: true },
-  { id: "tue-c-5", subject: "Medieval History",       time: "1:30",  note: "Text · narration · Book of Centuries · map", fromLevel: 4 },
-  { id: "tue-c-6", subject: "Handicraft",             time: "2:30–3:30", note: "Handicraft & skills", free: true, fromLevel: 2 },
-  { id: "tue-c-7", subject: "Piano",                  time: "5:00",  note: "10 minutes before dinner", free: true },
+// Away Tuesdays — chosen by the Home / Chispa / Horses picker on the Tuesday
+// home page. The morning basket is done in the car on the drive; Medieval
+// History and Nature Study happen once home.
+const AWAY_RISE = "Marcos: Denison math 40 · Nature Reader 20 · Building Writers · Spanish  |  Emma: Math practice · Nature Reader 20 · Copywork · Building Writers · Spanish";
+const AWAY_CAR = "Proverb · hymn · composer · audiobook · medieval history read-aloud";
+
+export const TUESDAY_CHISPA = [
+  { id: "tue-ch-1", subject: "Rise & Shine",     time: "8:30",  note: AWAY_RISE, free: true, fromLevel: 2 },
+  { id: "tue-ch-2", subject: "In the Car",       time: "10:30", note: AWAY_CAR, free: true },
+  { id: "tue-ch-3", subject: "Chispa",           time: "11:00", note: "Volunteering", free: true },
+  { id: "tue-ch-4", subject: "Lunch",            time: "12:00", note: "", free: true },
+  { id: "tue-ch-5", subject: "Medieval History", time: "1:00",  note: "Home — text · narration · Book of Centuries · map", fromLevel: 4 },
+  { id: "tue-ch-6", subject: "Nature Study",     time: "1:45",  note: "Outdoors — a hike, a nature walk, or time on the ranch", fromLevel: 3 },
+  { id: "tue-ch-7", subject: "Piano",            time: "5:00",  note: "10 min before dinner — skip if it's late", free: true },
+];
+
+export const TUESDAY_HORSES = [
+  { id: "tue-h-1", subject: "Rise & Shine",     time: "8:30",  note: AWAY_RISE, free: true, fromLevel: 2 },
+  { id: "tue-h-2", subject: "In the Car",       time: "10:30", note: AWAY_CAR, free: true },
+  { id: "tue-h-3", subject: "Horseback Riding", time: "11:00", note: "", free: true },
+  { id: "tue-h-4", subject: "Lunch",            time: "12:00", note: "", free: true },
+  { id: "tue-h-5", subject: "Medieval History", time: "1:00",  note: "Home — text · narration · Book of Centuries · map", fromLevel: 4 },
+  { id: "tue-h-6", subject: "Nature Study",     time: "1:45",  note: "Outdoors — a hike, a nature walk, or time on the ranch", fromLevel: 3 },
+  { id: "tue-h-7", subject: "Piano",            time: "5:00",  note: "10 min before dinner — skip if it's late", free: true },
 ];
 
 // Bump this whenever the built-in schedule changes so existing accounts refresh
 // their stored week to the new default (see syncScheduleToVersion in db.js).
-export const SCHEDULE_VERSION = "2026-fall-16";
+export const SCHEDULE_VERSION = "2026-fall-17";
 
 // ─── TERM SETTINGS ────────────────────────────────────────────────────────────
 export const TERM_SETTINGS = {

@@ -7,7 +7,7 @@ import FocusTimer from "../components/FocusTimer";
 import MotherCultureRow from "../components/MotherCultureRow";
 import { useDayAppointments } from "../components/TodayAppointments";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { DAYS, DAY_SCHEDULE, TUESDAY_CIBOLO, SCHEDULE_VERSION, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm, NATURE_DAYS, NATURE_LOOP_STEPS, getNatureLoopStep, advanceNatureLoop } from "../data/seed";
+import { DAYS, DAY_SCHEDULE, TUESDAY_CHISPA, TUESDAY_HORSES, SCHEDULE_VERSION, HABIT_PROMPTS, CM_QUOTES, RISE_SHINE_ITEMS, getSaturdayRhythm, getSundayRhythm, NATURE_DAYS, NATURE_LOOP_STEPS, getNatureLoopStep, advanceNatureLoop } from "../data/seed";
 import {
   SUMMER_MORNING_ANCHORS,
   getEveningAnchors,
@@ -1069,22 +1069,24 @@ export default function HomeScreen({ onNavigate, settings }) {
     if (settings?.saveToMeta) settings.saveToMeta({ launch_level: n });
   };
 
-  // Tuesday's Cibolo/home choice is a manual weekly toggle (Kim skips many
-  // volunteer weeks this year), keyed by the Monday of the viewed week.
+  // Tuesday is a manual weekly choice — Home nature / Chispa (volunteer) /
+  // Horseback riding — keyed by the Monday of the viewed week. Kim picks each
+  // week (rotation with the freedom to skip).
   const weekKey = (() => {
     const d = new Date(viewDate); d.setHours(0, 0, 0, 0);
     const back = d.getDay() === 0 ? 6 : d.getDay() - 1;
     d.setDate(d.getDate() - back);
     return d.toISOString().slice(0, 10);
   })();
-  const [volunteerWeeks, setVolunteerWeeks] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("tend_cibolo_weeks") || "[]"); } catch { return []; }
+  const [tuesdayModes, setTuesdayModes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("tend_tuesday_modes") || "{}"); } catch { return {}; }
   });
-  const isVolunteerWeek = volunteerWeeks.includes(weekKey);
-  const toggleVolunteerWeek = () => {
-    setVolunteerWeeks(prev => {
-      const next = prev.includes(weekKey) ? prev.filter(w => w !== weekKey) : [...prev, weekKey];
-      try { localStorage.setItem("tend_cibolo_weeks", JSON.stringify(next)); } catch {}
+  const tuesdayMode = tuesdayModes[weekKey] || "home";
+  const setTuesdayMode = (mode) => {
+    setTuesdayModes(prev => {
+      const next = { ...prev };
+      if (mode === "home") delete next[weekKey]; else next[weekKey] = mode;
+      try { localStorage.setItem("tend_tuesday_modes", JSON.stringify(next)); } catch {}
       return next;
     });
   };
@@ -1119,10 +1121,11 @@ export default function HomeScreen({ onNavigate, settings }) {
     const atLevel = (blocks) => blocks.filter(b => (b.fromLevel || 1) <= effectiveLevel);
     const isCustom = customDays.includes(dayName);
 
-    // Tuesday: the Cibolo week (toggle) is code-only; the home nature Tuesday can
-    // be edited in the Planner like any other day.
+    // Tuesday: Chispa & Horses weeks are code-only (chosen by the picker); the
+    // home nature Tuesday can be edited in the Planner like any other day.
     if (dayName === "Tuesday") {
-      if (isVolunteerWeek) return atLevel(TUESDAY_CIBOLO);
+      if (tuesdayMode === "chispa") return atLevel(TUESDAY_CHISPA);
+      if (tuesdayMode === "horses") return atLevel(TUESDAY_HORSES);
       const t = savedSchedule?.Tuesday;
       if (isCustom && t && t.length) return t.map(b => hydrateSavedBlock(b, "Tuesday"));
       return atLevel(DAY_SCHEDULE.Tuesday);
@@ -1136,7 +1139,7 @@ export default function HomeScreen({ onNavigate, settings }) {
       return isCustom ? blocks : atLevel(blocks);
     }
     return atLevel(DAY_SCHEDULE[dayName] || []);
-  }, [isSummer, dayName, viewDate, savedSchedule, effectiveLevel, isVolunteerWeek, customDays]);
+  }, [isSummer, dayName, viewDate, savedSchedule, effectiveLevel, tuesdayMode, customDays]);
 
   const [dailyOffset, setDailyOffset] = useState(() => {
     try {
@@ -1236,19 +1239,24 @@ export default function HomeScreen({ onNavigate, settings }) {
             </div>
           )}
           {isToday && dayName === "Tuesday" && (
-            <div onClick={toggleVolunteerWeek}
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", marginBottom: 16, background: isVolunteerWeek ? "var(--gold-bg)" : "var(--sage-bg)", border: `1px solid ${isVolunteerWeek ? "#D9C8B0" : "var(--sage-md)"}`, borderRadius: 3, cursor: "pointer" }}>
-              <div style={{ paddingRight: 12 }}>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: "var(--ink)", margin: 0 }}>
-                  {isVolunteerWeek ? "Volunteering at Cibolo this week" : "Home nature Tuesday"}
-                </p>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", margin: "2px 0 0" }}>
-                  {isVolunteerWeek ? "Tap for a home Tuesday instead" : "Going to Cibolo? Tap to switch this week"}
-                </p>
+            <div style={{ padding: "12px 14px", marginBottom: 16, background: "var(--sage-bg)", border: "1px solid var(--sage-md)", borderRadius: 3 }}>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "var(--ink-faint)", margin: "0 0 8px" }}>
+                This Tuesday is…
+              </p>
+              <div style={{ display: "flex", gap: 6 }}>
+                {[["home", "Home"], ["chispa", "Chispa"], ["horses", "Horses"]].map(([id, label]) => {
+                  const on = tuesdayMode === id;
+                  return (
+                    <button key={id} onClick={() => setTuesdayMode(id)}
+                      style={{ flex: 1, padding: "8px 0", borderRadius: 3, border: `1px solid ${on ? "var(--sage)" : "var(--rule)"}`, background: on ? "var(--sage)" : "none", color: on ? "white" : "var(--ink-lt)", cursor: "pointer", fontFamily: "'Playfair Display', serif", fontSize: 14 }}>
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
-              <span style={{ width: 44, height: 26, borderRadius: 20, background: isVolunteerWeek ? "var(--gold)" : "var(--rule)", position: "relative", flexShrink: 0, transition: "background .2s" }}>
-                <span style={{ position: "absolute", top: 3, left: isVolunteerWeek ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left .2s" }} />
-              </span>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 12, color: "var(--ink-faint)", margin: "8px 0 0" }}>
+                {tuesdayMode === "home" ? "Full home nature day." : tuesdayMode === "chispa" ? "Basket in the car · Chispa at 11 · Medieval History & Nature Study at home." : "Basket in the car · horseback riding at 11 · Medieval History & Nature Study at home."}
+              </p>
             </div>
           )}
           {isToday && <MorningPlan blocks={todayBlocks} />}
